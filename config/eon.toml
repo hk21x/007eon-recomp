@@ -3,3 +3,102 @@
 # ([[hook]], [[function]], [[switch]], [functions], [xbe] data_ranges / trace). Sign with this file:
 #   build/linux/xbe_symbols --sign config/eon.toml --out sdk/xdk/5659/signatures.toml
 includes = ["game.toml"]
+
+# D3D8 data the 5659 signatures cannot read here: the library is QFE 4 (sdk/xdk/5659 was made from PGR2's QFE 1).
+# Each value from the default.xbe instruction given; the QFE 1 instruction it matches is PGR2's.
+[data]
+D3D_DirtyFlags           = 0x27A7E8  # SelectVertexShader 0x26E668 ors 0x70 into it (PGR2 0x1C0128)
+D3D_DeferredTextureState = 0x27A7F0  # 0x26A5F6 stores [stage * 32 + type] (8 past DirtyFlags, as in PGR2)
+D3D_RenderState          = 0x27A9F0  # SetPixelShader 0x2758EF copies 0x39 dwords to it (PGR2 0x1C26AF)
+D3D_Streams              = 0x27D148  # the vertex setup 0x27575F reads [n * 12 + 8] (PGR2 0x1C7A9F)
+D3D_PresentInterval      = 0x27ABEC  # 0x26D40A compares it with 0x80000000 (PGR2 0x1C534A)
+D3D_FvfShader            = 0x27D320  # the device init 0x270F7B stores it as the vertex shader (PGR2 0x1C9E1B, 0x1CF808)
+
+# D3D8 QFE 4 CDevice: fields from +0x780 moved by 4, from about +0x900 by 0x10. The instruction proving each is
+# EoN's; the QFE 1 instruction it matches is the one sdk/xdk/5659/layout.toml cites.
+[layout]
+CDevice_BaseVertex        = 0x1C    # unverified: no SetIndices in EoN; fields below +0x780 did not move
+CDevice_IndexBuffer       = 0x7A0   # the device teardown 0x2710CA releases it
+CDevice_ZScale            = 0x948   # the viewport offset and scale 0x269D74
+CDevice_SuperSampleX      = 0x95C   # SetViewport 0x26C0B2
+CDevice_SuperSampleY      = 0x960   # SetViewport 0x26C106
+CDevice_Transforms        = 0xC60   # SetTransform 0x26B396
+CDevice_Textures          = 0xF88   # SetTexture 0x26C1E0
+CDevice_Palettes          = 0xF98   # the state query 0x26CA64, the device teardown 0x2710EF
+CDevice_RenderTarget      = 0x1A04  # 4 below Depth, as in QFE 1 (GetRenderTarget2 not linked)
+CDevice_Depth             = 0x1A08  # GetDepthStencilSurface2 0x26BF86
+CDevice_BackBuffer        = 0x1A14  # GetBackBuffer2 0x26BC30
+CDevice_FrontBuffer       = 0x1A18  # GetBackBuffer2 0x26BC15 (+0x1A14 + 1 * 4)
+CDevice_SwapCount         = 0x2478  # Swap 0x26D730 increments it
+CDevice_Size              = 0x24A0  # Direct3D_CreateDevice 0x269BBB clears 0x928 dwords
+CDevice_PixelShader       = 0x784   # SetPixelShader 0x275818 stores the handle
+CDevice_VertexShader      = 0x794   # SetVertexShader 0x26E9DE stores it
+CDevice_BackBufferScale   = 0x96C   # the frame buffer init 0x2706AB (X), 0x2706C4 (Y at +4)
+CDevice_Viewport          = 0xEE0   # SetViewport 0x26C150
+CDevice_ScreenSpaceOffset = 0xEF8   # SetScreenSpaceOffset 0x26C9A3
+CDevice_AutoDepth         = 0x1A20  # the frame buffer init 0x2707AA, D3D_InitDefaultState 0x270437
+CDevice_VBlankCallback    = 0x1DB8  # the miniport is at +0x1C28 (0x26CDAC, 0x270BE7), + 0x190 (0x272BCE)
+CDevice_SwapCallback      = 0x1DB4  # miniport + 0x18C (the vertical blank handler 0x272EF2)
+CDevice_VBlankEvent       = 0x1DBC  # BlockUntilVerticalBlank 0x26B4CB clears its SignalState at +0x1DC0
+CDevice_DisplayFlags      = 0x1DDC  # the present 0x26CD3B tests it
+CDevice_VBlankCount       = 0x1DE8  # miniport + 0x1C0 (the vertical blank handler 0x272B31)
+CDevice_Field             = 0x1DF8  # 0x26C3CF reads it
+CDevice_GammaRamps        = 0x1E04  # the state query 0x26CBBF
+CDevice_GammaPending      = 0x2404  # miniport + 0x7DC (SetGammaRamp 0x26B361)
+
+# D3D8 QFE 4 functions the 5659 signatures miss: each matched by its instructions (numbers masked) to the QFE 1
+# function PGR2 names; where several bodies match, by link order, which QFE 4 keeps
+[symbols]
+D3DDevice_SetVertexShaderInputDirect                 = 0x26E530
+D3DDevice_LoadVertexShader                           = 0x26E570
+D3DDevice_SetVertexShaderInput                       = 0x26EAC0
+D3DDevice_End                                        = 0x276040
+D3DDevice_SetRenderState_PSTextureModes              = 0x269BF0
+D3DDevice_SetRenderState_TextureFactor               = 0x26A0E0
+D3DDevice_SetRenderState_Dxt1NoiseEnable             = 0x26A1B0
+D3DDevice_SetTextureState_BumpEnv                    = 0x26A5A0
+D3DDevice_SetTextureStageStateNotInline              = 0x26A690
+D3DDevice_SetRenderState_ZEnable                     = 0x26AE70
+D3DDevice_SetRenderState_YuvEnable                   = 0x26B000
+D3DDevice_SetRenderState_OcclusionCullEnable         = 0x26B030
+D3DDevice_SetRenderState_StencilCullEnable           = 0x26B0A0
+D3DDevice_SetRenderState_RopZCmpAlwaysRead           = 0x26B110
+D3DDevice_SetRenderState_RopZRead                    = 0x26B130
+D3DDevice_SetRenderState_DoNotCullUncompressed       = 0x26B150
+D3DDevice_SetRenderState_MultiSampleMode             = 0x26B170
+D3DDevice_SetRenderState_MultiSampleRenderTargetMode = 0x26B1A0
+D3DDevice_SetRenderState_MultiSampleAntiAlias        = 0x26B1D0
+D3DDevice_SetGammaRamp                               = 0x26B2F0
+D3DDevice_SetTransform                               = 0x26B380
+D3DDevice_BlockOnFence                               = 0x26B4B0
+D3DDevice_BlockUntilVerticalBlank                    = 0x26B4C0
+D3DDevice_SetFlickerFilter                           = 0x26B530
+D3DDevice_SetSoftDisplayFilter                       = 0x26B580
+D3DDevice_InsertFence                                = 0x26B5E0
+D3DDevice_Reset                                      = 0x26B7B0
+D3DDevice_SetRenderTarget                            = 0x26B860
+D3DDevice_SetRenderTargetFast                        = 0x26BAE0
+D3DDevice_GetBackBuffer2                             = 0x26BC00
+D3DDevice_GetDepthStencilSurface2                    = 0x26BF80
+D3DDevice_SetViewport                                = 0x26BFA0
+D3DDevice_SetScissors                                = 0x26C4E0
+D3DDevice_SetScreenSpaceOffset                       = 0x26C990
+D3DDevice_Clear                                      = 0x26D840
+D3DDevice_Swap                                       = 0x26D690
+CDevice_KickOff                                      = 0x26F710
+D3D_SetFence                                         = 0x26F830
+D3D_BlockOnTime                                      = 0x26F8F0
+D3D_MakeRequestedSpace                               = 0x26FA60
+D3DDevice_MakeSpace                                  = 0x26FBA0
+D3D_KickOffAndWaitForIdle                            = 0x26FC00
+D3D_BlockOnResource                                  = 0x26FC20
+D3DDevice_SetTile                                    = 0x26C3F0  # stores the tile at device +0x1AC0 + n * 24, then the miniport (+0x1C28) programs it
+D3DDevice_RunPushBuffer                              = 0x26ED10  # the frame end 0x60667 runs the frame it recorded (BeginPushBuffer 0x26F040, EndPushBuffer 0x26F0B0)
+# DSOUND exports the scan misses, named by their export ids in .XTLID (ids as other builds' signatures name them)
+IDirectSoundBuffer_SetEG                             = 0x27FB6A  # xtlid B0067
+IDirectSoundBuffer_StopEx                            = 0x27FBFA  # xtlid B007E
+IDirectSoundBuffer_PlayEx                            = 0         # the scan took StopEx (same bytes) for it; EoN exports no B005A
+IDirectSoundBuffer_GetCurrentPosition                = 0x27FC76  # xtlid B0053
+IDirectSoundStream_FlushEx                           = 0x27FCBC  # xtlid B0080
+IDirectSound_CreateSoundBuffer                       = 0x280D9B  # xtlid B003A
+XAudioCalculatePitch                                 = 0x27EB6D  # xtlid B00A3
