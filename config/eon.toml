@@ -1,0 +1,5 @@
+# Hand-kept recompiler config for default.xbe, the file the build reads. config/game.toml is xbe_symbols output and
+# every scan rewrites it, so nothing is edited there: it is included here, and everything added by hand goes below
+# ([[hook]], [[function]], [[switch]], [functions], [xbe] data_ranges / trace). Sign with this file:
+#   build/linux/xbe_symbols --sign config/eon.toml --out sdk/xdk/5659/signatures.toml
+includes = ["game.toml"]

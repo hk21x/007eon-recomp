@@ -1,0 +1,4 @@
+[submodule "sdk"]
+	path = sdk
+	url = https://github.com/hk21x/XboxXBERecomp.git
+	branch = main

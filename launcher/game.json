@@ -1,0 +1,12 @@
+{
+    "title": "007: Everything or Nothing",
+    "short": "EoN",
+    "exe": "EoN",
+    "xbe": "default.xbe",
+    "releases": {
+        "<the default.xbe's SHA-1>": "PAL (Europe)"
+    },
+    "repo": "https://github.com/<owner>/<repo>.git",
+    "branch": "main",
+    "toolchain": "https://raw.githubusercontent.com/<owner>/<repo>/main/launcher/toolchain.json"
+}

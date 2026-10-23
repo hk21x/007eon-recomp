@@ -1,0 +1,62 @@
+{
+    "tools": [
+        {
+            "id": "llvm",
+            "title": "Clang 19.1.7",
+            "kind": "tar.xz",
+            "url": "https://github.com/llvm/llvm-project/releases/download/llvmorg-19.1.7/clang%2Bllvm-19.1.7-x86_64-pc-windows-msvc.tar.xz",
+            "sha256": "b4557b4f012161f56a2f5d9e877ab9635cafd7a08f7affe14829bd60c9d357f0",
+            "size": 845236708,
+            "strip": 1,
+            "keep": ["bin/clang.exe", "bin/clang++.exe", "bin/clang-cl.exe", "bin/lld-link.exe", "bin/lld.exe",
+                     "bin/llvm-ar.exe", "bin/llvm-lib.exe", "bin/llvm-rc.exe", "bin/llvm-mt.exe", "bin/llvm-ranlib.exe",
+                     "bin/api-ms-win-*.dll", "bin/ucrtbase.dll", "bin/msvcp140*.dll", "bin/vcruntime140*.dll",
+                     "bin/concrt140.dll", "lib/clang/"]
+        },
+        {
+            "id": "cmake",
+            "title": "CMake 3.31.12",
+            "kind": "zip",
+            "url": "https://github.com/Kitware/CMake/releases/download/v3.31.12/cmake-3.31.12-windows-x86_64.zip",
+            "sha256": "0c4baa40f28b3f8225eb3fdf6946c987b4fe901403b4eaf2fbbd9378100aaa0c",
+            "size": 46666397,
+            "strip": 1,
+            "keep": ["bin/", "share/"]
+        },
+        {
+            "id": "ninja",
+            "title": "Ninja 1.13.2",
+            "kind": "zip",
+            "url": "https://github.com/ninja-build/ninja/releases/download/v1.13.2/ninja-win.zip",
+            "sha256": "07fc8261b42b20e71d1720b39068c2e14ffcee6396b76fb7a795fb460b78dc65",
+            "size": 291570
+        },
+        {
+            "id": "git",
+            "title": "MinGit 2.56.0",
+            "kind": "zip",
+            "url": "https://github.com/git-for-windows/git/releases/download/v2.56.0.windows.2/MinGit-2.56.0.2-64-bit.zip",
+            "sha256": "da35e72aa21c005a5a0d298cfbae110bc1609a815730ea0dde84b01a1b3cd3be",
+            "size": 39806486
+        }
+    ],
+    "msvc": {
+        "channel": "https://aka.ms/vs/17/release/channel",
+        "version": "14.44.17.14",
+        "packages": ["Microsoft.VC.{v}.CRT.Headers.base", "Microsoft.VC.{v}.CRT.x64.Desktop.base",
+                     "Microsoft.VC.{v}.CRT.x64.Store.base", "Microsoft.VC.{v}.CRT.Source.base"]
+    },
+    "sdk": {
+        "package": "Win11SDK_10.0.26100",
+        "version": "10.0.26100.0",
+        "msis": ["Windows SDK Desktop Headers x64-x86_en-us.msi", "Windows SDK Desktop Libs x64-x86_en-us.msi",
+                 "Universal CRT Headers Libraries and Sources-x86_en-us.msi",
+                 "Windows SDK for Windows Store Apps Headers-x86_en-us.msi",
+                 "Windows SDK for Windows Store Apps Libs-x86_en-us.msi",
+                 "Windows SDK OnecoreUap Headers x64-x86_en-us.msi",
+                 "Windows SDK Desktop Headers x86-x86_en-us.msi",
+                 "Windows SDK OnecoreUap Headers x86-x86_en-us.msi",
+                 "Windows SDK for Windows Store Apps Headers OnecoreUap-x86_en-us.msi",
+                 "Windows SDK Desktop Tools x64-x86_en-us.msi"]
+    }
+}

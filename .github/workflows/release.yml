@@ -1,0 +1,54 @@
+# <short>Launcher.exe, built on GitHub's Windows machines (it holds no game code: players build the game with it).
+# A push to main that touches the launcher builds it (an artifact); a tag v* builds it and publishes the release
+# with the exe and docs/releases/<tag>.md as its notes.
+name: Launcher
+
+on:
+  push:
+    branches: [main]
+    paths: ['launcher/**', 'sdk', '.github/workflows/release.yml']
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+# launcher/game.json's "short" and "title"
+env:
+  GAME_SHORT: EoN
+  GAME_TITLE: 007: Everything or Nothing
+
+jobs:
+  launcher:
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Build the launcher
+        shell: cmd
+        run: |
+          for /f "usebackq tokens=*" %%i in (`"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath`) do set "VSDIR=%%i"
+          call "%VSDIR%\Common7\Tools\VsDevCmd.bat" -arch=amd64 -host_arch=amd64
+          set "VSCMAKE=%VSDIR%\Common7\IDE\CommonExtensions\Microsoft\CMake"
+          set "PATH=%VSCMAKE%\CMake\bin;%VSCMAKE%\Ninja;%VSDIR%\VC\Tools\Llvm\x64\bin;%ProgramFiles%\LLVM\bin;%PATH%"
+          clang++ --version || exit /b 1
+          cmake -S sdk\launcher -B out\launcher -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DLAUNCHER_GAME="%CD%\launcher" || exit /b 1
+          cmake --build out\launcher || exit /b 1
+          dir out\launcher\%GAME_SHORT%Launcher.exe
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.GAME_SHORT }}Launcher
+          path: out/launcher/${{ env.GAME_SHORT }}Launcher.exe
+
+      - name: Publish the release
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          notes="docs/releases/${GITHUB_REF_NAME}.md"
+          gh release create "$GITHUB_REF_NAME" "out/launcher/${GAME_SHORT}Launcher.exe" \
+            --title "$GAME_TITLE PC port ${GITHUB_REF_NAME#v}" --notes-file "$notes"
