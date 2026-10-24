@@ -21,6 +21,7 @@ const app::GameInfo app::kGame = {
     .pad = nullptr,                       // changes a polled pad
     .rumble = nullptr,                    // changes a rumble before it is set
     .squeeze_screen_programs = true,      // ultrawide: the HUD and menus are drawn by a pass-through program
+    .pal_console = true,                  // a PAL disc's movies are _pal only: a PAL 60 Hz console for it
     // optional, after these: .achievements (conditions on guest memory), .same_code (other releases' xbe SHA-1s with
     // the same code), .wheel (what a steering wheel's force feedback follows)
 };

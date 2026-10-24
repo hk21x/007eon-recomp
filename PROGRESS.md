@@ -29,6 +29,17 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-24 - the cutscenes: a PAL console
+
+The runtime reported an NTSC console, so the game asked for its movies as _ntsc and _ntscw (XBE_FILES_LOG:
+eag_ntsc and in1_ntscw missing): Harry's disc (game region 4) has the EA logo and every cutscene (in1, in2a, intro,
+ls1, ...) only as _pal and _palw, so they were all skipped. The suffix comes from 0x24539C: _pal when 0x35BF78 is 1
+or 2, set at 0x5FF90 when XGetVideoStandard (setting 0x103, bits 8 to 15) is 3, PAL-I; with the PAL60 video flag
+(0x40, setting 8's 0x00400000) the game picks 60 Hz (0x35B7BC = 60). sdk 63b9ffe: GameInfo::pal_console, for a
+release whose certificate regions are rest of the world without North America, reports PAL-I with PAL60 on; EoN
+opts in, PGR1 and PGR2 do not. Headless: eag_pal and in1_palw open, the opening gun barrel plays; THX and MGM stay
+_ntsc (the game asks for them so, both exist). Smoke OK, wincheck OK.
+
 ### 2026-10-24 - the second mission's gun flashes and punch effects
 
 Harry: the flashes are right in the first mission, at the top left again in the second (VR training), punch effects
