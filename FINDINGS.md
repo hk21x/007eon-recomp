@@ -19,4 +19,10 @@ game's own code and data, with its addresses).
 - **[game]** The .viv archives (BIGF) are mounted only when XGetDiskSectorSize("D:\\") is 2048 (0x5BD00 sets mode 2,
   the gate is 0x21110); otherwise the game looks for loose files the disc does not have.
 - **[console]** 5659's IDirectSoundBuffer_PlayEx signature also matches StopEx's thunk (same bytes, other callee).
+- **[game]** The skinned characters are push buffers built with the models: 132 no-ops (filled by a fixup with the
+  bone matrices), a constant load, then index strips (0x1800/0x1808 array elements); vertex data, program and
+  textures set through the API before RunPushBuffer.
+- **[game]** The vertex programs are loaded with pushed commands (0x1E9C, 0x0B00) inside the recorded frame and
+  selected with SelectVertexShader(0x27D209 or 0, slot); 0x27D208 is the library's direct-input shader.
+- **[game]** BLACK is wall cover (the training level's first step).
 

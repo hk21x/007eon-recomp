@@ -1,12 +1,8 @@
-# vblank buttons [vblanks held]: exploring the training level the first boot goes to (about frame 2000)
-2700 X 20
-3000 LS 120
-3200 LSL 60
-3400 A 20
-3600 LSD 120
-3800 X 20
-4000 RT 30
-4200 LSR 60
-4400 START 20
-4600 A 20
-5000 START 20
+# vblank buttons [vblanks held]: the first boot goes from the movies to the training level (about 2000);
+# its tutorial: BLACK takes wall cover (step 1), LT held locks onto a target (step 2)
+2600 BLACK 20
+3000 LT 240
+3300 LT+RT 60
+3600 LS 120
+4000 START 20
+4200 START 20
