@@ -29,6 +29,17 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-24 - Windows: shadows right, full speed; the carousel's flicker
+
+Harry (D3D12): the shadow under Bond is now as faint as on the console (fe7afee). The level runs at full speed:
+1 to 13 frames in 10 s over 25 ms (all of them before the strip batching and the leak fix). The weapon carousel
+now copies the frame (4bf191d: a colour target on the depth buffer's memory keeps the colour target when colour is
+written) and shows its desaturated ghost of the copy (draw 11803: c0 0.30 0.59 0.11, alpha 0.5), but flickers
+white: draw 11534 (pixel shader 0x27B5B4) samples a 640x480 LIN_B8G8R8A8 (0x40) texture whose data is physical 0,
+and Bond goes white in the capture (153029). The header is filled from something the host leaves empty; sdk now
+logs such a texture once with its header address. Next: the header, from Harry's next log (the carousel's button
+is not Y, WHITE or the d-pad in the tutorial headless).
+
 ### 2026-10-24 - the shadow diamond on Windows: what the capture shows
 
 Harry's D3D12 capture (.local/win/144836, F3 with XBE_CAPTURE_DRAWS): a light, diagonally hatched diamond under
