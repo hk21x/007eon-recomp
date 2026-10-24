@@ -11,8 +11,7 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 - Push buffers: YES, both kinds, now drawn (6bded69). Every frame is recorded (BeginPushBuffer 0x26F040 .. EndPushBuffer 0x26F0B0) and run
   (RunPushBuffer 0x26ED10) at once, which the runtime's API level drawing covers; and after the movies the game runs
   buffers recorded earlier with fixups, again and again (2 to 26 KB each), which the runtime does not replay
-- SDK: the fork's main at cc6857c (2026-10-24, PGR1 and PGR2 smoke OK; neither reaches the new push buffer,
-  strip or program paths), task branch `eon`: 13fe175 title-made frame buffers, 255d367 the disc's 2048 byte
+- SDK: the fork's main at 63211f1 (2026-10-24, PGR1, PGR2 and EoN smoke OK), task branch `eon`: 13fe175 title-made frame buffers, 255d367 the disc's 2048 byte
   sectors, fab5f4a Walk inside a push buffer being recorded, 6bded69 RunPushBuffer replay; both change shared code, so PGR1 and PGR2 smoke must pass before they go to the fork's main
 - Windows (Harry, 2026-10-24, D3D12, RX 7900 XT): boots and plays. Fixed since: the black square under Bond
   (63e43e1), the movies (8068dbc), half the draws (8833e6b). Open: a dark slab on the ground, blue figures at
@@ -29,6 +28,18 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 - Menus: scripts/pad/menus.txt reaches the main menu and the Mission Select (only Ground Zero on a new save)
 
 ## Log
+
+### 2026-10-24 - a soak test; the memory leak
+
+scripts/soak_pad.sh (SOAK_PAD): the level, Quit, New Game, Ground Zero, over and over; run from a separate
+worktree (/home/harry/eon-soak, its own .local). 20 minutes on 3d9aaef: no traps, frames to the end (70620),
+repeated quit and reload cycles - but the process grew from 510 MB to 3858 MB (about 12.5 GB an hour).
+
+Cause: SelectProgram made a new VertexShader on every SelectVertexShader, hundreds a frame here, and the renderers
+and EndPrimitive keep each shader they meet (by pointer). Measured over 3 minutes in the level: +56 MB every 10 s.
+sdk 63211f1: one object per declaration, program and stream layout, handed out again. Then 101 to 103 MB over the
+same 3 minutes; the movies and the level unchanged; EoN, PGR2 and PGR1 smoke OK; the fork's main 63211f1. On
+Windows this also stops the backends making pipelines for new shader objects every frame.
 
 ### 2026-10-24 - a smoke test; driving.xbe left for a driving mission
 
