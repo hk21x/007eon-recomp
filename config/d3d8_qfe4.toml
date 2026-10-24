@@ -1,0 +1,34 @@
+# D3D8 QFE 4 (XDK 5659), the library both xbes link: its CDevice layout. sdk/xdk/5659/layout.toml was made from
+# PGR2's QFE 1; these replace its values. Each cites the default.xbe instruction that proves it; driving.xbe has
+# the same instructions (config/driving.toml).
+# D3D8 QFE 4 CDevice: fields from +0x780 moved by 4, from about +0x900 by 0x10. The instruction proving each is
+# EoN's; the QFE 1 instruction it matches is the one sdk/xdk/5659/layout.toml cites.
+[layout]
+CDevice_BaseVertex        = 0x1C    # unverified: no SetIndices in EoN; fields below +0x780 did not move
+CDevice_IndexBuffer       = 0x7A0   # the device teardown 0x2710CA releases it
+CDevice_ZScale            = 0x948   # the viewport offset and scale 0x269D74
+CDevice_SuperSampleX      = 0x95C   # SetViewport 0x26C0B2
+CDevice_SuperSampleY      = 0x960   # SetViewport 0x26C106
+CDevice_Transforms        = 0xC60   # SetTransform 0x26B396
+CDevice_Textures          = 0xF88   # SetTexture 0x26C1E0
+CDevice_Palettes          = 0xF98   # the state query 0x26CA64, the device teardown 0x2710EF
+CDevice_RenderTarget      = 0x1A04  # 4 below Depth, as in QFE 1 (GetRenderTarget2 not linked)
+CDevice_Depth             = 0x1A08  # GetDepthStencilSurface2 0x26BF86
+CDevice_BackBuffer        = 0x1A14  # GetBackBuffer2 0x26BC30
+CDevice_FrontBuffer       = 0x1A18  # GetBackBuffer2 0x26BC15 (+0x1A14 + 1 * 4)
+CDevice_SwapCount         = 0x2478  # Swap 0x26D730 increments it
+CDevice_Size              = 0x24A0  # Direct3D_CreateDevice 0x269BBB clears 0x928 dwords
+CDevice_PixelShader       = 0x784   # SetPixelShader 0x275818 stores the handle
+CDevice_VertexShader      = 0x794   # SetVertexShader 0x26E9DE stores it
+CDevice_BackBufferScale   = 0x96C   # the frame buffer init 0x2706AB (X), 0x2706C4 (Y at +4)
+CDevice_Viewport          = 0xEE0   # SetViewport 0x26C150
+CDevice_ScreenSpaceOffset = 0xEF8   # SetScreenSpaceOffset 0x26C9A3
+CDevice_AutoDepth         = 0x1A20  # the frame buffer init 0x2707AA, D3D_InitDefaultState 0x270437
+CDevice_VBlankCallback    = 0x1DB8  # the miniport is at +0x1C28 (0x26CDAC, 0x270BE7), + 0x190 (0x272BCE)
+CDevice_SwapCallback      = 0x1DB4  # miniport + 0x18C (the vertical blank handler 0x272EF2)
+CDevice_VBlankEvent       = 0x1DBC  # BlockUntilVerticalBlank 0x26B4CB clears its SignalState at +0x1DC0
+CDevice_DisplayFlags      = 0x1DDC  # the present 0x26CD3B tests it
+CDevice_VBlankCount       = 0x1DE8  # miniport + 0x1C0 (the vertical blank handler 0x272B31)
+CDevice_Field             = 0x1DF8  # 0x26C3CF reads it
+CDevice_GammaRamps        = 0x1E04  # the state query 0x26CBBF
+CDevice_GammaPending      = 0x2404  # miniport + 0x7DC (SetGammaRamp 0x26B361)

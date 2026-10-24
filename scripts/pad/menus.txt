@@ -1,0 +1,12 @@
+# vblank buttons [vblanks held]: from the training level the first boot goes to, through the pause menu's Quit
+# (Game tab, Quit, Yes) to the main menu (about 6000), Single Player, New Game, to the Mission Select (about 7000),
+# where only Ground Zero is open on a new save
+2600 START 20
+2800 RIGHT 10
+3000 DOWN 10
+3200 DOWN 10
+3400 A 10
+3700 RIGHT 10
+3900 A 10
+6200 A 10
+6600 A 10

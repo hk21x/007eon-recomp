@@ -11,13 +11,35 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 - Push buffers: YES, both kinds, now drawn (6bded69). Every frame is recorded (BeginPushBuffer 0x26F040 .. EndPushBuffer 0x26F0B0) and run
   (RunPushBuffer 0x26ED10) at once, which the runtime's API level drawing covers; and after the movies the game runs
   buffers recorded earlier with fixups, again and again (2 to 26 KB each), which the runtime does not replay
-- SDK: branch `eon` of the fork (local, not pushed): 13fe175 title-made frame buffers, 255d367 the disc's 2048 byte
+- SDK: on the fork's main since 2026-10-24 (6bded69; PGR1 and PGR2 smoke OK), task branch `eon`: 13fe175 title-made frame buffers, 255d367 the disc's 2048 byte
   sectors, fab5f4a Walk inside a push buffer being recorded, 6bded69 RunPushBuffer replay; both change shared code, so PGR1 and PGR2 smoke must pass before they go to the fork's main
-- Next: the garbage strip on the loading screen; the movies (overlay); driving.xbe; then the SDK changes through
-  PGR1 and PGR2 smoke so they can go to the fork's main
-- driving.xbe: not built or run yet
+- Next: driving.xbe through the game's own launch (a driving mission: the campaign, or Harry on Windows); the
+  garbage strip on the loading screen; the movies (overlay)
+- driving.xbe: named and built (config/driving.toml, 43 D3D names matched from default.xbe, the shared QFE 4
+  layout in config/d3d8_qfe4.toml); run on its own it boots its device and audio, then loads the developer fallback
+  track qlab (not on the disc): it needs the launch data default.xbe passes
+- Menus: scripts/pad/menus.txt reaches the main menu and the Mission Select (only Ground Zero on a new save)
 
 ## Log
+
+### 2026-10-24 - SDK published; driving.xbe named and booted on its own; the menus
+
+SDK: PGR2 smoke (this repo's sdk at 6bded69 in a PGR2 worktree: SMOKE OK, race 2221 draws a frame) and PGR1 smoke
+(/home/harry/smoke-pgr1: SMOKE OK, race 2723) passed, neither touches the push buffer paths; the fork's main
+fast-forwarded 2fbeb57..6bded69 and pushed with the task branch `eon`.
+
+driving.xbe: the same QFE 4 library, so the CDevice layout moved to config/d3d8_qfe4.toml, included by both hand
+configs (default.xbe's generated symbols unchanged). Its D3D functions matched against default.xbe's names (43;
+SetGammaRamp begins its D3D section; not linked there: SetVertexShaderInput(Direct), Begin/EndPushBuffer,
+SetRenderTargetFast, SetVertexShaderConstant1Fast), its D3D data by the instructions using default.xbe's (every use
+agrees), DSOUND by .XTLID (PlayEx again the scan's false match), SetBackBufferScale 0x2A2870 by reading it. Built
+with sdk/harness/build.sh -g generated/driving and run alone: CreateDevice (640x480, two back buffers, auto depth),
+audio, then the tuning table's fallback track qlab (0x286F80), whose files are not on the disc, and a crash.
+The game launches it from its flow (state handler 0x1EB00 -> 0x21DE0 -> 0x21D30(1): "D:\DRIVING.XBE" from
+0x2B9ACC, the state object 0x31EA60 as launch data). So it needs a driving mission reached in default.xbe.
+
+Menus: Quit from the pause menu (Game tab, Quit, Yes) leads to the main menu (Single Player, Multiplayer,
+Options, over a looping movie), New Game, Mission Select (Ground Zero; MI6 Training locked). scripts/pad/menus.txt.
 
 ### 2026-10-24 - the characters draw: RunPushBuffer replays; the tutorial plays
 
