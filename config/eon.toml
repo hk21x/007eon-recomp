@@ -102,3 +102,5 @@ IDirectSoundBuffer_GetCurrentPosition                = 0x27FC76  # xtlid B0053
 IDirectSoundStream_FlushEx                           = 0x27FCBC  # xtlid B0080
 IDirectSound_CreateSoundBuffer                       = 0x280D9B  # xtlid B003A
 XAudioCalculatePitch                                 = 0x27EB6D  # xtlid B00A3
+D3DDevice_BeginPushBuffer                            = 0x26F040  # points the device's push at the buffer (+0x764 it, +0x770/+0x76C the old push), flag 4
+D3DDevice_EndPushBuffer                              = 0x26F0B0  # stores the size recorded, puts the push back

@@ -3,19 +3,40 @@
 Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Status
-- Milestone: 1 - boots headless: device, audio, the archives, the logo movies (THX, MGM) and on into the front end's
-  loading; 120 s without a trap, about 60 frames a second. Every frame after the movies is black.
+- Milestone: 2 - headless, the first boot goes from the movies to the training level, drawn (level, lighting, fire,
+  HUD, text) and the pause menu; 4 minutes without a trap at 60 frames a second. Bond and the other skinned
+  characters are missing: they are replayed push buffers (below).
 - XDK: 5659, D3D8 QFE 4. default.xbe 84 of 250 functions by signature, 50 more by hand in config/eon.toml (matched to
   PGR2's QFE 1 bodies, or by .XTLID export id); 6 D3D globals and 28 CDevice layout offsets for QFE 4 there too
 - Push buffers: YES, both kinds. Every frame is recorded (BeginPushBuffer 0x26F040 .. EndPushBuffer 0x26F0B0) and run
   (RunPushBuffer 0x26ED10) at once, which the runtime's API level drawing covers; and after the movies the game runs
   buffers recorded earlier with fixups, again and again (2 to 26 KB each), which the runtime does not replay
 - SDK: branch `eon` of the fork (local, not pushed): 13fe175 title-made frame buffers, 255d367 the disc's 2048 byte
-  sectors; both change shared code, so PGR1 and PGR2 smoke must pass before they go to the fork's main
-- Next: why the front end is black: what draws, and how much of it is in the replayed push buffers
+  sectors, then Walk inside a push buffer being recorded; both change shared code, so PGR1 and PGR2 smoke must pass before they go to the fork's main
+- Next: replay recorded push buffers (RunPushBuffer with fixups): the characters
 - driving.xbe: not built or run yet
 
 ## Log
+
+### 2026-10-24 - the training level draws: commands pushed while recording are read
+
+The black frames after the movies had about 11000 draws each, every one with vertex shader handle 0x27D209 (the
+library's static direct-input shader, 0x27D208: SetVertexShaderInputDirect 0x26E530 copies the inputs into it). The
+engine selects its programs with SelectVertexShader(0x27D209 or 0, slot 0 or 8) and loads them with pushed commands
+(0x1E9C), never LoadVertexShader. Logged: no program load ever reached the runtime, every selected program was zeros.
+The loads are in the frame's own recording (the first RunPushBuffer's data begins 00041E9C 00000000): Walk only read
+the scratch buffer. sdk: Begin/EndPushBuffer (0x26F040, 0x26F0B0, named here) wrapped, Walk follows the push into
+the buffer being recorded and back. Program loads and selects now carry 24 of 32 dwords.
+
+With none.txt the first boot goes from the movies to the training level ("Basic combat, step 1: Press [] for wall
+cover"), drawn: the level, lights, fire, smoke, HUD and text; 4 minutes (13440 frames) without a trap or new
+warning. scripts/pad/explore.txt: START opens the pause menu (drawn: Objectives, Game, Options). The left stick
+moves nothing visible and Bond is not drawn: the skinned meshes (0xE9D30) patch bone matrices into a fixup
+(0x26F2B0 begins it, 0x26F1F0 sets constants) and run a push buffer recorded at load time with it, which the
+runtime does not replay (64 RunPushBuffer logged, 2 to 26 KB). The loading screen (frame 1800) has a garbage strip
+along the top.
+
+Next: replaying recorded push buffers with their fixups.
 
 ### 2026-10-23 - first boot: QFE 4 names and layout, the game's own frame buffers, the DVD's sectors; black after the movies
 
