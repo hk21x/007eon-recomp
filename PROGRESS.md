@@ -29,6 +29,21 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-24 - the shadow diamond on Windows: what the capture shows
+
+Harry's D3D12 capture (.local/win/144836, F3 with XBE_CAPTURE_DRAWS): a light, diagonally hatched diamond under
+Bond, the projected shadow's ground patch. The shadow pass binds a 640x480 colour surface (0x12) and a 640x480
+D24S8 surface (0x2E), both pitch 2560, on the same memory 0x03043000 (SetRenderTargetFast, headers 0x849A00 and
+0x8499D0), with a 128x128 or 256x256 viewport; the ground patches then sample 0x03043000 through 256x256 (pitch
+1024, header 0x63A9AC) and 128x128 (pitch 512, 0x63A9C0) D24S8 texture headers. No SetTile covers that memory
+(tiles 0 and 1 are the frame buffers 0x03A04000 and 0x03C5C000, pitch 0x1400).
+D3D12 keeps the pass in a 640x480 depth target (the silhouettes are in its top left in the capture's z images);
+a 256x256 depth texture finds no target of its size and reads guest memory, which the GPU never wrote. The
+reference renderer reads guest memory too, but there, at the first sample in the level, the memory holds noise
+in both layouts (no silhouette): it is not clearly right either. Open: how the console lays the pass out for those
+texture headers; what EoN's character shadows look like on a console (or xemu) decides the fix (sample the
+target's top left, or rebuild the texture's layout from the target on the GPU).
+
 ### 2026-10-24 - a soak test; the memory leak
 
 scripts/soak_pad.sh (SOAK_PAD): the level, Quit, New Game, Ground Zero, over and over; run from a separate
