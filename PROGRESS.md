@@ -13,14 +13,43 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
   buffers recorded earlier with fixups, again and again (2 to 26 KB each), which the runtime does not replay
 - SDK: on the fork's main since 2026-10-24 (6bded69; PGR1 and PGR2 smoke OK), task branch `eon`: 13fe175 title-made frame buffers, 255d367 the disc's 2048 byte
   sectors, fab5f4a Walk inside a push buffer being recorded, 6bded69 RunPushBuffer replay; both change shared code, so PGR1 and PGR2 smoke must pass before they go to the fork's main
-- Next: driving.xbe through the game's own launch (a driving mission: the campaign, or Harry on Windows); the
-  garbage strip on the loading screen; the movies (overlay)
+- Windows (Harry, 2026-10-24, D3D12, RX 7900 XT): boots and plays. Fixed since: the black square under Bond
+  (63e43e1), the movies (8068dbc), half the draws (8833e6b). Open: a dark slab on the ground, blue figures at
+  the top left and a bright band with the weapon carousel up (perhaps the movies' cause, to be seen); frame rate
+  (about 23 a second in the level before 8833e6b)
+- Next: Harry's next test (F3 capture with XBE_CAPTURE_DIR and XBE_CAPTURE_DRAWS=1 for what remains); driving.xbe
+  through the game's own launch; the loading screen's strip (0x83043000, the shadow maps' memory, sampled as a
+  640x480 picture with nothing written there before)
 - driving.xbe: named and built (config/driving.toml, 43 D3D names matched from default.xbe, the shared QFE 4
   layout in config/d3d8_qfe4.toml); run on its own it boots its device and audio, then loads the developer fallback
   track qlab (not on the disc): it needs the launch data default.xbe passes
 - Menus: scripts/pad/menus.txt reaches the main menu and the Mission Select (only Ground Zero on a new save)
 
 ## Log
+
+### 2026-10-24 - Windows: the shadow pass, half the draws, the movies
+
+Harry's first Windows build (D3D12): it boots and plays; a black square with hatched edges under Bond, more
+glitches with the weapon carousel up, and every frame over 25 ms in the level.
+
+- The square: the character shadows are a depth-only pass (cw=0) into a 128x128 or 256x256 D24S8 surface given as
+  both colour target and depth buffer (0x03043000), sampled as a depth texture (PROJECT2D, compared with 0 as
+  xemu does) by the ground patches redrawn under each character (pixel shader 0x27B5B4, stage 1 bump env).
+  sdk 63e43e1: both GPU backends bind the depth target alone when the colour target is its memory (they made a
+  colour twin and could drop the depth target). Harry: the square under Bond is gone.
+- Draws: about 26000 a frame in the level, 14500 of them pushed index strips (the characters). sdk 8833e6b: Walk
+  keeps the strips' triangles and draws them as one list before any other command and at the end of every walk.
+  57 million draws over 4100 frames before, 24 million after, the frames the same. (A first version flushed only
+  at the end of a walk, after the next object's constants: spiky characters; the flush now comes before any
+  other command.) About 11500 remain: 8000 of them the ground patches under the shadows, one API draw each.
+- Movies: each frame is a YUY2 640x480 texture drawn as an immediate quad (0x17FC, colour 0x194C, position
+  0x1518) through program slot 0; the game calls SelectVertexShader(0, 0) and only then pushes the program into
+  slot 0 (1E9C, 0B00..), reusing the slot for other programs in the frame. The runtime copied the program at the
+  select: the quad went through the slot's previous program, off screen. sdk 8068dbc: the slot is kept and the
+  selected shader rebuilt from program memory when pushed instructions change it. THX and MGM now play; the level
+  and menus unchanged.
+- The loading screen's strip: a 640x480 A8R8G8B8 texture at 0x83043000 (the shadow maps' memory) drawn dimmed;
+  nothing writes there before it in the harness. Open.
 
 ### 2026-10-24 - SDK published; driving.xbe named and booted on its own; the menus
 

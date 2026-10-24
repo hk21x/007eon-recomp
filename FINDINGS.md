@@ -25,4 +25,11 @@ game's own code and data, with its addresses).
 - **[game]** The vertex programs are loaded with pushed commands (0x1E9C, 0x0B00) inside the recorded frame and
   selected with SelectVertexShader(0x27D209 or 0, slot); 0x27D208 is the library's direct-input shader.
 - **[game]** BLACK is wall cover (the training level's first step).
+- **[game]** Character shadows: a depth-only pass into a D24S8 surface given as colour target and depth buffer
+  (0x03043000, 128x128 or 256x256), then the ground patches under the character redrawn with pixel shader
+  0x27B5B4 (stage 0 PROJECT2D on the depth texture, border addressing; stage 1 bump env) - about 8000 draws a
+  frame in the first level.
+- **[game]** Movies: XMV decodes into a YUY2 surface the game draws as an immediate quad through vertex program
+  slot 0, selected before the program is loaded there (SelectVertexShader(0, 0) from 0xFA6C5).
+- **[console]** A selected vertex program runs from program memory as it is at the draw, not as it was at the select.
 
