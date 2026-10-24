@@ -32,3 +32,4 @@ CDevice_VBlankCount       = 0x1DE8  # miniport + 0x1C0 (the vertical blank handl
 CDevice_Field             = 0x1DF8  # 0x26C3CF reads it
 CDevice_GammaRamps        = 0x1E04  # the state query 0x26CBBF
 CDevice_GammaPending      = 0x2404  # miniport + 0x7DC (SetGammaRamp 0x26B361)
+CDevice_Tiles             = 0x1AC0  # SetTile 0x26C435 stores [index * 24], GetTile 0x26B4FD reads it
