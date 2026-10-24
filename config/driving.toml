@@ -64,7 +64,6 @@ D3DDevice_SetBackBufferScale = 0x2A2870  # (x, y): scales by the multisample typ
 # DSOUND exports the scan misses, by their .XTLID export ids
 IDirectSoundBuffer_SetEG              = 0x294743  # xtlid B0067
 IDirectSoundBuffer_StopEx             = 0x2947D3  # xtlid B007E
-IDirectSoundBuffer_PlayEx             = 0         # the scan took StopEx (same bytes) for it; no B005A here
 IDirectSoundBuffer_GetCurrentPosition = 0x29484F  # xtlid B0053
 IDirectSound_CreateSoundBuffer        = 0x295754  # xtlid B003A
 XAudioCalculatePitch                  = 0x293B97  # xtlid B00A3

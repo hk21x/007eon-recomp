@@ -65,7 +65,6 @@ D3DDevice_RunPushBuffer                              = 0x26ED10  # the frame end
 # DSOUND exports the scan misses, named by their export ids in .XTLID (ids as other builds' signatures name them)
 IDirectSoundBuffer_SetEG                             = 0x27FB6A  # xtlid B0067
 IDirectSoundBuffer_StopEx                            = 0x27FBFA  # xtlid B007E
-IDirectSoundBuffer_PlayEx                            = 0         # the scan took StopEx (same bytes) for it; EoN exports no B005A
 IDirectSoundBuffer_GetCurrentPosition                = 0x27FC76  # xtlid B0053
 IDirectSoundStream_FlushEx                           = 0x27FCBC  # xtlid B0080
 IDirectSound_CreateSoundBuffer                       = 0x280D9B  # xtlid B003A
