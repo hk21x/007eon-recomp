@@ -29,6 +29,22 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-24 - the gun flash at the top left: MultiSampleMode 4X
+
+Harry (D3D12): with the frame buffers made without supersampling (b0e80c3, which fixed the carousel's flicker) the
+gun's flash, its tracer and the bullet sparks land at the top left; EON_SUPERSAMPLE=1 puts them back (with other
+shadow oddities). Headless shows the same: a fire burning at (590,200) with supersampling sits at (290,105) without.
+Cause: around its particles (0xFA3C0 .. 0xFA4F0, called from 0xAB9B0 and 0x259B50) the game, without supersampling
+(0x35BBF4 clear), sets D3DRS_MULTISAMPLEMODE to 2 (4X) and vertex constant 8 to half the back buffer's width and
+height; with supersampling it only switches MultiSampleAntiAlias. 4X on a buffer made without multisampling makes
+the console draw the buffer as a 320x240 one, each pixel 2 by 2 of it: the particles are drawn at a quarter of the
+pixels and stretched. The runtime kept the state but drew in the buffer's own pixels. sdk 5228627: State::aa_x,
+aa_y, the mode (MultiSampleMode on the back buffer, MultiSampleRenderTargetMode on another target) over the samples
+the target was made with (D3DPRESENT_PARAMETERS MultiSampleType), never below 1; the D3D12 and D3D11 backends and
+the reference renderer draw in pixels that size (the screen constants, scissor and viewport). Headless now: the
+fire in its place, the flash, tracer and shell casings at the gun (ten frames snapped while firing). Smoke OK,
+wincheck OK. Next: Harry's test on Windows; then PGR1 and PGR2 smoke for the fork's main.
+
 ### 2026-10-24 - Windows: shadows right, full speed; the carousel's flicker
 
 Harry (D3D12): the shadow under Bond is now as faint as on the console (fe7afee). The level runs at full speed:

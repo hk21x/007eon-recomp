@@ -32,4 +32,10 @@ game's own code and data, with its addresses).
 - **[game]** Movies: XMV decodes into a YUY2 surface the game draws as an immediate quad through vertex program
   slot 0, selected before the program is loaded there (SelectVertexShader(0, 0) from 0xFA6C5).
 - **[console]** A selected vertex program runs from program memory as it is at the draw, not as it was at the select.
+- **[game]** 0x5E270 (mode in al) picks the frame buffers: supersampled 1280x480 (MultiSampleType 0x1121) or plain
+  640x480 (0x11); src/game/supersample.cpp always takes the plain set (the carousel's frame copy expects it).
+- **[game]** Without supersampling the particles (0xFA3C0 .. 0xFA4F0) are drawn with D3DRS_MULTISAMPLEMODE 4X and
+  vertex constant 8 at half the buffer's size: a quarter of the pixels, stretched 2 by 2.
+- **[console]** A multisample mode with more samples than the target was made with draws the target as a smaller
+  one (4X on a plain 640x480 buffer: 320x240, each pixel 2 by 2); sdk State::aa_x, aa_y.
 
