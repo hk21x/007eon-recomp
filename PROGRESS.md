@@ -29,6 +29,22 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-24 - ultrawide; fork main in sync
+
+SDK: the fork's main (PGR2's send level, a vertex range check, short read logging, a recompiler report) merged into
+`eon` (53d91b1) and the fork's main fast-forwarded to it: EoN, PGR1 and PGR2 smoke OK; EoN's firing test unchanged.
+Widescreen: EoN has its own 16:9 mode, on with the console's widescreen flag (0x5AA59C), which the runtime reports
+for a display 3:2 or wider: a wider view, anamorphic in 640x480, shown at 16:9 (4:3 and 16:9 outputs compared
+headless). Ultrawide (aspect = "screen"): src/game/ultrawide.cpp widens the view factor 0x5AA550 (4/3 at 16:9; the
+projection 0x61080 divides x by it) by the frame's width over 16:9 while 0xF6660 draws the views (0xF67A0 sets the
+factor and draws in one call, so a change after it came too late) and after 0xF4B60. The HUD and menus are drawn by
+a pass-through vertex program (oPos = v0 plus constants), not pretransformed vertices, so the renderers' 16:9
+squeeze missed them: sdk 00f769f GameInfo::squeeze_screen_programs and gpu::ScreenProgram give such programs the
+same squeeze, EoN opts in. Headless at 2.39:1 (FRAME_ASPECT_X100=239): more of the level to the sides, Bond in
+proportion, HUD and menu text 16:9 and centred; full screen backgrounds (the menus' picture) still reach both edges,
+stretched, as PGR2's full screen passes do. 16:9 smoke OK, wincheck OK. Next: Harry's test with aspect = "screen";
+mouse aiming.
+
 ### 2026-10-24 - the ghost in the sky: supersampling only
 
 Harry (D3D12): the gun flash is right; a faint copy of the buildings showed in the night sky. His capture
