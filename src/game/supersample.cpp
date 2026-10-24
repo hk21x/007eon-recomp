@@ -10,11 +10,21 @@
 // game's post effects in the supersampled mode address the back buffer as 1280 wide (the weapon carousel copied the
 // last frame squeezed into the left half, every other frame). The plain mode is the game's own way to draw 640 wide,
 // so every switch takes it.
+#include <cstdlib>
+
 #include "core/log.h"
 #include "xdk/hle.h"
 
 X86_EXTERN_FUNC(__imp__sub_0005E270);
 X86_FUNC(sub_0005E270) {
+    // EON_SUPERSAMPLE=1 leaves the game's choice, to compare
+    static const bool keep = [] {
+        const char* e = std::getenv("EON_SUPERSAMPLE");
+        bool v = e && *e == '1';
+        if (v) LOGR("eon: EON_SUPERSAMPLE=1, the game chooses supersampling itself");
+        return v;
+    }();
+    if (keep) return __imp__sub_0005E270(ctx, base);
     static bool told = false;
     if (!told && (ctx.eax & 0xFF)) LOGI("eon: the frame buffers without supersampling (the game asked for it)");
     told = true;
