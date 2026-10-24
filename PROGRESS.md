@@ -29,6 +29,15 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-24 - the second mission's gun flashes and punch effects
+
+Harry: the flashes are right in the first mission, at the top left again in the second (VR training), punch effects
+too. His log: MultiSampleMode 4X applied on the back buffer's surface 0x35B9C4; his captures (231217..231240) draw
+whole frames into 0x03A04000 and 0x03A04A00 in turn, the second buffer through the front buffer's surface object, so
+those frames' particles missed the 2x2 and landed at half their place. On the console the frame buffers take turns
+at being the back buffer: sdk 22a2d73 applies the mode on any of them. Mission 1 headless unchanged, smoke OK,
+wincheck OK. Next: Harry's test in the second mission.
+
 ### 2026-10-24 - ultrawide; fork main in sync
 
 SDK: the fork's main (PGR2's send level, a vertex range check, short read logging, a recompiler report) merged into
