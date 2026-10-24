@@ -11,7 +11,8 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 - Push buffers: YES, both kinds, now drawn (6bded69). Every frame is recorded (BeginPushBuffer 0x26F040 .. EndPushBuffer 0x26F0B0) and run
   (RunPushBuffer 0x26ED10) at once, which the runtime's API level drawing covers; and after the movies the game runs
   buffers recorded earlier with fixups, again and again (2 to 26 KB each), which the runtime does not replay
-- SDK: on the fork's main since 2026-10-24 (6bded69; PGR1 and PGR2 smoke OK), task branch `eon`: 13fe175 title-made frame buffers, 255d367 the disc's 2048 byte
+- SDK: the fork's main at cc6857c (2026-10-24, PGR1 and PGR2 smoke OK; neither reaches the new push buffer,
+  strip or program paths), task branch `eon`: 13fe175 title-made frame buffers, 255d367 the disc's 2048 byte
   sectors, fab5f4a Walk inside a push buffer being recorded, 6bded69 RunPushBuffer replay; both change shared code, so PGR1 and PGR2 smoke must pass before they go to the fork's main
 - Windows (Harry, 2026-10-24, D3D12, RX 7900 XT): boots and plays. Fixed since: the black square under Bond
   (63e43e1), the movies (8068dbc), half the draws (8833e6b). Open: a dark slab on the ground, blue figures at
@@ -26,6 +27,16 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 - Menus: scripts/pad/menus.txt reaches the main menu and the Mission Select (only Ground Zero on a new save)
 
 ## Log
+
+### 2026-10-24 - the scan's false PlayEx; SDK to the fork's main again
+
+sdk cc6857c: xbe_symbols drops a byte match the image's .XTLID lists under another export id (never this one):
+5659's PlayEx signature had taken StopEx's thunk in both xbes. PGR2, PGR1 and Forza scan unchanged; EoN's scans
+lose the false PlayEx, the hand overrides are gone, the generated symbols of both xbes are unchanged.
+PGR2 smoke (race 2010 draws a frame) and PGR1 smoke (2812) OK on cc6857c; a PGR2 run to the race with logging
+showed it never reaches the strip batching or the program rebuild. The fork's main fast-forwarded 6bded69..cc6857c.
+The loading screen's strip: game code (0xFC740 via BeginPush, 0x26F6E0) pushes text vertices into 0x83043000
+early on; the same memory is later the shadow maps and the loading picture. Left open (cosmetic, loading only).
 
 ### 2026-10-24 - Windows: the shadow pass, half the draws, the movies
 
