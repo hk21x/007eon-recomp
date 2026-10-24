@@ -38,7 +38,9 @@ repeated quit and reload cycles - but the process grew from 510 MB to 3858 MB (a
 Cause: SelectProgram made a new VertexShader on every SelectVertexShader, hundreds a frame here, and the renderers
 and EndPrimitive keep each shader they meet (by pointer). Measured over 3 minutes in the level: +56 MB every 10 s.
 sdk 63211f1: one object per declaration, program and stream layout, handed out again. Then 101 to 103 MB over the
-same 3 minutes; the movies and the level unchanged; EoN, PGR2 and PGR1 smoke OK; the fork's main 63211f1. On
+same 3 minutes; the movies and the level unchanged; EoN, PGR2 and PGR1 smoke OK; the fork's main 63211f1.
+The 20 minute soak again on 63211f1: no traps, frames to the end (70860), 94 MB at 5 minutes, 104 MB at 20
+(+39 MB an hour, against 12.5 GB an hour before). On
 Windows this also stops the backends making pipelines for new shader objects every frame.
 
 ### 2026-10-24 - a smoke test; driving.xbe left for a driving mission
