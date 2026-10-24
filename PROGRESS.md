@@ -29,6 +29,17 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-24 - the ghost in the sky: supersampling only
+
+Harry (D3D12): the gun flash is right; a faint copy of the buildings showed in the night sky. His capture
+(193348) ran with EON_SUPERSAMPLE=1 left set in the shell. The ghost is the depth haze (draw 9318: pretransformed
+quad, pixel shader 0x27B5B4, stage 0 the depth buffer 0x83C5C000 read as LIN_B8G8R8A8 bytes, stage 1 a bump-env
+lookup into the 128x256 ramp 0x82021000, its alpha the haze): with supersampling it reads the depth at twice x (the
+ghost floodlight at x 232 is the one at 462, same height), the game addressing its 1280 wide buffer while the
+runtime keeps it 640. With EON_SUPERSAMPLE=0 (the default) Harry sees no ghost. Nothing to fix while the plain
+buffers are the default; supersampling would need the runtime to keep the 1280 wide buffers. sdk 1b5c7b9: the
+headless draw log gives a draw's multisample scale (aa).
+
 ### 2026-10-24 - the gun flash at the top left: MultiSampleMode 4X
 
 Harry (D3D12): with the frame buffers made without supersampling (b0e80c3, which fixed the carousel's flicker) the
