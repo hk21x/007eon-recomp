@@ -24,9 +24,23 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 - driving.xbe: named and built (config/driving.toml, 43 D3D names matched from default.xbe, the shared QFE 4
   layout in config/d3d8_qfe4.toml); run on its own it boots its device and audio, then loads the developer fallback
   track qlab (not on the disc): it needs the launch data default.xbe passes
+- Smoke: scripts/smoke.sh (explore.txt; the movies as the 2D check, the training level after): SMOKE OK, 1 draw a
+  frame in the movies, 11532 in the level (2026-10-24)
 - Menus: scripts/pad/menus.txt reaches the main menu and the Mission Select (only Ground Zero on a new save)
 
 ## Log
+
+### 2026-10-24 - a smoke test; driving.xbe left for a driving mission
+
+scripts/game.env: SMOKE_PAD=scripts/pad/explore.txt, SMOKE_MENU="900 1500" (the THX and MGM movies, one draw a
+frame). scripts/smoke.sh 150: SMOKE OK (movies 1 draw a frame, level 11532, no traps).
+
+driving.xbe through the game's own launch, three attempts, stopped here: (1) run alone it falls back to the
+developer track qlab (not on the disc); (2) a new save's Mission Select has only Ground Zero (MI6 Training
+locked), the unlocks are in the profile, not found; (3) the flow's state table 0x2FD358 (handler 0x1EB00 ->
+0x21DE0 -> 0x21D30(1) "D:\DRIVING.XBE", launch data the state object 0x31EA60, mission from 0x35B6EC, which
+0x5DD3D fills from a sorted table of 12 byte records) is too deep to drive by pokes with confidence. Next: Harry
+reaching a driving mission on Windows, or the profile's unlocks found.
 
 ### 2026-10-24 - the scan's false PlayEx; SDK to the fork's main again
 
