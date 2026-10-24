@@ -4,9 +4,9 @@
     "exe": "EoN",
     "xbe": "default.xbe",
     "releases": {
-        "<the default.xbe's SHA-1>": "PAL (Europe)"
+        "62298fe4e618d9d81863080fb1b00c1667d871c9": "PAL (Europe)"
     },
-    "repo": "https://github.com/<owner>/<repo>.git",
+    "repo": "https://github.com/hk21x/007eon-recomp.git",
     "branch": "main",
-    "toolchain": "https://raw.githubusercontent.com/<owner>/<repo>/main/launcher/toolchain.json"
+    "toolchain": "https://raw.githubusercontent.com/hk21x/007eon-recomp/main/launcher/toolchain.json"
 }
