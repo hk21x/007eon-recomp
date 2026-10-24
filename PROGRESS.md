@@ -29,6 +29,19 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-24 - mouse and keyboard
+
+sdk 4e05344: mouse look for a title that offers it (GameInfo::mouse_look): raw mouse movement (WM_INPUT)
+read each poll as a rate (2400 counts a second full deflection at 100%), past a 20% start so a game's stick dead zone
+does not swallow slow moves, eased over a frame, added to controller 1's right stick; the cursor hidden and clipped
+to the window while the game is in front and the settings window shut. Settings mouse_look, mouse_sensitivity (10 to
+1000%), mouse_invert_y, in the Controls tab; mouse buttons bind as keys (mouse_left, mouse_right, mouse_middle,
+mouse4, mouse5), also by clicking in the binding box; GameInfo::default_keys for a title's own layout. EoN: WASD,
+mouse aims, left button fires (RT), right button locks on (LT), Space A, Ctrl B, Q and E punch (X, Y), C cover
+(BLACK), F WHITE, arrows or 1 to 4 the d-pad, Esc Start, Tab Back. PGR1 and PGR2 unchanged (opt-in). Built and
+wincheck'd only: the feel (sensitivity, the start past the dead zone) needs Harry. README features filled in.
+Next: the button pictures (BLACK and WHITE as LB and RB).
+
 ### 2026-10-24 - Skip intro movies
 
 The boot logos (THX, MGM, the EA logo) are named in the game's data, not its code; a missing movie is passed over

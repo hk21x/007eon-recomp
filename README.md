@@ -16,14 +16,22 @@ This port was created using the [Xbox XBE Recomp](https://github.com/TGP482/Xbox
 ## Features
 
 ### Display
-
+- **Widescreen** - The game's own 16:9 mode on a widescreen display.
+- **Ultrawide** - With `aspect = "screen"`, the 3D view widens to fill a 21:9 or wider screen; the HUD and menus keep their 16:9 shape in the centre.
 
 ### Graphics
 
 ### Controller
 Supports Xbox, PlayStation and Switch controllers, with hot plugging and rumble.
 
+### Keyboard and Mouse
+- **Mouse aiming** - The mouse moves the camera and aim (the right stick), with sensitivity and invert options; the cursor stays in the window while playing.
+- **Default layout** - WASD to move, left mouse button to fire, right mouse button to lock on, Space to jump or confirm, Q and E to punch left and right, C for wall cover, F for the White button, 1 to 4 or the arrow keys for the d-pad (weapons and gadgets), Esc to pause.
+- Every key and mouse button can be rebound in the settings window (F1, Controls tab).
+
 ### General
+- **Skip Intro Movies** - `skip_intro = true` goes past the THX, MGM and EA logos at start.
+- **Cutscenes** - A PAL disc's cutscenes play (the game runs as on a PAL console at 60 Hz).
 
 ### Miscellaneous
 - **Boot Splash** - Place a `splash.png` (or `.bmp`) beside the exe to display a splash screen at launch.

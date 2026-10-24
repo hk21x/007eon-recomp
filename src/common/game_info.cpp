@@ -1,8 +1,10 @@
+#include <array>
 #include <cctype>
 #include <cstdlib>
 #include <string>
 
 #include "app/app.h"
+#include "core/input.h"
 #include "core/log.h"
 
 namespace eon {
@@ -28,6 +30,37 @@ bool HideFile(const std::string& path) {
     for (const char* logo : {"thxlogo", "mgm_", "eag"})
         if (file.compare(0, std::char_traits<char>::length(logo), logo) == 0) return true;
     return false;
+}
+
+// keyboard and mouse, as a shooter plays (Windows virtual key codes: this file builds for the headless harness too)
+constexpr uint16_t kMouseLeft = 0x01, kMouseRight = 0x02, kMouseMiddle = 0x04, kTab = 0x09, kEnter = 0x0D,
+                   kEscape = 0x1B, kSpace = 0x20, kArrowLeft = 0x25, kArrowUp = 0x26, kArrowRight = 0x27, kArrowDown = 0x28,
+                   kLeftShift = 0xA0, kLeftCtrl = 0xA2;
+std::array<uint16_t, 2> ShooterKeys(int c) {
+    using namespace input;
+    switch (c) {
+        case kLSUp: return {'W', 0};
+        case kLSDown: return {'S', 0};
+        case kLSLeft: return {'A', 0};
+        case kLSRight: return {'D', 0};
+        case kRT: return {kMouseLeft, 0};    // fire
+        case kLT: return {kMouseRight, 0};   // lock on
+        case kA: return {kSpace, kEnter};
+        case kB: return {kLeftCtrl, 0};
+        case kX: return {'Q', 0};            // punch left
+        case kY: return {'E', 0};            // punch right
+        case kBlack: return {'C', 0};        // wall cover
+        case kWhite: return {'F', 0};
+        case kUp: return {kArrowUp, '1'};         // the d-pad: weapons, gadgets and the menus
+        case kDown: return {kArrowDown, '2'};
+        case kLeft: return {kArrowLeft, '3'};
+        case kRight: return {kArrowRight, '4'};
+        case kStart: return {kEscape, 'P'};
+        case kBack: return {kTab, 0};
+        case kLThumb: return {'V', kLeftShift};
+        case kRThumb: return {kMouseMiddle, 0};
+        default: return {0, 0};
+    }
 }
 }  // namespace
 
@@ -55,6 +88,8 @@ const app::GameInfo app::kGame = {
     .squeeze_screen_programs = true,      // ultrawide: the HUD and menus are drawn by a pass-through program
     .pal_console = true,                  // a PAL disc's movies are _pal only: a PAL 60 Hz console for it
     .hide_file = HideFile,                // skip_intro
+    .mouse_look = true,                   // the mouse aims (the right stick)
+    .default_keys = ShooterKeys,          // a shooter's keys and mouse buttons
     // optional, after these: .achievements (conditions on guest memory), .same_code (other releases' xbe SHA-1s with
     // the same code), .wheel (what a steering wheel's force feedback follows)
 };
