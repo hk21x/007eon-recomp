@@ -29,6 +29,15 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-24 - Skip intro movies
+
+The boot logos (THX, MGM, the EA logo) are named in the game's data, not its code; a missing movie is passed over
+(as the EA logo was when the game asked for an NTSC file). sdk af60d2d: GameInfo::hide_file, a file reported
+missing to NtCreateFile (open), NtOpenFile and NtQueryFullAttributesFile when the title says so. EoN's setting
+skip_intro ("Skip intro movies", off by default; EON_SKIP_INTRO=1 headless) hides thxlogo*, mgm_* and eag* under
+movies: headless, the opening gun barrel starts at 17.7 s instead of 35.5 s. Smoke OK, wincheck OK. Next: mouse
+aiming, then the button pictures (BLACK and WHITE as LB and RB).
+
 ### 2026-10-24 - the cutscenes: a PAL console
 
 The runtime reported an NTSC console, so the game asked for its movies as _ntsc and _ntscw (XBE_FILES_LOG:
