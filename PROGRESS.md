@@ -28,6 +28,20 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-25 - Thermovision: the shrink pass's viewport
+
+Harry: the radar is fixed; Thermovision better but doubled (capture 204137: the shrunk view sits at x 82..320 of its
+320 wide corner, the accumulation shows it twice with a dark strip). His log: the shrunk texture's pitch is 5120 (the
+game keeps the 1280 wide layout of its supersampled buffers, 8316CA00 the right half of 8316C000's row), so the
+earlier top left fix only applied once the pitch condition went. With Harry's save (.local/harrysave3, the last
+mission; Up then A on the d-pad switches Thermovision on) the effect runs headless (.local/m4.sh, .local/m4thermo.txt)
+and CAP lists it: shrink into rt 83170A00 with viewport 320x240 (quad 0..320 x 0..240, reading the frame 0..640),
+accumulate into 83170000 (full screen, stage 1 at 0.5..320.5 x 0.5..240.5 of the 320x240 texture), colour the frame
+from 83170000. The per draw squeeze took the shrink quad for a draw not spanning the frame and squeezed it whole: now
+a pass filling a viewport narrower than the frame is not squeezed (kSpanViewport). Smoke OK. The reference renderer
+shows the thermal view in the top half only (it does not keep the 5120 pitch apart from the target's); the D3D
+renderers' targets are not in guest memory, so that is the reference renderer's own.
+
 ### 2026-10-25 - radar and Thermovision, third look
 
 Harry: the radar better but still flicking into an oval now and then; Thermovision unchanged (capture 200028: the
