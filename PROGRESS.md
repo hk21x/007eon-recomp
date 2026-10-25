@@ -28,6 +28,13 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-25 - mouse in the driving missions' menus
+
+driving.xbe has the same menu engine: its package input function is 0x13C2D0 (default.xbe's 0x131610; the package's
+mask +0x20 and focus +0x84 the same, set-focus 0x1353F0). src/driving/menu_input.cpp marks a menu there too.
+Headless (Train Chase, START): "a menu takes the input" with the pause screen up. The pause screens' tabs change with
+the d-pad's left and right, which the wheel does not play (the arrow keys do).
+
 ### 2026-10-25 - SDK eon branch merged into the fork's main
 
 Fork main had two new commits (PGR2's W-buffer clipping fix; a Quit game button at the settings window's top right).

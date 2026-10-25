@@ -1,7 +1,7 @@
 // The mouse in the menus: the wheel scrolls (d-pad up and down), the left button selects (A), the right goes back (B).
 //
-// While a menu takes the controller's input (src/game/menu_input.cpp marks it: driving.xbe's menus are not marked, so
-// there the mouse stays as bound), the mouse's buttons stop playing what they are bound to in play (fire, lock on) and
+// While a menu takes the controller's input (src/game/menu_input.cpp and src/driving/menu_input.cpp mark it), the
+// mouse's buttons stop playing what they are bound to in play (fire, lock on) and
 // play A and B instead; each notch of the wheel is a press of the d-pad, one after another.
 #include <algorithm>
 #include <atomic>
