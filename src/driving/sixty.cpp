@@ -4,9 +4,11 @@
 // 0x7A6B0), run by the scheduler 0x15F4D0 against the vertical blank count 0x35FBB4 (the blank callback 0x15CD30).
 // It presents every second blank (0x214CB0(2), from the device setup 0x14D290), and the scheduler waits for two blanks
 // and runs two ticks (0x15F5B3: last + 2) unless its object's byte +0x1C or +0x1E is set; then it runs one tick for
-// each blank gone by (the blanks since the last run times the speed +0x20, up to 11). So for 60: the interval asked
-// for is 1, and +0x1E is set while the scheduler runs (put back after: nothing else reads it here). The game's speed
-// stays real time: the ticks follow the blanks either way.
+// each blank gone by (the blanks since the last run times the speed +0x20, up to 11). The drawing task 0x72410 draws
+// (0x14EBF0) only when the callback's second count, bumped every other blank (0x35FBB8), differs from the one it last
+// drew at (0x326F30). So for 60: the interval asked for is 1, +0x1E is set while the scheduler runs (put back after:
+// nothing else reads it here), and the drawing task sees a new count at each blank. The game's speed stays real time:
+// the ticks follow the blanks either way.
 #include "core/log.h"
 #include "kernel/kernel.h"
 #include "xdk/hle.h"
@@ -41,4 +43,18 @@ X86_FUNC(sub_0015F4D0) {
     kernel::G<uint8_t>(sched + 0x1E) = 1;
     __imp__sub_0015F4D0(ctx, base);
     kernel::G<uint8_t>(sched + 0x1E) = was;
+}
+
+// fastcall (its task object in ecx): a blank gone by since it last ran looks like a new half rate count to it
+X86_EXTERN_FUNC(__imp__sub_00072410);
+X86_FUNC(sub_00072410) {
+    if (On()) {
+        constexpr uint32_t kBlanks = 0x35FBB4, kHalfBlanks = 0x35FBB8, kDrawnAt = 0x326F30;
+        static uint32_t last = 0;
+        uint32_t blanks = kernel::R32(kBlanks);
+        if (blanks != last && kernel::R32(kDrawnAt) == kernel::R32(kHalfBlanks))
+            kernel::W32(kDrawnAt, kernel::R32(kHalfBlanks) - 1);
+        last = blanks;
+    }
+    __imp__sub_00072410(ctx, base);
 }

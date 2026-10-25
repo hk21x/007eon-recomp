@@ -29,6 +29,15 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-25 - driving at 60: the drawing task
+
+Harry's log: the setting reached driving.xbe (interval 0 asked for) and every frame still took 33 ms. The drawing task
+0x72410 draws (0x14EBF0) only when the blank callback's second count 0x35FBB8 (bumped every other blank, 0x15CD3F)
+differs from the one it drew at (0x326F30): 30 a second whatever the ticks. src/driving/sixty.cpp now makes a blank
+gone by look like a new count to it. Headless the driving mission now draws about 57 a second paced (55 unpaced):
+the 33 ms a frame of the entry below was this limit, not the machine. Ticks keep to the blanks (3104 at 3253 after
+loading). Smoke OK.
+
 ### 2026-10-25 - driving at 60 frames a second (setting, experimental)
 
 driving.xbe is time based: it simulates in ticks of 1/60 s (0x3165F8 = 60, 0x3165FC = 1/60, the tick count 0x316600
@@ -39,9 +48,8 @@ ticks (0x15F5B3, last + 2) unless its object's +0x1C or +0x1E is set; then it ru
 draws once after (the swap is under the task queue 0x15DA60 the scheduler runs last: gdb at SwapFrame). An earlier
 reading (forced interval 1 runs at double speed) compared frame numbers, not wall time: at the same wall time both
 runs draw the same scene. src/driving/sixty.cpp (setting driving_60fps, off by default; EON_DRIVING60 headless):
-0x214CB0 asked for 2 passes 1, and +0x1E is set while 0x15F4D0 runs. Headless the driving mission costs about 33 ms a
-frame on this machine (30 a second unpaced either way), so two ticks run per frame and the 60 is for Harry to see;
-the ticks keep to the blanks (3026 ticks at 3180 blanks after loading). Smoke OK.
+0x214CB0 asked for 2 passes 1, and +0x1E is set while 0x15F4D0 runs. Headless it still drew 30 a second (the drawing task's
+own limit, found next); the ticks keep to the blanks (3026 ticks at 3180 blanks after loading). Smoke OK.
 
 ### 2026-10-25 - every button picture modern
 
