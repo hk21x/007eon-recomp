@@ -28,6 +28,23 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-25 - Thermovision and the radar, second look
+
+Harry: Thermovision now shows thermal colours but the top left quarter holds a sharp half size copy of the view; the
+radar still stretched. Capture 193903: the effect shrinks the frame into 640x480 target 83170A00 (viewport 320x240)
+and reads it back as a 320x240 linear texture (0228, with the target's 2560 byte pitch: on the console its top left).
+The renderers normalised that texture's texel coordinates by 320x240, so the whole 640x480 target was spread over
+the screen and the small copy landed 1:1 in the top left. Now a smaller linear texture over a colour target with the
+target's pitch reads its top left, as a smaller depth texture over a depth buffer already did (the shadows). The two
+buffers also overlap in memory (83170A00 is one row into 83170000): EoN draws this effect for its 1280 wide
+supersampled frame buffers, where +0xA00 is the right half; the renderers keep them apart, so it does not matter.
+Radar (capture 193756): its matrix is plain 2D after all (c0..c3 ortho, not rotated; the rotation is in its
+vertices), so the earlier change was not it. The squeeze leaves vertices on or past the frame's left and right edges
+where they are (a full screen quad's corners); the radar's map is big rotating tiles reaching far off screen left,
+so some corners stayed and others moved, stretching it, and its mask cut it. Now only vertices within 2 pixels past
+an edge stay (AtFrameEdge, shaders and reference renderer). Headless at 2.39:1: menus and backgrounds as before;
+shaders compile (DXC); smoke OK. The radar and Thermovision themselves only on Windows.
+
 ### 2026-10-25 - Thermovision and the driving radar on Windows
 
 Harry (Windows, 3440x1440): Thermovision "bugged out" (the screen looked frozen, tinted blue) and the driving radar
