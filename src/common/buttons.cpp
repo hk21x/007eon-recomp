@@ -17,7 +17,11 @@
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
+#include <memory>
+#include <string>
+#include <vector>
 
+#include "core/input.h"
 #include "core/log.h"
 #include "gpu/texture.h"
 #include "kernel/kernel.h"
@@ -132,7 +136,8 @@ void Disc(Canvas& c, float cx, float cy, float r) {
 void FaceButton(Canvas& c, Box b, const char* letter, Rgba colour) {
     Clear(c, b);
     Area a = Inside(b);
-    float cx = (a.x0 + a.x1) / 2, cy = (a.y0 + a.y1) / 2, r = std::min(a.x1 - a.x0, a.y1 - a.y0) / 2;
+    // half a texel in from the box: the game's rectangles cut B's left edge there
+    float cx = (a.x0 + a.x1) / 2, cy = (a.y0 + a.y1) / 2, r = std::min(a.x1 - a.x0, a.y1 - a.y0) / 2 - 0.5f;
     Disc(c, cx, cy, r);
     Text(c, letter, cx, cy, 9, 2.0f, C(colour));
 }
@@ -230,19 +235,24 @@ constexpr Box kWhiteButton{32, 64, 43, 77}, kBlackButton{48, 64, 59, 77};
 constexpr Box kPadUpDown{5, 28, 24, 52}, kPadLeftRight{5, 57, 24, 81}, kPadAll{5, 86, 24, 110};
 constexpr Box kPadUp{31, 102, 50, 126}, kPadRight{56, 102, 75, 126}, kPadDown{81, 102, 100, 126}, kPadLeft{106, 102, 125, 126};
 constexpr Box kStick1{66, 56, 90, 84}, kStick2{93, 56, 117, 84};
+// the game names them ANALOGPAD and ANALOGPADRIGHT (0x117310: icons 8 and 9), taken to lie in that order
+constexpr Box kMoveStick = kStick1, kLookStick = kStick2;
+// the part of the triggers' boxes the game draws (its rectangle for LT ends at row 21)
+constexpr Area kLeftTriggerShown{95, 5, 114, 22}, kRightTriggerShown{95, 28, 114, 45};
 constexpr Box kArrowLeft{33, 45, 46, 58}, kArrowRight{48, 45, 61, 58};
 constexpr Box kDrawn[] = {kFaceB,    kFaceX,    kFaceA,        kFaceY, kLeftTrigger, kRightTrigger, kStart,
                           kBack,     kWhiteButton, kBlackButton, kPadUpDown, kPadLeftRight, kPadAll, kPadUp,
                           kPadRight, kPadDown,  kPadLeft,      kStick1, kStick2,     kArrowLeft,    kArrowRight};
 
-void Draw(Canvas& c) {
+void DrawPad(Canvas& c) {
     FaceButton(c, kFaceA, "A", {100, 200, 60, 255});
     FaceButton(c, kFaceB, "B", {235, 60, 60, 255});
     FaceButton(c, kFaceX, "X", {50, 140, 245, 255});
     FaceButton(c, kFaceY, "Y", {250, 200, 40, 255});
     auto inset = [](Box b, float dx, float dy) { return Area{b.x0 + dx, b.y0 + dy, b.x1 + 1 - dx, b.y1 + 1 - dy}; };
-    Shoulder(c, kLeftTrigger, inset(kLeftTrigger, 2, 2), 4, 1.5f, "LT");
-    Shoulder(c, kRightTrigger, inset(kRightTrigger, 2, 2), 4, 1.5f, "RT");
+    auto plate = [](Area a) { return Area{a.x0 + 2, a.y0 + 0.5f, a.x1 - 2, a.y1 - 0.5f}; };
+    Shoulder(c, kLeftTrigger, plate(kLeftTriggerShown), 4, 1.5f, "LT");
+    Shoulder(c, kRightTrigger, plate(kRightTriggerShown), 4, 1.5f, "RT");
     Shoulder(c, kWhiteButton, inset(kWhiteButton, 0, 2), 2, 2, "LB", 5.2f);
     Shoulder(c, kBlackButton, inset(kBlackButton, 0, 2), 2, 2, "RB", 5.2f);
     Menu(c, kStart);
@@ -258,6 +268,189 @@ void Draw(Canvas& c) {
     Stick(c, kStick2);
     Arrow(c, kArrowLeft, true);
     Arrow(c, kArrowRight, false);
+}
+
+// what the pictures show: the disc's, a modern controller's, or the keys and mouse buttons bound to each control
+struct Look {
+    bool modern = false, keys = false;
+    std::array<std::array<uint16_t, 2>, input::kControls> bound{};  // with keys
+    bool operator==(const Look&) const = default;
+};
+
+Look Current() {
+    Look l;
+    l.keys = input::UsingKeyboard();
+    l.modern = modern_buttons || l.keys;
+    if (l.keys)
+        for (int c = 0; c < input::kControls; c++) l.bound[size_t(c)] = input::ControlKeys(c);
+    return l;
+}
+
+// Windows virtual keys the pictures name
+constexpr uint16_t kVkLeftButton = 0x01, kVkRightButton = 0x02, kVkMiddleButton = 0x04, kVkButton4 = 0x05,
+                   kVkButton5 = 0x06, kVkLeft = 0x25, kVkUp = 0x26, kVkRight = 0x27, kVkDown = 0x28;
+
+bool MouseButton(uint16_t vk) { return vk == kVkLeftButton || vk == kVkRightButton || vk == kVkMiddleButton; }
+
+// a key's name on its cap, empty for the arrows (drawn as heads) and keys it does not know
+std::string KeyLabel(uint16_t vk) {
+    if ((vk >= 'A' && vk <= 'Z') || (vk >= '0' && vk <= '9')) return std::string(1, char(vk));
+    if (vk >= 0x60 && vk <= 0x69) return "NUM" + std::to_string(vk - 0x60);
+    if (vk >= 0x70 && vk <= 0x7B) return "F" + std::to_string(vk - 0x70 + 1);
+    switch (vk) {
+        case 0x08: return "BKSP";
+        case 0x09: return "TAB";
+        case 0x0D: return "ENTER";
+        case 0x10: case 0xA0: case 0xA1: return "SHIFT";
+        case 0x11: case 0xA2: case 0xA3: return "CTRL";
+        case 0x12: case 0xA4: case 0xA5: return "ALT";
+        case 0x1B: return "ESC";
+        case 0x20: return "SPACE";
+        case 0x21: return "PGUP";
+        case 0x22: return "PGDN";
+        case 0x23: return "END";
+        case 0x24: return "HOME";
+        case 0x2D: return "INS";
+        case 0x2E: return "DEL";
+        case kVkButton4: return "M4";
+        case kVkButton5: return "M5";
+        case 0xBA: return ";";
+        case 0xBB: return "=";
+        case 0xBC: return ",";
+        case 0xBD: return "-";
+        case 0xBE: return ".";
+        case 0xBF: return "/";
+        case 0xC0: return "`";
+        case 0xDB: return "[";
+        case 0xDC: return "\\";
+        case 0xDD: return "]";
+        case 0xDE: return "'";
+        default: return "";
+    }
+}
+
+constexpr Colour kCapEdge{200, 200, 200, 255}, kDimEdge{75, 75, 75, 255}, kDimText{95, 95, 95, 255};
+
+// a key: a dark cap with a light edge and its name, or an arrow's head; dim when not lit
+void KeyCap(Canvas& c, Area cap, uint16_t vk, bool lit = true) {
+    float w = cap.x1 - cap.x0, h = cap.y1 - cap.y0, r = std::min(w, h) * 0.2f, edge = std::max(0.5f, std::min(w, h) * 0.07f);
+    Fill(c, cap, lit ? kCapEdge : kDimEdge, [&](float x, float y) { return BoxDistance(x, y, cap, r, r); });
+    Fill(c, cap, C(kDark), [&](float x, float y) { return BoxDistance(x, y, cap, r, r) + edge; });
+    Colour ink = lit ? C(kWhite) : kDimText;
+    float cx = (cap.x0 + cap.x1) / 2, cy = (cap.y0 + cap.y1) / 2;
+    if (vk >= kVkLeft && vk <= kVkDown) {
+        float k = std::min(w, h) * 0.22f;
+        std::vector<Pt> head;
+        if (vk == kVkUp) head = {{cx, cy - k}, {cx + k, cy + k * 0.7f}, {cx - k, cy + k * 0.7f}};
+        if (vk == kVkDown) head = {{cx, cy + k}, {cx - k, cy - k * 0.7f}, {cx + k, cy - k * 0.7f}};
+        if (vk == kVkLeft) head = {{cx - k, cy}, {cx + k * 0.7f, cy - k}, {cx + k * 0.7f, cy + k}};
+        if (vk == kVkRight) head = {{cx + k, cy}, {cx - k * 0.7f, cy + k}, {cx - k * 0.7f, cy - k}};
+        Fill(c, cap, ink, [&](float x, float y) { return PolygonDistance(x, y, head); });
+        return;
+    }
+    std::string label = KeyLabel(vk);
+    if (label.empty()) return;
+    float height = std::min(h * 0.5f, (w - 2 * edge - std::max(1.0f, w * 0.12f)) / TextWidth(label.c_str(), 1));
+    Text(c, label.c_str(), cx, cy, height, std::max(0.45f, height * 0.2f), ink);
+}
+
+// a mouse from above, the button pressed lit (none: just the mouse, for looking about)
+void Mouse(Canvas& c, Area a, uint16_t vk) {
+    float h = (a.y1 - a.y0) * 0.92f, w = std::min(h * 0.64f, (a.x1 - a.x0) * 0.92f);
+    float cx = (a.x0 + a.x1) / 2, cy = (a.y0 + a.y1) / 2;
+    Area body{cx - w / 2, cy - h / 2, cx + w / 2, cy + h / 2};
+    float r = w / 2, edge = std::max(0.5f, w * 0.08f), split = body.y0 + h * 0.42f;
+    Fill(c, body, kCapEdge, [&](float x, float y) { return BoxDistance(x, y, body, r, r * 0.9f); });
+    Fill(c, body, C(kDark), [&](float x, float y) { return BoxDistance(x, y, body, r, r * 0.9f) + edge; });
+    auto inside = [&](float x, float y) { return BoxDistance(x, y, body, r, r * 0.9f) + edge * 1.8f; };
+    float gap = edge * 0.8f;
+    if (vk == kVkLeftButton)
+        Fill(c, body, C(kWhite), [&](float x, float y) { return std::max({inside(x, y), x - (cx - gap), y - (split - gap)}); });
+    if (vk == kVkRightButton)
+        Fill(c, body, C(kWhite), [&](float x, float y) { return std::max({inside(x, y), (cx + gap) - x, y - (split - gap)}); });
+    std::vector<Segment> lines = {{{cx, body.y0 + edge}, {cx, split}}, {{body.x0 + edge, split}, {body.x1 - edge, split}}};
+    Fill(c, body, kCapEdge, [&](float x, float y) { return std::max(StrokeDistance(x, y, lines, edge * 0.5f), -inside(x, y) - edge); });
+    Area wheel{cx - w * 0.09f, body.y0 + h * 0.13f, cx + w * 0.09f, body.y0 + h * 0.31f};
+    Fill(c, body, vk == kVkMiddleButton ? C(kWhite) : kDimText,
+         [&](float x, float y) { return BoxDistance(x, y, wheel, w * 0.09f, w * 0.09f); });
+}
+
+// the key a control is played with (its first binding), in the space `a`
+void BoundKey(Canvas& c, Area a, const std::array<uint16_t, 2>& keys) {
+    uint16_t vk = keys[0] ? keys[0] : keys[1];
+    if (MouseButton(vk)) return Mouse(c, a, vk);
+    float w = a.x1 - a.x0, h = a.y1 - a.y0, side = std::min(w, h);
+    std::string label = KeyLabel(vk);
+    // a long name gets the whole width
+    float cw = label.size() > 1 ? w : side;
+    float cx = (a.x0 + a.x1) / 2, cy = (a.y0 + a.y1) / 2;
+    KeyCap(c, {cx - cw / 2, cy - side / 2, cx + cw / 2, cy + side / 2}, vk);
+}
+
+// four keys as the arrows lie: one above three; those named lit bright
+void Cluster(Canvas& c, Area a, const Look& look, const int dirs[4], int lit) {
+    float w = a.x1 - a.x0, h = a.y1 - a.y0, k = std::min(w / 3, h / 2), gap = k * 0.08f;
+    float cx = (a.x0 + a.x1) / 2, cy = (a.y0 + a.y1) / 2;
+    Area cell[4] = {{cx - k / 2, cy - k, cx + k / 2, cy},             // up
+                    {cx - k / 2, cy, cx + k / 2, cy + k},             // down
+                    {cx - k * 1.5f, cy, cx - k / 2, cy + k},          // left
+                    {cx + k / 2, cy, cx + k * 1.5f, cy + k}};         // right
+    for (int i = 0; i < 4; i++) {
+        const auto& keys = look.bound[size_t(dirs[i])];
+        uint16_t vk = keys[0] ? keys[0] : keys[1];
+        // two bindings of which one is an arrow: the arrow, which needs no name
+        if (keys[1] >= kVkLeft && keys[1] <= kVkDown && !(keys[0] >= kVkLeft && keys[0] <= kVkDown)) vk = keys[1];
+        Area g{cell[i].x0 + gap, cell[i].y0 + gap, cell[i].x1 - gap, cell[i].y1 - gap};
+        KeyCap(c, g, vk, lit >> i & 1);
+    }
+}
+
+// the keyboard's pictures: every button's box its key (or mouse button), the d-pads and the stick that moves as key
+// clusters, the stick that looks as the mouse; the menus' arrows stay
+void DrawKeys(Canvas& c, const Look& look) {
+    auto key = [&](Box b, Area a, int control) {
+        Clear(c, b);
+        BoundKey(c, a, look.bound[size_t(control)]);
+    };
+    auto inset = [](Box b, float dx, float dy) { return Area{b.x0 + dx, b.y0 + dy, b.x1 + 1 - dx, b.y1 + 1 - dy}; };
+    key(kFaceA, inset(kFaceA, 0.5f, 2.5f), input::kA);
+    key(kFaceB, inset(kFaceB, 0.5f, 2.5f), input::kB);
+    key(kFaceX, inset(kFaceX, 0.5f, 2.5f), input::kX);
+    key(kFaceY, inset(kFaceY, 0.5f, 2.5f), input::kY);
+    key(kLeftTrigger, kLeftTriggerShown, input::kLT);
+    key(kRightTrigger, kRightTriggerShown, input::kRT);
+    key(kWhiteButton, inset(kWhiteButton, 0, 1), input::kWhite);
+    key(kBlackButton, inset(kBlackButton, 0, 1), input::kBlack);
+    auto middle = [](Box b, float side) {
+        float cx = (b.x0 + b.x1 + 1) / 2, cy = (b.y0 + b.y1 + 1) / 2;
+        return Area{cx - side / 2, cy - side / 2, cx + side / 2, cy + side / 2};
+    };
+    Area start = middle(kStart, 14), back = middle(kBack, 14);
+    key(kStart, {start.x0 - 3, start.y0, start.x1 + 3, start.y1}, input::kStart);
+    key(kBack, {back.x0 - 3, back.y0, back.x1 + 3, back.y1}, input::kBack);
+    const int dpad[4] = {input::kUp, input::kDown, input::kLeft, input::kRight};
+    struct {
+        Box b;
+        int lit;
+    } pads[] = {{kPadUpDown, 3}, {kPadLeftRight, 12}, {kPadAll, 15}, {kPadUp, 1}, {kPadRight, 8}, {kPadDown, 2}, {kPadLeft, 4}};
+    for (auto& p : pads) {
+        Clear(c, p.b);
+        Cluster(c, inset(p.b, 0, 2), look, dpad, p.lit);
+    }
+    const int move[4] = {input::kLSUp, input::kLSDown, input::kLSLeft, input::kLSRight};
+    Clear(c, kMoveStick);
+    Cluster(c, inset(kMoveStick, 0, 3), look, move, 15);
+    Clear(c, kLookStick);
+    Mouse(c, inset(kLookStick, 2, 2), 0);
+}
+
+void Draw(Canvas& c, const Look& look) {
+    if (look.keys) {
+        DrawPad(c);  // the arrows, and whatever the keys leave
+        DrawKeys(c, look);
+    } else {
+        DrawPad(c);
+    }
 }
 
 // the atlas onto a canvas `scale` times its size (bilinear, premultiplied), and back
@@ -292,7 +485,7 @@ Rgba Straight(const std::array<float, 4>& p) {
 
 // the atlas drawn on: `after` as the console gets it, and gpu::SetReplacement's picture four times larger
 constexpr int kSharp = 4;
-std::vector<uint32_t> Redraw(const Image& before, Image& after) {
+std::vector<uint32_t> Redraw(const Image& before, Image& after, const Look& look) {
     // the old art gone first, so none of it is smeared past the boxes when enlarged
     static Image cleared;
     std::memcpy(cleared, before, sizeof(Image));
@@ -300,7 +493,7 @@ std::vector<uint32_t> Redraw(const Image& before, Image& after) {
         for (int y = b.y0; y <= b.y1; y++)
             for (int x = b.x0; x <= b.x1; x++) cleared[y][x] = kClear;
     Canvas c = Upscale(cleared, 1);
-    Draw(c);
+    Draw(c, look);
     for (int y = 0; y < kSize; y++)
         for (int x = 0; x < kSize; x++) after[y][x] = Straight(c.px[size_t(y) * kSize + x]);
     // where the drawing did not reach, the texels as they were (the conversion's rounding aside)
@@ -311,7 +504,7 @@ std::vector<uint32_t> Redraw(const Image& before, Image& after) {
                 after[y][x] = b;
         }
     Canvas sharp = Upscale(cleared, kSharp);
-    Draw(sharp);
+    Draw(sharp, look);
     std::vector<uint32_t> bgra(sharp.px.size());
     for (size_t i = 0; i < bgra.size(); i++) {
         Rgba p = Straight(sharp.px[i]);
@@ -370,81 +563,139 @@ uint32_t Swizzle(int x, int y) {
 
 int Dist4(Rgba x, Rgba y) { return Dist(x, y) + (x.a - y.a) * (x.a - y.a); }
 
-// the DXT3 copy: its bytes as the disc has them, the changed blocks encoded again
-bool PatchDxt3(uint8_t* atlas, std::vector<uint32_t>& sharp) {
-    if (Fnv(atlas, kSize * kSize) != kOriginal) return false;
-    static Image before, after;
-    Decode(atlas, before);
-    sharp = Redraw(before, after);
-    for (int by = 0; by < kSize / 4; by++)
-        for (int bx = 0; bx < kSize / 4; bx++) {
-            bool changed = false;
-            for (int y = by * 4; y < by * 4 + 4 && !changed; y++)
-                changed = std::memcmp(before[y] + bx * 4, after[y] + bx * 4, 4 * sizeof(Rgba)) != 0;
-            if (changed) EncodeBlock(after, bx, by, atlas + (by * (kSize / 4) + bx) * 16);
-        }
-    return true;
-}
+// one atlas the game has in memory: its bytes as the disc has them, what it was last drawn as, the two last looks
+struct Atlas {
+    uint32_t data = 0;
+    bool p8 = false;
+    std::vector<uint8_t> disc;
+    Image before;  // decoded
+    Rgba pal[256] = {};
+    int colours = 0;
+    uint64_t written = 0;  // FNV-1a of its bytes as last written
+    Look drawn;
+    struct Drawing {
+        Look look;
+        std::vector<uint8_t> bytes;
+        std::vector<uint32_t> sharp;
+    };
+    std::vector<Drawing> cache;  // the newest last
+};
+std::vector<std::unique_ptr<Atlas>> g_atlases;
 
-// the P8 copy: decoded through its palette (BGRA, 256 entries fewer by the size code), each changed texel the
+// the guest bytes for a look: the disc's, the DXT3 blocks drawn on encoded again, or the P8 texels drawn on the
 // palette's nearest colour
-bool PatchP8(uint8_t* atlas, const uint8_t* bgra, int colours, std::vector<uint32_t>& sharp) {
-    static Image before, after;
-    Rgba pal[256];
-    for (int i = 0; i < colours; i++) pal[i] = {bgra[i * 4 + 2], bgra[i * 4 + 1], bgra[i * 4], bgra[i * 4 + 3]};
-    for (int y = 0; y < kSize; y++)
-        for (int x = 0; x < kSize; x++) {
-            uint8_t i = atlas[Swizzle(x, y)];
-            before[y][x] = i < colours ? pal[i] : kClear;
-        }
-    if (!LooksLikeAtlas(before)) return false;
-    sharp = Redraw(before, after);
+void Encode(const Atlas& a, const Image& after, std::vector<uint8_t>& out) {
+    out = a.disc;
+    if (!a.p8) {
+        for (int by = 0; by < kSize / 4; by++)
+            for (int bx = 0; bx < kSize / 4; bx++) {
+                bool changed = false;
+                for (int y = by * 4; y < by * 4 + 4 && !changed; y++)
+                    changed = std::memcmp(a.before[y] + bx * 4, after[y] + bx * 4, 4 * sizeof(Rgba)) != 0;
+                if (changed) EncodeBlock(after, bx, by, &out[size_t(by * (kSize / 4) + bx) * 16]);
+            }
+        return;
+    }
     int clear = -1;  // a fully clear colour, for the texels cleared
-    for (int i = 0; i < colours && clear < 0; i++)
-        if (pal[i].a == 0) clear = i;
+    for (int i = 0; i < a.colours && clear < 0; i++)
+        if (a.pal[i].a == 0) clear = i;
     for (int y = 0; y < kSize; y++)
         for (int x = 0; x < kSize; x++) {
             Rgba c = after[y][x];
-            if (std::memcmp(&c, &before[y][x], sizeof(Rgba)) == 0) continue;
+            if (std::memcmp(&c, &a.before[y][x], sizeof(Rgba)) == 0) continue;
             if (c.a == 0 && clear >= 0) {
-                atlas[Swizzle(x, y)] = uint8_t(clear);
+                out[Swizzle(x, y)] = uint8_t(clear);
                 continue;
             }
             int best = 0;
-            for (int i = 1; i < colours; i++)
-                if (Dist4(c, pal[i]) < Dist4(c, pal[best])) best = i;
-            atlas[Swizzle(x, y)] = uint8_t(best);
+            for (int i = 1; i < a.colours; i++)
+                if (Dist4(c, a.pal[i]) < Dist4(c, a.pal[best])) best = i;
+            out[Swizzle(x, y)] = uint8_t(best);
         }
-    return true;
+}
+
+// a new atlas: the DXT3 copy by its bytes' hash, the P8 copy by its look through the palette bound with it (BGRA,
+// 256 entries fewer by the size code)
+std::unique_ptr<Atlas> Find(uint32_t data, const uint8_t* bytes, bool p8, const uint8_t* bgra, int colours) {
+    auto a = std::make_unique<Atlas>();
+    a->data = data;
+    a->p8 = p8;
+    if (!p8) {
+        if (Fnv(bytes, kSize * kSize) != kOriginal) return nullptr;
+        Decode(bytes, a->before);
+    } else {
+        a->colours = colours;
+        for (int i = 0; i < colours; i++) a->pal[i] = {bgra[i * 4 + 2], bgra[i * 4 + 1], bgra[i * 4], bgra[i * 4 + 3]};
+        for (int y = 0; y < kSize; y++)
+            for (int x = 0; x < kSize; x++) {
+                uint8_t i = bytes[Swizzle(x, y)];
+                a->before[y][x] = i < colours ? a->pal[i] : kClear;
+            }
+        if (!LooksLikeAtlas(a->before)) return nullptr;
+    }
+    a->disc.assign(bytes, bytes + kSize * kSize);
+    return a;
 }
 
 }  // namespace
 
 // GameInfo::texture_bound: D3DBaseTexture Data (+4, physical) and Format (+12: format bits 8-15, the width's and
-// height's log2 in bits 20-23 and 24-27); D3DPalette Common (+0, its size code in the top two bits) and Data (+4)
+// height's log2 in bits 20-23 and 24-27); D3DPalette Common (+0, its size code in the top two bits) and Data (+4).
+// Drawn again when what the pictures should show changed (the controller or the keyboard last played with, a key
+// bound anew, the setting).
 bool ButtonPictures(uint32_t header, uint32_t palette) {
     constexpr uint32_t kP8 = 0x0B;
-    if (!modern_buttons) return false;
     uint32_t format = kernel::R32(header + 12), kind = format >> 8 & 0xFF;
     if ((kind != kDxt3 && kind != kP8) || (format >> 20 & 15) != 7 || (format >> 24 & 15) != 7) return false;
     uint32_t data = mem::VirtualFromPhysical(kernel::R32(header + 4));
     constexpr uint32_t kBytes = kSize * kSize;  // DXT3 and P8: a byte a texel
     if (!mem::IsCommitted(data) || !mem::IsCommitted(data + kBytes - 1)) return false;
-    auto* atlas = static_cast<uint8_t*>(kernel::HostPtr(data));
-    bool done;
-    std::vector<uint32_t> sharp;
-    if (kind == kDxt3) {
-        done = PatchDxt3(atlas, sharp);
-    } else {
-        if (!palette) return false;
-        uint32_t colours = 256u >> (kernel::R32(palette) >> 30), pal = mem::VirtualFromPhysical(kernel::R32(palette + 4));
-        if (!mem::IsCommitted(pal) || !mem::IsCommitted(pal + colours * 4 - 1)) return false;
-        done = PatchP8(atlas, static_cast<const uint8_t*>(kernel::HostPtr(pal)), int(colours), sharp);
+    auto* bytes = static_cast<uint8_t*>(kernel::HostPtr(data));
+    auto it = std::find_if(g_atlases.begin(), g_atlases.end(), [&](const auto& a) { return a->data == data; });
+    if (it != g_atlases.end() && Fnv(bytes, kBytes) != (*it)->written) {
+        g_atlases.erase(it);  // the memory holds something else now (or the atlas loaded again)
+        it = g_atlases.end();
     }
-    if (!done) return false;
-    gpu::SetReplacement(data, kBytes, kSize * kSharp, kSize * kSharp, std::move(sharp));
-    LOGR("eon: the button atlas %08X (%s) drawn as a modern pad's, and %dx%d for the renderers", data,
-         kind == kDxt3 ? "DXT3" : "P8", kSize * kSharp, kSize * kSharp);
-    return done;
+    Look look = Current();
+    if (it == g_atlases.end()) {
+        if (!look.modern) return false;  // the disc's pictures, as they are
+        std::unique_ptr<Atlas> a;
+        if (kind == kDxt3) {
+            a = Find(data, bytes, false, nullptr, 0);
+        } else if (palette) {
+            uint32_t colours = 256u >> (kernel::R32(palette) >> 30), pal = mem::VirtualFromPhysical(kernel::R32(palette + 4));
+            if (mem::IsCommitted(pal) && mem::IsCommitted(pal + colours * 4 - 1))
+                a = Find(data, bytes, true, static_cast<const uint8_t*>(kernel::HostPtr(pal)), int(colours));
+        }
+        if (!a) return false;
+        a->drawn = Look{};  // as the disc has it
+        g_atlases.push_back(std::move(a));
+        if (g_atlases.size() > 4) g_atlases.erase(g_atlases.begin());
+        it = g_atlases.end() - 1;
+    }
+    Atlas& a = **it;
+    if (look == a.drawn) return false;
+    if (!look.modern) {
+        std::memcpy(bytes, a.disc.data(), kBytes);
+        gpu::ClearReplacement(data);
+    } else {
+        auto d = std::find_if(a.cache.begin(), a.cache.end(), [&](const Atlas::Drawing& x) { return x.look == look; });
+        if (d == a.cache.end()) {
+            static Image after;
+            Atlas::Drawing drawing{look, {}, Redraw(a.before, after, look)};
+            Encode(a, after, drawing.bytes);
+            a.cache.push_back(std::move(drawing));
+            if (a.cache.size() > 2) a.cache.erase(a.cache.begin());
+            d = a.cache.end() - 1;
+        }
+        std::memcpy(bytes, d->bytes.data(), kBytes);
+        gpu::SetReplacement(data, kBytes, kSize * kSharp, kSize * kSharp, d->sharp);
+    }
+    a.written = Fnv(bytes, kBytes);
+    a.drawn = look;
+    LOGR("eon: the button atlas %08X (%s) drawn as %s%s", data, a.p8 ? "P8" : "DXT3",
+         !look.modern ? "the disc has it" : look.keys ? "the keys and mouse" : "a modern pad's",
+         look.modern ? ", and 512x512 for the renderers" : "");
+    return true;
 }
 }  // namespace eon

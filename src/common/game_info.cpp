@@ -10,17 +10,19 @@
 namespace eon {
 bool skip_intro = false;  // no logo movies at start (HideFile)
 bool driving_60fps = true;   // the driving missions at 60 frames a second (src/driving/sixty.cpp)
+uint32_t fov_percent = 100;  // the on-foot views' field of view, percent of the game's (src/game/fov.cpp)
 extern bool modern_buttons;           // src/common/buttons.cpp
 bool ButtonPictures(uint32_t header, uint32_t palette);  // GameInfo::texture_bound
 }
 
 namespace {
-// EON_SKIP_INTRO=1, EON_MODERN_BUTTONS and EON_DRIVING60 (0 or 1) set those options without a settings file (the headless harness has
-// none)
+// EON_SKIP_INTRO=1, EON_MODERN_BUTTONS and EON_DRIVING60 (0 or 1) and EON_FOV (percent) set those options without a
+// settings file (the headless harness has none)
 void Init() {
     if (const char* e = std::getenv("EON_SKIP_INTRO"); e && *e == '1') eon::skip_intro = true;
     if (const char* e = std::getenv("EON_MODERN_BUTTONS")) eon::modern_buttons = *e == '1';
     if (const char* e = std::getenv("EON_DRIVING60")) eon::driving_60fps = *e == '1';
+    if (const char* e = std::getenv("EON_FOV")) eon::fov_percent = uint32_t(std::atoi(e));
     if (eon::skip_intro) LOGR("eon: the intro logos are skipped (skip_intro)");
 }
 
@@ -83,7 +85,9 @@ const app::GameInfo app::kGame = {
     .options = {{"skip_intro", &eon::skip_intro, nullptr, "Skip intro movies",
                  "The THX, MGM and EA logos; at the next start."},
                 {"modern_buttons", &eon::modern_buttons, nullptr, "Modern button pictures",
-                 "Today's Xbox pad in the prompts; at the next start."},
+                 "Today's Xbox pad in the prompts (the keys and mouse while playing on the keyboard either way)."},
+                {"fov_percent", nullptr, &eon::fov_percent, "Field of view (%)",
+                 "On foot, 50 to 150; 100 is the game's. Cutscenes widen too."},
                 {"driving_60fps", &eon::driving_60fps, nullptr, "Driving missions at 60 frames a second",
                  "Same simulation, drawn after every tick instead of every second one; from the next driving mission."}},  // kept in the settings file
     .load = nullptr,                      // reads more from the settings file's toml::table

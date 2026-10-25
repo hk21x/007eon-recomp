@@ -29,6 +29,27 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-25 - keyboard and mouse prompts, field of view
+
+Keyboard prompts: sdk (input): UsingKeyboard, what controller 1 was last played with (a bound key or mouse button,
+the mouse moved 16 counts while looking, or no controller plugged in: the keyboard; a controller's button or a stick
+pushed half way: the controller), and ControlKeys (a control's bound keys, the settings' or the defaults); the
+harness's KEYS token. src/common/buttons.cpp keeps each atlas it finds (its disc bytes, decoded) and draws it again at
+its next bind whenever the look changes (controller or keyboard, a key bound anew, modern_buttons), the last two
+drawings cached: on the keyboard every button's picture is its key on a cap (SPACE, CTRL, ESC, TAB, letters; arrows
+as heads) or a mouse with the button lit, the d-pads as arrow-key clusters with the directions lit, the left stick as
+WASD, the right stick as a mouse. The game names the sticks ANALOGPAD and ANALOGPADRIGHT (icons 8 and 9 from
+0x117310); which atlas picture each is was not seen in a run (the tutorial step showing it was not reached), so the
+left one is taken as the left stick. The game's LT rectangle ends at row 21 in the menus (93..115, 2..21) and at 25
+in the tutorial, so the trigger plates now sit above row 22. Headless MI6 Training with KEYS: "E or Q: Punch left or
+right" drawn with key caps (log: "drawn as the keys and mouse").
+
+fov_percent (50 to 150, src/game/fov.cpp): 0x61080 makes every view's projection from the vertical field of view in
+radians (1 over tan of half of it); its callers make the culling planes from its results, so the angle is scaled
+there. Headless at 130%: 78 degrees for the game's 60, the training room wider. Smoke OK; driving runs (its P8 atlas
+drawn). Next: Harry's Windows test of the sharp icons, the keyboard prompts and the FOV; the sticks' pictures when a
+prompt shows one.
+
 ### 2026-10-25 - sharp button pictures
 
 The prompts' atlas is 128x128, so on a 1440p screen each icon was a blurry 20 texels enlarged three times. sdk eb577a0:
