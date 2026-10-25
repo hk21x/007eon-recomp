@@ -29,6 +29,17 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-25 - LB and RB button pictures
+
+The button prompts (\i<ACTION> in the strings) draw from one 128x128 DXT3 atlas: B X A Y, the trigger arrows,
+the d-pads, START, BACK, the sticks, and WHITE and BLACK as small white and black ovals (16x16 cells at 32,64 and
+48,64, the ovals in their columns 0 to 11, rows 0 to 13). src/common/buttons.cpp (setting modern_buttons, on by
+default): when the atlas is bound (sdk 5d7f3eb GameInfo::texture_bound, from SetTexture, the texture marked dirty
+after), recognised by the two cells' original bytes (FNV-1a D26D60581BC4099B), the cells are rewritten as LB and
+RB bumpers inside the ovals' texels: white 3x7 letters on a dark rounded body with a grey edge, colours a DXT block
+holds exactly. Headless: the atlas patched in the menus' and the level's copies (decoded from a memory dump);
+SDL maps RB to BLACK and LB to WHITE, as the pictures say. Smoke OK.
+
 ### 2026-10-25 - driving.xbe: the first driving mission, headless; the palettes
 
 Harry reached Train Chase on Windows: default.xbe hands over to driving.xbe (HalReturnToFirmware 2, launch data)

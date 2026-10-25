@@ -9,6 +9,8 @@
 
 namespace eon {
 bool skip_intro = false;  // no logo movies at start (HideFile)
+extern bool modern_buttons;           // src/common/buttons.cpp
+bool ButtonPictures(uint32_t header);  // GameInfo::texture_bound
 }
 
 namespace {
@@ -75,7 +77,9 @@ const app::GameInfo app::kGame = {
     .missing = L"Put the game in the assets folder: its disc image (.iso), or default.xbe with its folders beside it.",
     .images = {{"default.xbe", "EoN"}, {"driving.xbe", "EoNDriving"}},  // each recompiled xbe and its exe, for title launches
     .options = {{"skip_intro", &eon::skip_intro, nullptr, "Skip intro movies",
-                 "The THX, MGM and EA logos; at the next start."}},  // game settings kept in the settings file
+                 "The THX, MGM and EA logos; at the next start."},
+                {"modern_buttons", &eon::modern_buttons, nullptr, "Modern button pictures",
+                 "LB and RB in place of the White and Black buttons; at the next start."}},  // kept in the settings file
     .load = nullptr,                      // reads more from the settings file's toml::table
     .save = nullptr,                      // writes more into it
     .init = Init,                         // after the settings load, before the window and boot
@@ -90,6 +94,7 @@ const app::GameInfo app::kGame = {
     .hide_file = HideFile,                // skip_intro
     .mouse_look = true,                   // the mouse aims (the right stick)
     .default_keys = ShooterKeys,          // a shooter's keys and mouse buttons
+    .texture_bound = eon::ButtonPictures, // modern_buttons
     // optional, after these: .achievements (conditions on guest memory), .same_code (other releases' xbe SHA-1s with
     // the same code), .wheel (what a steering wheel's force feedback follows)
 };

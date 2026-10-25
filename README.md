@@ -30,6 +30,7 @@ Supports Xbox, PlayStation and Switch controllers, with hot plugging and rumble.
 - Every key and mouse button can be rebound in the settings window (F1, Controls tab).
 
 ### General
+- **Modern Button Pictures** - The prompts show LB and RB in place of the original controller's White and Black buttons (`modern_buttons`, on by default).
 - **Skip Intro Movies** - `skip_intro = true` goes past the THX, MGM and EA logos at start.
 - **Cutscenes** - A PAL disc's cutscenes play (the game runs as on a PAL console at 60 Hz).
 
