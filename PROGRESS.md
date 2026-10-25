@@ -29,6 +29,20 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-25 - sharp button pictures
+
+The prompts' atlas is 128x128, so on a 1440p screen each icon was a blurry 20 texels enlarged three times. sdk eb577a0:
+gpu::SetReplacement, a title's own picture for a texture's memory: D3D12 and D3D11 upload it (with a box filtered mip
+chain, sampled across it) and draw it instead of the guest bytes while those stay as they were when it was set (checked
+once a frame; memory given to something else drops it). src/common/buttons.cpp now draws every icon as shapes and a
+stroke font (src/common/strokes.cpp, A-Z 0-9 and a few signs, for the keyboard pictures next): the face buttons,
+triggers, bumpers, Menu and View as before, and now the seven d-pads (the arms the red marks meant drawn white), the
+sticks and the menus' arrows too. Drawn twice: at 128 into guest memory as before (DXT3 or P8), and at 512 for the
+renderers. Offline test of both atlases (the disc's DXT3 and driving's P8 dump) at 512: clean edges, no old art left
+around the boxes (cleared before enlarging). Headless MI6 Training: the 1x atlas patched in the menu and again in the
+level (82085080, 82BD1D00), "Y or X: Punch" drawn with the new icons. Next: Harry's look on Windows (the log names the
+512 picture once: "drawn from the title's 512x512 picture"); keyboard and mouse pictures.
+
 ### 2026-10-25 - mouse aiming straight into the game's look input
 
 The mouse played the right stick, through the game's stick processing. The game reads controller 1's sticks in
