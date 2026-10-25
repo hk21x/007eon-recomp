@@ -29,6 +29,17 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-25 - the second muzzle flash, found
+
+Harry's save (hdd.zip: E:\UDATA\45410042) loads headless: Load Game, MI6 Training (.local/m2punch.txt). His
+D3D12 captures (072255..072404, an older build: XBE_CAPTURE_DRAWS=aa was not in it) show two flashes per shot: one
+at the gun and a copy at half its place (179,64 against 364,129). The particle draws are immediate (pushed) quads,
+batched until Walk reads them; SetRenderState_MultiSampleMode is an HLE setter that did not read pending pushed
+commands first, so the last batch inside the 4X window was drawn after the mode went back, unstretched. Headless the
+same: of the punch sprites (texture 0x82C99480) 6369 stretched and 6370 not. sdk 2867d1d: both multisample
+setters walk pending commands first (WalkBeforeState, as SetRenderTarget does); now all three sprites are stretched.
+Smoke OK. The other complex state setters do not walk first either; left as they are for PGR's sake.
+
 ### 2026-10-24 - mouse and keyboard
 
 sdk 4e05344: mouse look for a title that offers it (GameInfo::mouse_look): raw mouse movement (WM_INPUT)
