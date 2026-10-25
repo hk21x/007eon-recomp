@@ -28,6 +28,12 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-25 - 30 minute soak with today's changes
+
+scripts/soak.sh 30 (the level, Quit, New Game, Ground Zero, over and over) with the sharp 2D textures, the Quit Game
+item, the menu mouse and the keyboard pictures: no traps, frames to the end (104940), 32 level loads, resident
+memory flat (106 MB at 5 minutes, 105 MB at 30; data 607 -> 608 MB).
+
 ### 2026-10-25 - mouse in the driving missions' menus
 
 driving.xbe has the same menu engine: its package input function is 0x13C2D0 (default.xbe's 0x131610; the package's
