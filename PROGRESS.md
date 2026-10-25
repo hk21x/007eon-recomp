@@ -29,6 +29,17 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-25 - every button picture modern
+
+src/common/buttons.cpp redraws the whole prompt atlas (recognised by all of its bytes, FNV-1a 09076852FE367BA4): it
+is decoded, each icon drawn again inside its own artwork's bounds (measured as the atlas's opaque components: the
+rectangles the game draws with hold them, e.g. Y u 66.5..89.5 v 2.5..24.5 around its oval 69..86, 3..24), and the
+blocks drawn on encoded again (the two texels furthest apart as end colours, each texel the nearest of four). A B X
+Y: bold coloured letters on a dark disc; LT RT: labelled triggers where the arrow boxes were; LB RB: bumpers; START:
+the Menu button's three lines; BACK: the View button's two squares (the words cleared: the icons hold the dot and
+the word). D-pads and sticks as they were. EON_MODERN_BUTTONS=0 or 1 headless. driving.xbe's HUD does not bind this
+atlas (its prompts are P8 textures): left as they are. Smoke OK.
+
 ### 2026-10-25 - LB and RB button pictures
 
 The button prompts (\i<ACTION> in the strings) draw from one 128x128 DXT3 atlas: B X A Y, the trigger arrows,

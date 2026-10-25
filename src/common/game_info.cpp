@@ -14,9 +14,11 @@ bool ButtonPictures(uint32_t header);  // GameInfo::texture_bound
 }
 
 namespace {
-// EON_SKIP_INTRO=1 sets skip_intro without a settings file (the headless harness has none)
+// EON_SKIP_INTRO=1 and EON_MODERN_BUTTONS=0 or 1 set those options without a settings file (the headless harness has
+// none)
 void Init() {
     if (const char* e = std::getenv("EON_SKIP_INTRO"); e && *e == '1') eon::skip_intro = true;
+    if (const char* e = std::getenv("EON_MODERN_BUTTONS")) eon::modern_buttons = *e == '1';
     if (eon::skip_intro) LOGR("eon: the intro logos are skipped (skip_intro)");
 }
 
