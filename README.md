@@ -28,12 +28,14 @@ Supports Xbox, PlayStation and Switch controllers, with hot plugging and rumble.
 
 ### Keyboard and Mouse
 - **Mouse aiming** - The mouse turns the camera and aim directly (not through the stick's curve), with sensitivity and invert options; the cursor stays in the window while playing.
+- **Mouse in menus** - In the menus the mouse wheel scrolls, the left button selects and the right button goes back; in play the buttons do what they are bound to.
 - **Keyboard prompts** - While you play on the keyboard and mouse, the game's button prompts show the keys and mouse buttons bound to them; they switch back when you pick up the controller.
 - **Default layout** - WASD to move, left mouse button to fire, right mouse button to lock on, Space to jump or confirm, Q and E to punch left and right, C for wall cover, F for the White button, 1 to 4 or the arrow keys for the d-pad (weapons and gadgets), Esc to pause.
 - Every key and mouse button can be rebound in the settings window (F1, Controls tab).
 
 ### General
 - **Modern Button Pictures** - The prompts show today's Xbox pad: A B X Y in the modern style, LB and RB in place of the White and Black buttons, LT and RT, and the Menu and View buttons in place of Start and Back (`modern_buttons`, on by default). They are drawn at four times the console's resolution, so they stay sharp at 1440p and 4K.
+- **Sharp Text and HUD** - The text, menus' and HUD's pictures are enlarged with sharp edges for high resolutions (`sharp_2d`, on by default; Graphics tab).
 - **60 FPS Driving** - The driving missions draw at 60 frames a second instead of 30, the game's timing unchanged (`driving_60fps`, on by default).
 - **Quit Game** - The main menu has a Quit Game item under Options (where the console's unused Online item was), and the settings window (F1) has a Quit game button.
 - **Skip Intro Movies** - `skip_intro = true` goes past the THX, MGM and EA logos at start.

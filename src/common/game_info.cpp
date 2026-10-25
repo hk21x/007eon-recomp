@@ -13,6 +13,7 @@ bool driving_60fps = true;   // the driving missions at 60 frames a second (src/
 uint32_t fov_percent = 100;  // the on-foot views' field of view, percent of the game's (src/game/fov.cpp)
 extern bool modern_buttons;           // src/common/buttons.cpp
 bool ButtonPictures(uint32_t header, uint32_t palette);  // GameInfo::texture_bound
+void MenuMouse(int port, input::Pad& p);                 // GameInfo::pad: the mouse in the menus
 }
 
 namespace {
@@ -97,9 +98,10 @@ const app::GameInfo app::kGame = {
     .window = nullptr,                    // the game window is up
     .message = nullptr,                   // window messages first; true takes one
     .ui = nullptr,                        // ImGui drawing each frame
-    .pad = nullptr,                       // changes a polled pad
+    .pad = eon::MenuMouse,                // changes a polled pad: the mouse in the menus
     .rumble = nullptr,                    // changes a rumble before it is set
     .squeeze_screen_programs = true,      // ultrawide: the HUD and menus are drawn by a pass-through program
+    .sharpen_2d = true,                   // text and HUD pictures enlarged sharp
     .pal_console = true,                  // a PAL disc's movies are _pal only: a PAL 60 Hz console for it
     .hide_file = HideFile,                // skip_intro
     .mouse_look = true,                   // the mouse aims

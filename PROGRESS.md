@@ -29,6 +29,23 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-25 - sharp text and HUD, mouse in the menus
+
+Sharp 2D (sdk 94a9acf): GameInfo::sharpen_2d and Settings::sharp_2d. A texture a 2D draw samples (pretransformed or
+a screen program; swizzled, up to 512, not P8) is copied and enlarged on a background thread: alpha that is mostly
+fully in or out (text, outlines) as a mask (Catmull-Rom, then thresholded at half with an edge one output pixel
+wide), else interpolated; colour Catmull-Rom weighted by alpha; DXT decoded on the CPU. Text (A8) and pictures up to
+128 four times, larger ones twice (a 256 picture at four times would be 4 MB of memory and 5 of video memory). Then
+it is the texture's replacement (dropped when its bytes change; a texture dropped twice is left alone).
+XBE_SHARPEN_DUMP=folder writes each as a TGA; the reference renderer runs it too. Headless: the menus' fonts (A8
+256x128, 256x256), flags, logo, the HUD's weapon atlas and menu pictures made in about 0.2 s each.
+
+Mouse in the menus: sdk input::TakeWheel and MouseButtons (raw input's wheel). The menus' engine gives each package
+the input through 0x131610 (the package, the port); one taking port 1 with a button in focus (+0x84) marks a menu
+in use (src/game/menu_input.cpp). GameInfo::pad (src/common/menu_mouse.cpp): in a menu the mouse buttons stop playing
+their bindings, left is A, right B, each wheel notch a d-pad press. Headless: three notches down and a click choose
+Quit Game; "out of the menus" from the level's load through play. Smoke OK.
+
 ### 2026-10-25 - Quit Game: main menu and settings window
 
 sdk: app::Quit (closing the window, headless a shutdown) and a Quit game button in the settings window's footer
