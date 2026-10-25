@@ -35,6 +35,7 @@ Supports Xbox, PlayStation and Switch controllers, with hot plugging and rumble.
 ### General
 - **Modern Button Pictures** - The prompts show today's Xbox pad: A B X Y in the modern style, LB and RB in place of the White and Black buttons, LT and RT, and the Menu and View buttons in place of Start and Back (`modern_buttons`, on by default). They are drawn at four times the console's resolution, so they stay sharp at 1440p and 4K.
 - **60 FPS Driving** - The driving missions draw at 60 frames a second instead of 30, the game's timing unchanged (`driving_60fps`, on by default).
+- **Quit Game** - The main menu has a Quit Game item under Options (where the console's unused Online item was), and the settings window (F1) has a Quit game button.
 - **Skip Intro Movies** - `skip_intro = true` goes past the THX, MGM and EA logos at start.
 - **Cutscenes** - A PAL disc's cutscenes play (the game runs as on a PAL console at 60 Hz).
 

@@ -29,6 +29,17 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-25 - Quit Game: main menu and settings window
+
+sdk: app::Quit (closing the window, headless a shutdown) and a Quit game button in the settings window's footer
+(asked twice). Main menu: the menus are EA FEng packages, resident and parsed by 0x138900; frontend_spmp.fng has a
+fourth item this release never shows, Online (button 0x3BD5E, labels 0x3BD60/0x3BD5F, help 0x40978), whose focus
+response hands the focus back to Options without Xbox Live. src/game/quit_item.cpp parses a copy with that item made
+Quit Game: new string hashes for its labels and help (answered by a hook on the string lookup 0x142F60, in the game's
+language told from its Single Player), its button's responses as the other items' with a message of its own (response
+type 2 goes through 0x1305A0, hooked: app::Quit). Headless: the menu shows Quit Game under Options, it highlights,
+and A on it closes the game ("Quit Game chosen in the main menu").
+
 ### 2026-10-25 - keyboard and mouse prompts, field of view
 
 Keyboard prompts: sdk (input): UsingKeyboard, what controller 1 was last played with (a bound key or mouse button,
