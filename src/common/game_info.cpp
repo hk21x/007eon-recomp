@@ -2,10 +2,8 @@
 #include <cctype>
 #include <cstdlib>
 #include <string>
-#include <string_view>
 
 #include "app/app.h"
-#include "image_symbols.h"  // IMAGE_XBE: this file is built into each image's executable
 #include "core/input.h"
 #include "core/log.h"
 
@@ -97,8 +95,6 @@ const app::GameInfo app::kGame = {
     .ui = nullptr,                        // ImGui drawing each frame
     .pad = nullptr,                       // changes a polled pad
     .rumble = nullptr,                    // changes a rumble before it is set
-    // the 2D's shape: default.xbe lays its HUD and menus out for 16:9 on a widescreen display, driving.xbe for 4:3
-    .hud_aspect = std::string_view(IMAGE_XBE) == "driving.xbe" ? 4.0f / 3.0f : 16.0f / 9.0f,
     .squeeze_screen_programs = true,      // ultrawide: the HUD and menus are drawn by a pass-through program
     .pal_console = true,                  // a PAL disc's movies are _pal only: a PAL 60 Hz console for it
     .hide_file = HideFile,                // skip_intro

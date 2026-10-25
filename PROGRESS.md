@@ -29,6 +29,19 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-25 - the driving HUD on ultrawide
+
+Harry's 2.39:1 screenshot: the 3D widened, the "Missiles" text in proportion, the radar and the weapon picture
+stretched and out at the screen's edges. driving.xbe lays its HUD out for 16:9 itself on a widescreen display
+(0xDA0A0 and others: the frame object's +0x4C narrows sizes by 0.75), so its hud_aspect is 16:9 after all (the 4:3
+of the last entry undone). Its text draws through the pass-through program (squeezed); the radar, pictures and boxes
+through a program that multiplies v0 by c0..c3 (dp4 x4, then the XDK's screen tail) with an orthographic matrix
+there (c0 = 1/320 0 0 -1, c1 = 0 -1/240 0 1, c3 = 0 0 0 1), which the squeeze did not know. sdk 597cc47:
+MatrixProgram (four dp4 of v0 with consecutive constants at a program's start) gets the squeeze code, switched on per
+draw only when those constants are an orthographic 2D matrix (OrthoConstants), so 3D draws with the same program
+shape stay. Headless at 2.39:1: the objective box 225..414 squeezed to 250..389 with its text; small render targets
+(64x64 to 256x128) unsqueezed. Smoke OK.
+
 ### 2026-10-25 - the driving missions' button pictures
 
 Harry's captures (112758..112915): the driving prompts ("Y Get In Vehicle") draw from the same button atlas, but

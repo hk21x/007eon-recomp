@@ -18,7 +18,7 @@ This port was created using the [Xbox XBE Recomp](https://github.com/TGP482/Xbox
 ### Display
 - **Widescreen** - The game's own 16:9 mode on a widescreen display.
 - **Ultrawide** - With `aspect = "screen"`, the 3D view widens to fill a 21:9 or wider screen; the HUD and menus keep their 16:9 shape in the centre.
-- **Widescreen Driving** - The driving missions, 4:3 on the console, widen to the screen's shape too; their HUD keeps its 4:3 shape in the centre.
+- **Widescreen Driving** - The driving missions, 4:3 on the console, widen to the screen's shape too; their HUD keeps its 16:9 shape in the centre.
 
 ### Graphics
 
