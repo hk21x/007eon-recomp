@@ -2,14 +2,16 @@
 #include <cctype>
 #include <cstdlib>
 #include <string>
+#include <string_view>
 
 #include "app/app.h"
+#include "image_symbols.h"  // IMAGE_XBE: this file is built into each image's executable
 #include "core/input.h"
 #include "core/log.h"
 
 namespace eon {
 bool skip_intro = false;  // no logo movies at start (HideFile)
-bool driving_60fps = false;  // the driving missions at 60 frames a second (src/driving/sixty.cpp)
+bool driving_60fps = true;   // the driving missions at 60 frames a second (src/driving/sixty.cpp)
 extern bool modern_buttons;           // src/common/buttons.cpp
 bool ButtonPictures(uint32_t header);  // GameInfo::texture_bound
 }
@@ -84,7 +86,7 @@ const app::GameInfo app::kGame = {
                  "The THX, MGM and EA logos; at the next start."},
                 {"modern_buttons", &eon::modern_buttons, nullptr, "Modern button pictures",
                  "Today's Xbox pad in the prompts; at the next start."},
-                {"driving_60fps", &eon::driving_60fps, nullptr, "Driving missions at 60 frames a second (experimental)",
+                {"driving_60fps", &eon::driving_60fps, nullptr, "Driving missions at 60 frames a second",
                  "Same simulation, drawn after every tick instead of every second one; from the next driving mission."}},  // kept in the settings file
     .load = nullptr,                      // reads more from the settings file's toml::table
     .save = nullptr,                      // writes more into it
@@ -95,6 +97,8 @@ const app::GameInfo app::kGame = {
     .ui = nullptr,                        // ImGui drawing each frame
     .pad = nullptr,                       // changes a polled pad
     .rumble = nullptr,                    // changes a rumble before it is set
+    // the 2D's shape: default.xbe lays its HUD and menus out for 16:9 on a widescreen display, driving.xbe for 4:3
+    .hud_aspect = std::string_view(IMAGE_XBE) == "driving.xbe" ? 4.0f / 3.0f : 16.0f / 9.0f,
     .squeeze_screen_programs = true,      // ultrawide: the HUD and menus are drawn by a pass-through program
     .pal_console = true,                  // a PAL disc's movies are _pal only: a PAL 60 Hz console for it
     .hide_file = HideFile,                // skip_intro

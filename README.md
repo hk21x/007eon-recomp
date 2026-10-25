@@ -18,6 +18,7 @@ This port was created using the [Xbox XBE Recomp](https://github.com/TGP482/Xbox
 ### Display
 - **Widescreen** - The game's own 16:9 mode on a widescreen display.
 - **Ultrawide** - With `aspect = "screen"`, the 3D view widens to fill a 21:9 or wider screen; the HUD and menus keep their 16:9 shape in the centre.
+- **Widescreen Driving** - The driving missions, 4:3 on the console, widen to the screen's shape too; their HUD keeps its 4:3 shape in the centre.
 
 ### Graphics
 
@@ -31,7 +32,7 @@ Supports Xbox, PlayStation and Switch controllers, with hot plugging and rumble.
 
 ### General
 - **Modern Button Pictures** - The prompts show today's Xbox pad: A B X Y in the modern style, LB and RB in place of the White and Black buttons, LT and RT, and the Menu and View buttons in place of Start and Back (`modern_buttons`, on by default; the on-foot missions).
-- **60 FPS Driving (experimental)** - `driving_60fps = true` draws the driving missions at 60 frames a second instead of 30, the game's timing unchanged.
+- **60 FPS Driving** - The driving missions draw at 60 frames a second instead of 30, the game's timing unchanged (`driving_60fps`, on by default).
 - **Skip Intro Movies** - `skip_intro = true` goes past the THX, MGM and EA logos at start.
 - **Cutscenes** - A PAL disc's cutscenes play (the game runs as on a PAL console at 60 Hz).
 

@@ -29,6 +29,21 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-25 - driving: widescreen and ultrawide; 60 by default
+
+driving.xbe's views are 4:3 whatever widescreen flag its launch data carries (the launch data differs by one bit,
+byte 1216 0x80, between a 4:3 and a widescreen run of default.xbe; the driving frame is the same with either), so on
+a wider screen they stretched. A view's projection is built in 0x2111E0 (field of view, aspect, near, far): a square
+projection, x times +0x140, y times +0x144 and the aspect, then the culling planes (left and right from the half
+angle's tangent times +0x178 and +0x17C). Giving it a wider aspect only narrowed the height (tried: the view zoomed
+in, still stretched). src/driving/widescreen.cpp: x divided by k (the frame's aspect over 4:3) after, +0x178 and
++0x17C k times larger while it runs, so the sides show more and are not culled. Headless at 16:9 and 2.39:1: Bond in
+proportion, more of the level at the sides. The driving 2D is laid out for 4:3: game_info.cpp (built into each
+image's executable) gives driving.xbe hud_aspect 4:3, so its HUD and text keep that shape in the centre ("NEW
+OBJECTIVE" checked at 2.39:1). driving_60fps is on by default (Harry: works). The driving button pictures: the HUD
+atlas (0x82917880 in Harry's captures, P8 on stage 3) only loads in the car, which a blind headless walk does not
+reach (Train Chase starts on foot); waiting for a capture with a driving prompt on screen.
+
 ### 2026-10-25 - driving at 60: the drawing task
 
 Harry's log: the setting reached driving.xbe (interval 0 asked for) and every frame still took 33 ms. The drawing task
