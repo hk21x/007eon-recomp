@@ -28,6 +28,21 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-25 - radar and Thermovision, third look
+
+Harry: the radar better but still flicking into an oval now and then; Thermovision unchanged (capture 200028: the
+half size copy still in the accumulation buffer's top left). Radar: a rotating tile corner landing within the 2 pixel
+edge allowance still stayed for that frame. Now decided per draw (SpansFrameWidth: the draw's screen x from its
+vertices, pretransformed, pass-through or through its 2D matrix): only a draw reaching both edges (a full screen quad)
+keeps its edge vertices, any other is squeezed whole; the shaders get it as the sign of hud.y (KeptAtEdge), the
+reference renderer squeezes after the draw's vertices are known. Visible change at 2.39:1: the Mission Select header
+bar starts at the 16:9 edge rather than the screen's. Thermovision: the top left reading needed the texture's pitch to
+be the target's; this one's evidently is not, so a smaller linear texture over a colour target now always reads the
+top left (its pitch logged once, "read as the top left of target"). Its draw's vertices were not in the capture (raw
+buffers are not converted); D3D12 captures now print the guest's vertex buffers too. Headless at 2.39:1 menus fine,
+26 shaders compile, smoke OK. Thermovision cannot be reached headless (Ground Zero has none; the saves stop at Train
+Chase): attempt 2 of 3 on that effect.
+
 ### 2026-10-25 - Thermovision and the radar, second look
 
 Harry: Thermovision now shows thermal colours but the top left quarter holds a sharp half size copy of the view; the
