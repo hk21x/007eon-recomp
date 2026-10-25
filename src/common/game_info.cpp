@@ -13,7 +13,7 @@ namespace eon {
 bool skip_intro = false;  // no logo movies at start (HideFile)
 bool driving_60fps = true;   // the driving missions at 60 frames a second (src/driving/sixty.cpp)
 extern bool modern_buttons;           // src/common/buttons.cpp
-bool ButtonPictures(uint32_t header);  // GameInfo::texture_bound
+bool ButtonPictures(uint32_t header, uint32_t palette);  // GameInfo::texture_bound
 }
 
 namespace {

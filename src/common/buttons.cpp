@@ -7,10 +7,13 @@
 // A B X Y as coloured letters on a dark disc, LT and RT as labelled triggers, LB and RB as labelled bumpers, START as
 // the Menu button (three lines), BACK as the View button (two squares). The d-pads and sticks look as they did. The
 // atlas is decoded, drawn on, and the blocks drawn on are encoded again (two end colours a block, the pair furthest
-// apart, each texel the nearest of the four).
+// apart, each texel the nearest of the four). driving.xbe has the same atlas as P8 (swizzled indices into a palette
+// bound with it): told by its look (each 16x16 cell's mean colour), drawn on the same way, each texel changed the
+// palette's nearest colour.
 #include <algorithm>
 #include <cmath>
 #include <cstdint>
+#include <cstdlib>
 #include <cstring>
 
 #include "core/log.h"
@@ -210,7 +213,7 @@ void View(Image& img, Box b) {
 // each icon's artwork bounds in the atlas
 constexpr Box kFaceB{2, 3, 19, 24}, kFaceX{23, 3, 40, 24}, kFaceA{43, 3, 59, 24}, kFaceY{69, 3, 86, 24};
 constexpr Box kLeftTrigger{95, 5, 113, 25}, kRightTrigger{95, 28, 113, 48};
-constexpr Box kStart{29, 27, 59, 42}, kBack{30, 83, 56, 98};
+constexpr Box kStart{28, 26, 62, 44}, kBack{27, 82, 62, 100};  // past the art: the P8 copy's faint halo
 constexpr Box kWhiteButton{32, 64, 43, 77}, kBlackButton{48, 64, 59, 77};
 
 void Draw(Image& img) {
@@ -233,19 +236,53 @@ uint64_t Fnv(const uint8_t* p, size_t n) {
     return h;
 }
 
-}  // namespace
+// driving.xbe's copy is P8 (swizzled indices into the stage's palette), recognised by its look: the atlas's mean
+// colour in each 16x16 cell (premultiplied by alpha), within kLookSlack of the disc's (both copies agree within 4)
+constexpr Rgba kLook[64] = {
+    {88, 66, 67, 146}, {42, 37, 60, 121}, {32, 40, 54, 132}, {43, 64, 43, 131}, {71, 62, 42, 113}, {26, 21, 9, 74},
+    {39, 40, 40, 175}, {0, 0, 0, 21},     {43, 30, 30, 110}, {15, 13, 26, 80},  {18, 21, 30, 109}, {12, 26, 12, 83},
+    {28, 23, 9, 71},   {11, 8, 2, 51},    {25, 25, 25, 223}, {0, 0, 0, 27},     {69, 64, 64, 160}, {53, 53, 54, 131},
+    {40, 40, 40, 69},  {31, 31, 31, 40},  {0, 0, 0, 0},      {0, 0, 0, 15},     {43, 43, 43, 255}, {0, 0, 0, 31},
+    {28, 26, 27, 71},  {14, 14, 14, 47},  {36, 36, 36, 69},  {36, 36, 36, 69},  {16, 16, 16, 68},  {10, 10, 10, 49},
+    {22, 23, 23, 116}, {2, 2, 2, 15},     {66, 62, 63, 156}, {44, 40, 41, 117}, {70, 70, 70, 118}, {23, 23, 23, 127},
+    {41, 41, 42, 208}, {34, 34, 35, 193}, {46, 46, 47, 254}, {12, 12, 12, 80},  {32, 28, 28, 79},  {19, 19, 20, 58},
+    {27, 27, 27, 74},  {10, 10, 10, 12},  {5, 5, 5, 34},     {2, 2, 2, 21},     {7, 7, 7, 53},     {0, 0, 0, 2},
+    {57, 49, 50, 131}, {41, 37, 38, 101}, {65, 62, 62, 143}, {27, 27, 27, 67},  {30, 30, 30, 79},  {41, 41, 41, 107},
+    {14, 14, 14, 50},  {35, 36, 37, 96},  {0, 0, 0, 0},      {1, 1, 1, 5},      {84, 84, 85, 203}, {40, 40, 41, 108},
+    {59, 55, 56, 139}, {77, 74, 74, 185}, {39, 36, 36, 104}, {68, 68, 70, 166}};
+constexpr int kLookSlack = 12;
 
-// GameInfo::texture_bound: D3DBaseTexture Data (+4, physical) and Format (+12: format bits 8-15, the width's and
-// height's log2 in bits 20-23 and 24-27)
-bool ButtonPictures(uint32_t header) {
-    if (!modern_buttons) return false;
-    uint32_t format = kernel::R32(header + 12);
-    if ((format >> 8 & 0xFF) != kDxt3 || (format >> 20 & 15) != 7 || (format >> 24 & 15) != 7) return false;
-    uint32_t data = mem::VirtualFromPhysical(kernel::R32(header + 4));
-    constexpr uint32_t kBytes = kSize * kSize;  // DXT3: a byte a texel
-    if (!mem::IsCommitted(data) || !mem::IsCommitted(data + kBytes - 1)) return false;
-    auto* atlas = static_cast<uint8_t*>(kernel::HostPtr(data));
-    if (Fnv(atlas, kBytes) != kOriginal) return false;
+bool LooksLikeAtlas(const Image& img) {
+    for (int g = 0; g < 64; g++) {
+        int s[4] = {};
+        for (int y = g / 8 * 16; y < g / 8 * 16 + 16; y++)
+            for (int x = g % 8 * 16; x < g % 8 * 16 + 16; x++) {
+                Rgba c = img[y][x];
+                s[0] += c.r * c.a / 255;
+                s[1] += c.g * c.a / 255;
+                s[2] += c.b * c.a / 255;
+                s[3] += c.a;
+            }
+        const Rgba& w = kLook[g];
+        if (std::abs(s[0] / 256 - w.r) > kLookSlack || std::abs(s[1] / 256 - w.g) > kLookSlack ||
+            std::abs(s[2] / 256 - w.b) > kLookSlack || std::abs(s[3] / 256 - w.a) > kLookSlack)
+            return false;
+    }
+    return true;
+}
+
+// a swizzled texel's offset in a 128x128 texture: x and y bits interleaved, x first
+uint32_t Swizzle(int x, int y) {
+    uint32_t o = 0;
+    for (int i = 0; i < 7; i++) o |= uint32_t((x >> i & 1) << (2 * i) | (y >> i & 1) << (2 * i + 1));
+    return o;
+}
+
+int Dist4(Rgba x, Rgba y) { return Dist(x, y) + (x.a - y.a) * (x.a - y.a); }
+
+// the DXT3 copy: its bytes as the disc has them, the changed blocks encoded again
+bool PatchDxt3(uint8_t* atlas) {
+    if (Fnv(atlas, kSize * kSize) != kOriginal) return false;
     static Image before, after;
     Decode(atlas, before);
     std::memcpy(after, before, sizeof(Image));
@@ -257,7 +294,65 @@ bool ButtonPictures(uint32_t header) {
                 changed = std::memcmp(before[y] + bx * 4, after[y] + bx * 4, 4 * sizeof(Rgba)) != 0;
             if (changed) EncodeBlock(after, bx, by, atlas + (by * (kSize / 4) + bx) * 16);
         }
-    LOGR("eon: the button atlas %08X drawn as a modern pad's", data);
     return true;
+}
+
+// the P8 copy: decoded through its palette (BGRA, 256 entries fewer by the size code), each changed texel the
+// palette's nearest colour
+bool PatchP8(uint8_t* atlas, const uint8_t* bgra, int colours) {
+    static Image before, after;
+    Rgba pal[256];
+    for (int i = 0; i < colours; i++) pal[i] = {bgra[i * 4 + 2], bgra[i * 4 + 1], bgra[i * 4], bgra[i * 4 + 3]};
+    for (int y = 0; y < kSize; y++)
+        for (int x = 0; x < kSize; x++) {
+            uint8_t i = atlas[Swizzle(x, y)];
+            before[y][x] = i < colours ? pal[i] : kClear;
+        }
+    if (!LooksLikeAtlas(before)) return false;
+    std::memcpy(after, before, sizeof(Image));
+    Draw(after);
+    int clear = -1;  // a fully clear colour, for the texels cleared
+    for (int i = 0; i < colours && clear < 0; i++)
+        if (pal[i].a == 0) clear = i;
+    for (int y = 0; y < kSize; y++)
+        for (int x = 0; x < kSize; x++) {
+            Rgba c = after[y][x];
+            if (std::memcmp(&c, &before[y][x], sizeof(Rgba)) == 0) continue;
+            if (c.a == 0 && clear >= 0) {
+                atlas[Swizzle(x, y)] = uint8_t(clear);
+                continue;
+            }
+            int best = 0;
+            for (int i = 1; i < colours; i++)
+                if (Dist4(c, pal[i]) < Dist4(c, pal[best])) best = i;
+            atlas[Swizzle(x, y)] = uint8_t(best);
+        }
+    return true;
+}
+
+}  // namespace
+
+// GameInfo::texture_bound: D3DBaseTexture Data (+4, physical) and Format (+12: format bits 8-15, the width's and
+// height's log2 in bits 20-23 and 24-27); D3DPalette Common (+0, its size code in the top two bits) and Data (+4)
+bool ButtonPictures(uint32_t header, uint32_t palette) {
+    constexpr uint32_t kP8 = 0x0B;
+    if (!modern_buttons) return false;
+    uint32_t format = kernel::R32(header + 12), kind = format >> 8 & 0xFF;
+    if ((kind != kDxt3 && kind != kP8) || (format >> 20 & 15) != 7 || (format >> 24 & 15) != 7) return false;
+    uint32_t data = mem::VirtualFromPhysical(kernel::R32(header + 4));
+    constexpr uint32_t kBytes = kSize * kSize;  // DXT3 and P8: a byte a texel
+    if (!mem::IsCommitted(data) || !mem::IsCommitted(data + kBytes - 1)) return false;
+    auto* atlas = static_cast<uint8_t*>(kernel::HostPtr(data));
+    bool done;
+    if (kind == kDxt3) {
+        done = PatchDxt3(atlas);
+    } else {
+        if (!palette) return false;
+        uint32_t colours = 256u >> (kernel::R32(palette) >> 30), pal = mem::VirtualFromPhysical(kernel::R32(palette + 4));
+        if (!mem::IsCommitted(pal) || !mem::IsCommitted(pal + colours * 4 - 1)) return false;
+        done = PatchP8(atlas, static_cast<const uint8_t*>(kernel::HostPtr(pal)), int(colours));
+    }
+    if (done) LOGR("eon: the button atlas %08X (%s) drawn as a modern pad's", data, kind == kDxt3 ? "DXT3" : "P8");
+    return done;
 }
 }  // namespace eon

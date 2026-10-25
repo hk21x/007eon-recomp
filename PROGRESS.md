@@ -29,6 +29,18 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-25 - the driving missions' button pictures
+
+Harry's captures (112758..112915): the driving prompts ("Y Get In Vehicle") draw from the same button atlas, but
+driving.xbe's copy is P8 (128x128 swizzled indices on stage 3, its palette bound with SetPalette), so the DXT3 patch
+did not touch it. sdk fd520de: texture_bound gets the stage's palette and runs again from SetPalette.
+src/common/buttons.cpp: a P8 128x128 texture decoded through its palette is the atlas when each 16x16 cell's mean
+colour (premultiplied) is within 12 of the disc's (the DXT3 and P8 copies agree within 4; the look, not the bytes,
+since the copy only binds in the car, which the headless run does not reach); the same icons are drawn and each
+changed texel takes the palette's nearest colour (cleared ones a clear entry). The START and BACK boxes grew past
+their art: the P8 copy has a faint halo (alpha 12) there. Tested standalone: Harry's captured atlas quantised back
+to P8 with its own 253 colours, patched once and left alone the second time, clean. Smoke OK.
+
 ### 2026-10-25 - driving: widescreen and ultrawide; 60 by default
 
 driving.xbe's views are 4:3 whatever widescreen flag its launch data carries (the launch data differs by one bit,
