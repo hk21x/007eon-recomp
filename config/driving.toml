@@ -28,6 +28,7 @@ D3DDevice_SetRenderTarget                            = 0x29E660
 D3DDevice_GetBackBuffer2                             = 0x29E8E0
 D3DDevice_GetDepthStencilSurface2                    = 0x29EC60
 D3DDevice_SetViewport                                = 0x29EC80
+D3DDevice_SetPalette                                 = 0x29F060   # pushes 0x1B20 + stage * 0x40 itself (QFE 4)
 D3DDevice_SetTile                                    = 0x29F2E0
 D3DDevice_SetScissors                                = 0x29F3D0
 D3DDevice_SetScreenSpaceOffset                       = 0x29F880

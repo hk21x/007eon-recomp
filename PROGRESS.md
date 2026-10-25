@@ -29,6 +29,19 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-25 - driving.xbe: the first driving mission, headless; the palettes
+
+Harry reached Train Chase on Windows: default.xbe hands over to driving.xbe (HalReturnToFirmware 2, launch data)
+and it plays at 30 frames a second (present interval 2). His captures (080419..080450): the light glows patterned
+discs, a black and white panel at the top left (the radar), the weapon icon noise. Headless now too: his save
+(.local/harrysave2), Load Game, Train Chase (.local/drive_go.txt) writes hdd/launch.bin (kept as
+.local/launch_trainchase.bin, the driving boot deletes it), then .local/drive.sh builds and runs driving.xbe on the
+same disk. The glows are one draw sampling a P8 texture (format 0xB) on stage 3 alone, and most of the driving HUD
+samples P8 on stage 3: driving.xbe's SetPalette (0x29F060, pushes 0x1B20 + stage * 0x40 itself, a QFE 4 body the
+scan missed) was not replaced, so no palette reached the renderers. config/driving.toml names it; the reference
+renderer now decodes P8 with the stage's palette (sdk 34cbe6b). Headless: the glows are small lights. default.xbe
+sets no palettes. Next: Harry's test of the driving HUD.
+
 ### 2026-10-25 - the second muzzle flash, found
 
 Harry's save (hdd.zip: E:\UDATA\45410042) loads headless: Load Game, MI6 Training (.local/m2punch.txt). His
