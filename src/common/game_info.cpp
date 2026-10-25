@@ -98,7 +98,8 @@ const app::GameInfo app::kGame = {
     .squeeze_screen_programs = true,      // ultrawide: the HUD and menus are drawn by a pass-through program
     .pal_console = true,                  // a PAL disc's movies are _pal only: a PAL 60 Hz console for it
     .hide_file = HideFile,                // skip_intro
-    .mouse_look = true,                   // the mouse aims (the right stick)
+    .mouse_look = true,                   // the mouse aims
+    .mouse_direct = true,                 // straight into the game's look input (src/game/mouse.cpp)
     .default_keys = ShooterKeys,          // a shooter's keys and mouse buttons
     .texture_bound = eon::ButtonPictures, // modern_buttons
     // optional, after these: .achievements (conditions on guest memory), .same_code (other releases' xbe SHA-1s with

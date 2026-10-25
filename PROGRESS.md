@@ -29,6 +29,18 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-25 - mouse aiming straight into the game's look input
+
+The mouse played the right stick, through the game's stick processing. The game reads controller 1's sticks in
+0x1BC90 (via 0x5D210, the pad block 0x35B4A8, 0x90 a port): scaled to -1..1, squared when the response curve option
+0x2FD334 is on, pushed out on the diagonals, clamped; 0x1C330 maps them to actions (0x32E20 is the menus' direction
+bits). sdk aaef875: input::TakeMouse (the movement since the last call as a rate in deflections, sensitivity and
+invert applied) and GameInfo::mouse_direct (the runtime leaves the stick alone). src/game/mouse.cpp adds the rate to
+the right stick after 0x1BC90: no dead zone offset, no curve, no clamp, so the turn follows the mouse in proportion and
+a fast move turns past the stick's full rate. Headless (harness MOUSER, half a deflection): the camera turns as with
+the stick, half as far. Smoke OK. A camera-angle hunt by memory dumps (MI6 Training, the stick held) found bone
+rotations, not the camera; the input route is what is used.
+
 ### 2026-10-25 - the driving HUD on ultrawide
 
 Harry's 2.39:1 screenshot: the 3D widened, the "Missiles" text in proportion, the radar and the weapon picture
