@@ -28,6 +28,22 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-25 - ultrawide pop-in: on foot fixed, driving not found
+
+Harry: objects at the sides pop in, right at the 16:9 edge, on foot and driving. On foot: src/game/ultrawide.cpp
+widened the factor 0x5AA550 only while the views are drawn (0xF6660) and after 0xF4B60; every frustum the game culls
+with is built through 0x61080 with that factor as an argument (0xF5C70's planes, 0xF6170's visibility tests), so
+outside those the frustums stayed 16:9. Now src/game/fov.cpp's hook on 0x61080 widens the factor it is given unless it
+is the one ultrawide.cpp wrote (eon::WidenedFactor). Headless, the last mission (.local/harrysave3) at 2.39:1:
+24.61M draws by frame 8700 against 23.20M without (6% more drawn, the sides). Smoke OK.
+Driving: not found. With Harry's new save (.local/harrysave4: Mission Select, Right to the last mission, Serena St.
+Germaine, A, A; launch data kept as .local/launch_serena.bin) a vehicle mission runs headless (drive.sh with
+.local/drive_gas2.txt, throttle held). Its draw counts at frame 2700 are the same at 4:3, 16:9 and 2.39:1 (695537), so
+its culling does not follow the view the hook widens (0x2111E0's planes). Tried: the field of view getter 0x211180
+(only 0xEC080, not called in these missions) and keeping the widened +0x178/+0x17C (no change); both taken out. The
+camera setup 0xC9450 makes the view's field of view and aspect (widescreen: 0x35ED54 +0x4C) for 0x2111E0. Next: find
+what the driving scene culls with (a trace of the object loop), attempt 3.
+
 ### 2026-10-25 - Thermovision: the shrink pass's viewport
 
 Harry: the radar is fixed; Thermovision better but doubled (capture 204137: the shrunk view sits at x 82..320 of its

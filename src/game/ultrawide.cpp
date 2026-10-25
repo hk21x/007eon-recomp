@@ -6,7 +6,10 @@
 // it from its argument for 0x12F610's view. On a frame wider than 16:9 the factor is multiplied by the frame's width
 // over 16:9 while 0xF6660 draws (put back after: 0xF67A0 sets it before each call) and after 0xF4B60. The HUD and
 // menus, laid out for 16:9 and drawn through a pass-through program, are kept 16:9 by the renderers
-// (GameInfo::squeeze_screen_programs).
+// (GameInfo::squeeze_screen_programs). The factor also goes into every frustum the game culls with, outside those two:
+// 0x61080 builds each projection with it as an argument (0xF5C70's culling planes, 0xF6170's visibility tests), so
+// there a factor the game set and these did not widen is widened too (eon::WidenedFactor, from src/game/fov.cpp's
+// hook): else whatever lies past the 16:9 edges is culled and pops in as it comes inside.
 #include <algorithm>
 #include <cstring>
 
@@ -26,7 +29,12 @@ float Factor() {
     return f;
 }
 
-void SetFactor(float f) { std::memcpy(&kernel::G<uint32_t>(kWiden), &f, 4); }
+float g_written = 0;  // the widened factor these hooks last wrote
+
+void SetFactor(float f) {
+    std::memcpy(&kernel::G<uint32_t>(kWiden), &f, 4);
+    g_written = f;
+}
 
 // how much wider than 16:9 the frame is, 1 without the widescreen flag
 float Extra() {
@@ -41,6 +49,15 @@ float Extra() {
 }
 
 }  // namespace
+
+namespace eon {
+// a projection's widen factor (0x61080's argument): widened unless it is the one these hooks wrote
+float WidenedFactor(float f) {
+    float k = Extra();
+    if (k <= 1.0f + 1e-3f || (f == g_written && Factor() == g_written)) return f;
+    return f * k;
+}
+}  // namespace eon
 
 X86_EXTERN_FUNC(__imp__sub_000F6660);
 X86_FUNC(sub_000F6660) {
