@@ -29,6 +29,20 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-25 - driving at 60 frames a second (setting, experimental)
+
+driving.xbe is time based: it simulates in ticks of 1/60 s (0x3165F8 = 60, 0x3165FC = 1/60, the tick count 0x316600
+advanced in 0x11CE0 by each tick 0x7A6B0, found with a gdb watchpoint), run by the scheduler 0x15F4D0 for the vertical
+blanks counted at 0x35FBB4 (the blank callback 0x15CD30; the runtime's blank thread is real time). It presents every
+second blank (0x214CB0(2) from the device setup 0x14D290), and the scheduler waits for two blanks and runs exactly two
+ticks (0x15F5B3, last + 2) unless its object's +0x1C or +0x1E is set; then it runs a tick for each blank gone by and
+draws once after (the swap is under the task queue 0x15DA60 the scheduler runs last: gdb at SwapFrame). An earlier
+reading (forced interval 1 runs at double speed) compared frame numbers, not wall time: at the same wall time both
+runs draw the same scene. src/driving/sixty.cpp (setting driving_60fps, off by default; EON_DRIVING60 headless):
+0x214CB0 asked for 2 passes 1, and +0x1E is set while 0x15F4D0 runs. Headless the driving mission costs about 33 ms a
+frame on this machine (30 a second unpaced either way), so two ticks run per frame and the 60 is for Harry to see;
+the ticks keep to the blanks (3026 ticks at 3180 blanks after loading). Smoke OK.
+
 ### 2026-10-25 - every button picture modern
 
 src/common/buttons.cpp redraws the whole prompt atlas (recognised by all of its bytes, FNV-1a 09076852FE367BA4): it

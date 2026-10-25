@@ -9,16 +9,18 @@
 
 namespace eon {
 bool skip_intro = false;  // no logo movies at start (HideFile)
+bool driving_60fps = false;  // the driving missions at 60 frames a second (src/driving/sixty.cpp)
 extern bool modern_buttons;           // src/common/buttons.cpp
 bool ButtonPictures(uint32_t header);  // GameInfo::texture_bound
 }
 
 namespace {
-// EON_SKIP_INTRO=1 and EON_MODERN_BUTTONS=0 or 1 set those options without a settings file (the headless harness has
+// EON_SKIP_INTRO=1, EON_MODERN_BUTTONS and EON_DRIVING60 (0 or 1) set those options without a settings file (the headless harness has
 // none)
 void Init() {
     if (const char* e = std::getenv("EON_SKIP_INTRO"); e && *e == '1') eon::skip_intro = true;
     if (const char* e = std::getenv("EON_MODERN_BUTTONS")) eon::modern_buttons = *e == '1';
+    if (const char* e = std::getenv("EON_DRIVING60")) eon::driving_60fps = *e == '1';
     if (eon::skip_intro) LOGR("eon: the intro logos are skipped (skip_intro)");
 }
 
@@ -81,7 +83,9 @@ const app::GameInfo app::kGame = {
     .options = {{"skip_intro", &eon::skip_intro, nullptr, "Skip intro movies",
                  "The THX, MGM and EA logos; at the next start."},
                 {"modern_buttons", &eon::modern_buttons, nullptr, "Modern button pictures",
-                 "LB and RB in place of the White and Black buttons; at the next start."}},  // kept in the settings file
+                 "Today's Xbox pad in the prompts; at the next start."},
+                {"driving_60fps", &eon::driving_60fps, nullptr, "Driving missions at 60 frames a second (experimental)",
+                 "Same simulation, drawn after every tick instead of every second one; from the next driving mission."}},  // kept in the settings file
     .load = nullptr,                      // reads more from the settings file's toml::table
     .save = nullptr,                      // writes more into it
     .init = Init,                         // after the settings load, before the window and boot
