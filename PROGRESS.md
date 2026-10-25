@@ -28,6 +28,20 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-25 - Thermovision and the driving radar on Windows
+
+Harry (Windows, 3440x1440): Thermovision "bugged out" (the screen looked frozen, tinted blue) and the driving radar
+was stretched wide with its right side cut. Capture 180345: the effect renders the thermal view into the frame
+(83A00000), shrinks it into 8316CA00 (4925, 4926), blends it into the accumulation buffer 8316C000 (4927: blend
+CONSTANTALPHA / INVCONSTANTALPHA, 0x8003 0x8004) and colours that through a 256x1 ramp (4928). D3D12 and D3D11 mapped
+0x8003 to the blend factor, which scales colour by the blend colour's RGB (0 here), so nothing blended in and the
+buffer kept the scene from before: a still picture. The reference renderer had it right (alpha), so headless never
+showed it. sdk: BlendFactor() puts the blend colour's alpha in all four channels for constant alpha blends. The log
+ends with a normal close, so the "crash" was likely that still picture. Radar: its map is drawn through the HUD's
+matrix program with a rotation (it turns with the car); OrthoConstants wanted x from x alone, so it was not squeezed
+to 16:9 while its frame was. Now any 2D matrix (no depth, w 1, y flipped) counts. Smoke OK. Not seen headless (the
+radar needs a drive this launch data does not reach; Thermovision a level the saves here do not have): Harry's test.
+
 ### 2026-10-25 - 30 minute soak with today's changes
 
 scripts/soak.sh 30 (the level, Quit, New Game, Ground Zero, over and over) with the sharp 2D textures, the Quit Game
