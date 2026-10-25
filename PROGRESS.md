@@ -28,6 +28,24 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-25 - driving pop-in: what culls (stopped after 3 approaches)
+
+Driving at 2.39:1 pops objects in at the 16:9 edge. Headless with .local/launch_serena.bin (throttle,
+.local/drive_gas2.txt), the cumulative draws at frame 2100 (501636) were compared with one change at a time in the
+0x2111E0 hook (temporary, all taken out):
+- the field of view argument x1.5: 502549 (culling follows it)
+- the y scale (+0x54) after the build /1.5: 502352 (culling follows it)
+- the x scale (+0x40, already /k for the widening), the left/right factors +0x178/+0x17C (kept widened or not), the
+  top/bottom factors +0x180/+0x184, the stored field of view +0x130, a wider aspect argument with +0x54 put back:
+  no change; nor the camera object's field of view (0x81BEBE40, 0x14F0A0's view render)
+So the driving culling takes the projection's vertical scale and a width of its own (the 16:9 the game lays out:
+0xC9450 sets the aspect 0x2BED4C and a wider field of view when 0x35ED54 +0x4C is set), not the x scale the
+widening divides. Readers of +0x54 under a gdb watch: 0x2111E0, 0x2113D0 (copies the projection to the device through
+0x2191E0, to 0x36DA70, and view x projection to +0xC0), 0x211A40 (copies it out: from 0x145B30 in 0x14F0A0, 0xBEC70),
+0x210CE0 (an orthographic one, not this). Not culling: 0x148F80 (tiled screenshots), 0xE14D0 (fades small far objects
+by their size over the field of view), 0xEC080 (not called in these missions). Next: find which copy's y element the
+cull reads (watch 0x36DA84 and the 0x211A40 copies' +0x14), then give that test the widened width. Asked Harry.
+
 ### 2026-10-25 - ultrawide pop-in: on foot fixed, driving not found
 
 Harry: objects at the sides pop in, right at the 16:9 edge, on foot and driving. On foot: src/game/ultrawide.cpp
