@@ -31,7 +31,8 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
   and exe); launcher/game.json lists both. launcher_cli on Linux: both xbes written byte for byte, both exes
   installed, the build's tools left out. launcher.bat named the launcher GameLauncher.exe (GAME_SHORT); EoN now.
   release.bat's zip left out EoNDriving.exe.
-- docs/releases/v1.0.md written. A 30 minute soak running.
+- docs/releases/v1.0.md written. Soak 30 minutes: no traps, 32 scenes, frames to the end; RSS 106 -> 116 MB (+25 MB
+  an hour; the last soak was flat): small, to find later (today's hooks run per bind and per replayed draw).
 Next: Harry's launcher run on Windows from the .iso (the one path not testable here), then the release.
 
 ### 2026-10-26 - sniper scope: the right bar
