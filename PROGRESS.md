@@ -20,6 +20,18 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-26 - the ND1b stall, round two
+
+Harry's rerun with XBE_FILES_LOG=1: stalled again, about 92 s into ND1b, right after the game probed for
+actors\anims\nd1c.dat (an end sequence's animations, in misc.viv); no read stuck at a file's end, so that
+suspect is out. Headless with a probe: the game's tick (0x3766BC, bumped by thread 0x252950 on each XDK
+timeSetEvent callback 0x2529D0, re-armed at 0x265570) ran at 60 a second for 10 minutes of ND1b, and the waiting
+threads in the F3 stacks are where they always are between ticks: no evidence there. driving.xbe's main loop
+(0x160980) only ends when 0x3165F0 = 2, set by two state classes' destructors (0x78BB0, 0x78CD0, vtables 0x2BB81C
+and 0x2BB820); the stalled main thread was in another state's teardown (0x77640, vtable 0x2BBB78) drawing frames.
+The mission's end cannot be reached headless. sdk: F3 with XBE_CAPTURE_DIR writes the guest's memory
+(scripts/guestmem.py reads it), so the stalled state can be read here. Next: Harry's dump at the stall.
+
 ### 2026-10-26 - a driving mission stalls on its loading screen (diagnosis)
 
 Harry (Windows log, F3): New Orleans, ND1a then ND1b (launched from driving.xbe by driving.xbe); about 150 s into
