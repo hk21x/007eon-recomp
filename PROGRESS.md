@@ -20,6 +20,12 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-26 - sniper scope: the right bar
+
+Harry: the left of the scope now reaches the edge, the right not. Capture 173024: the right bar is x 464..641, a
+pixel past the frame, and the rule allowed half a pixel; now 2 (the radar's tiles are textured and reach well past).
+Smoke OK.
+
 ### 2026-10-26 - title screen pillarboxed on ultrawide
 
 Harry (capture 173130): "Press START" on ultrawide showed the menu movie stretched at the sides. Harry chose black
