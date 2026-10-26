@@ -20,6 +20,20 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-26 - achievements
+
+Harry's saves: the profile is GAME.DAT's image, at 0x652154 (load buffer, the whole file) and live at 0x31EC50 (from
++0x6C) in default.xbe, at 0x36CCC8 in driving.xbe's launch data (0x36CAD8). Mission k's record 0x24 bytes at profile
++ 0x84 + 0x24 k: found by gdb read watchpoints on Mission Select (the accessors 0x16A00..0x16E60, the results code
+0x96050) and a probe on 0x16A10 tying each mission shown to its record; byte 0 bit 0 completed, bits 1-3 the medal
+(1 bronze .. 4 platinum: Vertigo, The Ruined Tower and Death of an Agent bronze against their gold targets on
+screen, the rest gold), bits 4-5 the difficulty; +6 the Bond moments' mask. Mission names 0-13 from Mission Select,
+the rest by the game's text order (actdat1.viv). src/common/achievement_set.cpp: 39 achievements, 318 points, each on
+the change that earns it and guarded by +0x78 being non-zero last frame (the frame a save loads awards nothing); each
+exe checks its own copy. Headless with pokes: loading the save unlocked nothing; the poked records unlocked exactly the
+expected five (default.xbe) and two (driving.xbe). ACHIEVEMENTS.md has the set and the map. Next: Harry's play, and
+the sniper scope on ultrawide (an F3 capture asked for).
+
 ### 2026-10-26 - driving edge pop-in: a wider margin, from Harry's footage
 
 Harry: still popping with the 15% margin. His recording (13:20, 16:9 in a 3440 window), scanned for one-frame jumps

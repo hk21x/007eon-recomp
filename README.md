@@ -165,6 +165,9 @@ In the menus the mouse wheel scrolls, the left button selects and the right butt
   (`driving_60fps`, on by default).
 - **Quit Game** - The main menu has a Quit Game item under Options (where the console's unused Online item was), and
   the settings window (F1) has a Quit game button.
+- **Achievements** - 39 achievements (every mission, medals, 00 Agent, Bond moments) with pop-ups and a list in the
+  settings window, written in RetroAchievements' condition format; the set and its memory map are in
+  [ACHIEVEMENTS.md](ACHIEVEMENTS.md).
 - **Hide HUD** - Clears the HUD on foot and in the driving missions, for screenshots (`hide_hud`, F1 > Game; at
   once). The pause screens and menus stay.
 - **Skip Intro Movies** - `skip_intro = true` goes past the THX, MGM and EA logos at start.

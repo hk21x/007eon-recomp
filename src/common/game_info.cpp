@@ -8,6 +8,7 @@
 #endif
 
 #include "app/app.h"
+#include "core/achievements.h"
 #include "core/input.h"
 #include "core/log.h"
 
@@ -20,6 +21,7 @@ uint32_t fov_percent = 100;  // the on-foot views' field of view, percent of the
 extern bool modern_buttons;           // src/common/buttons.cpp
 bool ButtonPictures(uint32_t header, uint32_t palette);  // GameInfo::texture_bound
 void MenuMouse(int port, input::Pad& p);                 // GameInfo::pad: the mouse in the menus
+std::vector<achievements::Def> AchievementSet();         // src/common/achievement_set.cpp
 }
 
 namespace {
@@ -32,6 +34,9 @@ void Init() {
     if (const char* e = std::getenv("EON_HIDE_HUD"); e && *e == '1') eon::hide_hud = true;
     if (const char* e = std::getenv("EON_FOV")) eon::fov_percent = uint32_t(std::atoi(e));
     if (eon::skip_intro) LOGR("eon: the intro logos are skipped (skip_intro)");
+    // every achievement's condition parses (a typo would leave it never met)
+    for (const achievements::Def& d : app::kGame.achievements)
+        if (std::string e = achievements::Check(d.condition); !e.empty()) LOGE("eon: achievement %s: %s", d.id, e.c_str());
 }
 
 // skip_intro: the boot logos (THX, MGM, the EA logo and its language versions eagdut, eagita, eagswe) reported
@@ -183,6 +188,7 @@ const app::GameInfo app::kGame = {
     .ui = nullptr,                        // ImGui drawing each frame
     .pad = eon::MenuMouse,                // changes a polled pad: the mouse in the menus
     .rumble = nullptr,                    // changes a rumble before it is set
+    .achievements = eon::AchievementSet(),  // conditions on the profile, checked each frame (ACHIEVEMENTS.md)
     .squeeze_screen_programs = true,      // ultrawide: the HUD and menus are drawn by a pass-through program
     .sharpen_2d = true,                   // text and HUD pictures enlarged sharp
     .pal_console = true,                  // a PAL disc's movies are _pal only: a PAL 60 Hz console for it
@@ -192,6 +198,6 @@ const app::GameInfo app::kGame = {
     .mouse_direct = true,                 // straight into the game's look input (src/game/mouse.cpp)
     .default_keys = Keys,                 // a shooter's keys and mouse buttons on foot, a racing game's driving
     .texture_bound = eon::ButtonPictures, // modern_buttons
-    // optional, after these: .achievements (conditions on guest memory), .same_code (other releases' xbe SHA-1s with
-    // the same code), .wheel (what a steering wheel's force feedback follows)
+    // optional, after these: .same_code (other releases' xbe SHA-1s with the same code), .wheel (what a steering
+    // wheel's force feedback follows)
 };
