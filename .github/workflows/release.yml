@@ -16,7 +16,7 @@ permissions:
 # launcher/game.json's "short" and "title"
 env:
   GAME_SHORT: EoN
-  GAME_TITLE: 007: Everything or Nothing
+  GAME_TITLE: "007: Everything or Nothing"
 
 jobs:
   launcher:
