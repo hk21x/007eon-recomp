@@ -20,6 +20,20 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-26 - hide_hud
+
+Setting hide_hud (EON_HIDE_HUD=1 headless). Driving: the game's own "hud" option (driving.xbe's profile option
+"hud", read by 0x15D070 into the byte 0x2FA279) gates the frame's HUD pass 0xDFCB0 (the radar and meters 0x1F2440
+under it) and the objective and hint messages 0x1EC000 and 0x1EC1E0; src/driving/hud.cpp clears it while those run.
+Headless Serena drive, frame 1800: the radar and the health bar gone, the scene the same. On foot default.xbe has no
+such option: gdb on the harness (a temporary trap on pass-through program draws past 30M draws) gave the 2D's stacks,
+all through 0x23210 -> 0xC15B0 -> 0xC6C20 -> 0xC15D0, a UI manager's draw: three layers (on bytes +0x100..+0x102,
+element lists at +0x18). In the training level the HUD manager (vtable 0x2C3F80) has 11 elements in layer 0 (the
+ammo box) and the tutorial text in another; the pause screen is another manager's, and the game switches the HUD's
+layers off itself while paused. src/game/hud.cpp switches that manager's three layers off while it draws. Headless:
+the level without HUD or tutorial text; the pause screen, main menu and Single Player screens unchanged. Not checked:
+the cutscenes' subtitles (if they are the HUD manager's they go too). Smoke OK, wincheck OK.
+
 ### 2026-10-26 - keyboard layout for the driving missions
 
 The driving exe had the on-foot keys (fire on the left mouse button was the gas, RT). The game's own driving map

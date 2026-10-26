@@ -165,6 +165,8 @@ In the menus the mouse wheel scrolls, the left button selects and the right butt
   (`driving_60fps`, on by default).
 - **Quit Game** - The main menu has a Quit Game item under Options (where the console's unused Online item was), and
   the settings window (F1) has a Quit game button.
+- **Hide HUD** - Clears the HUD on foot and in the driving missions, for screenshots (`hide_hud`, F1 > Game; at
+  once). The pause screens and menus stay.
 - **Skip Intro Movies** - `skip_intro = true` goes past the THX, MGM and EA logos at start.
 - **Cutscenes** - A PAL disc's cutscenes play (the game runs as on a PAL console at 60 Hz).
 - **Saves** - Kept on an emulated hard disk beside the exe.

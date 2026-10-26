@@ -15,6 +15,7 @@ namespace eon {
 extern const bool kDriving;  // driving.xbe's exe (src/driving/hooks.cpp), default.xbe's false (src/game/hooks.cpp)
 bool skip_intro = false;  // no logo movies at start (HideFile)
 bool driving_60fps = true;   // the driving missions at 60 frames a second (src/driving/sixty.cpp)
+bool hide_hud = false;       // no HUD, for screenshots (src/driving/hud.cpp, src/game/hud.cpp)
 uint32_t fov_percent = 100;  // the on-foot views' field of view, percent of the game's (src/game/fov.cpp)
 extern bool modern_buttons;           // src/common/buttons.cpp
 bool ButtonPictures(uint32_t header, uint32_t palette);  // GameInfo::texture_bound
@@ -22,12 +23,13 @@ void MenuMouse(int port, input::Pad& p);                 // GameInfo::pad: the m
 }
 
 namespace {
-// EON_SKIP_INTRO=1, EON_MODERN_BUTTONS and EON_DRIVING60 (0 or 1) and EON_FOV (percent) set those options without a
+// EON_SKIP_INTRO=1, EON_HIDE_HUD=1, EON_MODERN_BUTTONS and EON_DRIVING60 (0 or 1) and EON_FOV (percent) set those options without a
 // settings file (the headless harness has none)
 void Init() {
     if (const char* e = std::getenv("EON_SKIP_INTRO"); e && *e == '1') eon::skip_intro = true;
     if (const char* e = std::getenv("EON_MODERN_BUTTONS")) eon::modern_buttons = *e == '1';
     if (const char* e = std::getenv("EON_DRIVING60")) eon::driving_60fps = *e == '1';
+    if (const char* e = std::getenv("EON_HIDE_HUD"); e && *e == '1') eon::hide_hud = true;
     if (const char* e = std::getenv("EON_FOV")) eon::fov_percent = uint32_t(std::atoi(e));
     if (eon::skip_intro) LOGR("eon: the intro logos are skipped (skip_intro)");
 }
@@ -169,6 +171,7 @@ const app::GameInfo app::kGame = {
                  "Today's Xbox pad in the prompts (the keys and mouse while playing on the keyboard either way)."},
                 {"fov_percent", nullptr, &eon::fov_percent, "Field of view (%)",
                  "On foot, 50 to 150; 100 is the game's. Cutscenes widen too."},
+                {"hide_hud", &eon::hide_hud, nullptr, "Hide the HUD", "For screenshots; at once, on foot and driving."},
                 {"driving_60fps", &eon::driving_60fps, nullptr, "Driving missions at 60 frames a second",
                  "Same simulation, drawn after every tick instead of every second one; from the next driving mission."}},  // kept in the settings file
     .load = LoadKeys,                     // the driving exe's keys apart (DrivingKeys)
