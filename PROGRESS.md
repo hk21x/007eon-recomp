@@ -9,8 +9,8 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 - Done since: widescreen and ultrawide on foot and driving (culling widened: no side pop-in), the driving radar and
   Thermovision, mouse aim and menus, keyboard prompts, modern buttons, sharp 2D, FOV, 60 FPS driving, Quit Game,
   skip intro, the driving 6 channel mix (speech, car, music), the shader cache (no repeat stalls)
-- Launcher end to end on Windows from an .iso: confirmed by Harry (2026-10-26). Untested: the D3D11 renderer, NTSC
-  discs
+- Launcher end to end on Windows from an .iso: confirmed by Harry (2026-10-26). Renderers: Direct3D 12 and 11 (both
+  supported in the docs). Untested: NTSC discs
 - XDK: 5659, D3D8 QFE 4. default.xbe 84 of 250 functions by signature, 50 more by hand in config/eon.toml; driving.xbe
   in config/driving.toml (the shared QFE 4 layout in config/d3d8_qfe4.toml)
 - Push buffers: both kinds, drawn (6bded69): recorded and run at once, and recorded ones replayed with fixups

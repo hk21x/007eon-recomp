@@ -5,7 +5,7 @@
 An unofficial native PC port of the original Xbox version of 007: Everything or Nothing, with extended graphics
 options and other enhancements. The game's own x86 code is statically recompiled into Windows executables with the
 [Xbox XBE Recomp](https://github.com/TGP482/XboxXBE-Recomp) tool; the Xbox's graphics, sound and system libraries are
-reimplemented for Windows (Direct3D 12, XAudio2, SDL). It is not an emulator.
+reimplemented for Windows (Direct3D 12 or 11, XAudio2, SDL). It is not an emulator.
 
 > [!NOTE]
 > This project does not include any game assets. You must provide the files from your own legally acquired copy of
@@ -35,7 +35,7 @@ never downloaded, only the tools and this project's source.
 and no admin rights needed.
 
 **You need:**
-- Windows 10 or 11, 64 bit, and a GPU with Direct3D 12.
+- Windows 10 or 11, 64 bit, and a GPU with Direct3D 12 or Direct3D 11.
 - Your own copy of the game (PAL): an `.iso` image of your disc, or a folder with the disc's files.
 - About 15 GB free, and an internet connection for the build tools.
 
@@ -198,7 +198,7 @@ and mouse, sharp 2D and 60 FPS driving are in. Progress is in [PROGRESS.md](PROG
 ## System Requirements
 
 - **OS** - Windows 10 or 11, 64 bit
-- **GPU** - with support for Direct3D 12
+- **GPU** - with support for Direct3D 12 or Direct3D 11 (F1, Graphics, Renderer; applies at the next start)
 
 ## Credits
 
