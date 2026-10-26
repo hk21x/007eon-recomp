@@ -3,14 +3,14 @@
 Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Status
-- Milestone: release candidate (2026-10-26). Windows (Harry, D3D12, RX 7900 XT, 3440x1440): plays on foot and in the
+- Milestone: released 1.0.0 (2026-10-26, tag v1.0.0; the launcher built and published by .github/workflows/release.yml). Windows (Harry, D3D12, RX 7900 XT, 3440x1440): plays on foot and in the
   driving missions up to the last mission, with saves. The open issues of 2026-10-24 (the dark slab, the blue figures,
   the carousel's band, the loading screen's strip) are fixed (Harry, 2026-10-26).
 - Done since: widescreen and ultrawide on foot and driving (culling widened: no side pop-in), the driving radar and
   Thermovision, mouse aim and menus, keyboard prompts, modern buttons, sharp 2D, FOV, 60 FPS driving, Quit Game,
   skip intro, the driving 6 channel mix (speech, car, music), the shader cache (no repeat stalls)
-- Before release: the launcher end to end on Windows (both xbes, from an .iso); docs/releases/v1.0.md; untested: the
-  D3D11 renderer, NTSC discs
+- Launcher end to end on Windows from an .iso: confirmed by Harry (2026-10-26). Untested: the D3D11 renderer, NTSC
+  discs
 - XDK: 5659, D3D8 QFE 4. default.xbe 84 of 250 functions by signature, 50 more by hand in config/eon.toml; driving.xbe
   in config/driving.toml (the shared QFE 4 layout in config/d3d8_qfe4.toml)
 - Push buffers: both kinds, drawn (6bded69): recorded and run at once, and recorded ones replayed with fixups
@@ -19,6 +19,14 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 - Smoke: scripts/smoke.sh: SMOKE OK (2026-10-26). Soak: 30 minutes, no traps, memory flat
 
 ## Log
+
+### 2026-10-26 - release 1.0.0
+
+Harry: the launcher's game boots from the .iso and his save works once it is at play\hdd (it had been copied a level
+off). Notes renamed docs/releases/v1.0.0.md for the tag (the workflow reads docs/releases/<tag>.md), with where an
+own build's saves go. Tag v1.0.0 on main; the game's SDK is the fork's eon branch (1c5282c), public.
+Next: merge eon into the fork's main after EoN, PGR2 and PGR1 smoke and PGR1's frame check; the soak's memory growth
+(+25 MB an hour); achievement names after Mardi Gras Mayhem.
 
 ### 2026-10-26 - the launcher's game crashed at boot (from an .iso)
 
