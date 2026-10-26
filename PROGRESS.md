@@ -38,7 +38,7 @@ kept nothing between runs, so every session stalled at the same places. Now the 
 shadercache.bin beside the exe (tested on Linux with the D3D parts stubbed: written, read back, a cut short tail
 trimmed, a foreign file started again); a run finds them and compiles only what it has never seen. The frames lines
 now end with how many shaders were compiled in those 10 s, so a stall left with 0 has another cause. Smoke OK.
-Next: Harry plays the same mission twice; the second run's frames lines should be quieter, with 0 compiled.
+Harry, Windows (same day): "Much better".
 
 ### 2026-10-26 - driving audio: speech and the 6 channel mix
 
