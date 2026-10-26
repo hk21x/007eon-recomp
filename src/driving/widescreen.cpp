@@ -7,6 +7,13 @@
 // from the half angle's tangent times +0x178 and +0x17C, top and bottom from +0x180 and +0x184 over the aspect. Widened
 // by k (the frame's aspect over 4:3): the x scale is divided by k after, and +0x178 and +0x17C are k times larger
 // while it runs (put back after), so the sides show more and are not culled; the height is as the game made it.
+// What the scene draws is chosen apart from that: the visibility pass 0x14C460 walks the scene's quadtree (0x34360)
+// testing each node's sphere against the frustum at 0x32A8C0 (0x147300: view matrix +0x10, near +0xB0, far +0xB4,
+// side planes as (x, z) normals at +0x70/+0x78 and +0x80/+0x88, top and bottom at +0x94.. and +0xA4..), whose sides
+// are the game's 16:9 (with the widescreen flag 0x35ED54 +0x4C, else 4:3) whatever the frame: far terrain chunks past
+// those edges popped in as they came inside. At the pass's start its sides are widened by the frame's aspect over the
+// game's, in tangent (a plane's x over z), once for each frustum the game writes.
+#include <cmath>
 #include <cstring>
 
 #include "app/app.h"
@@ -40,4 +47,34 @@ X86_FUNC(sub_002111E0) {
         said = true;
         LOGR("eon: driving views widened %.3f times for the %.3f:1 frame", k, app::FrameAspect());
     }
+}
+
+// the visibility pass (once a frame): the culling frustum's sides as wide as the frame
+X86_EXTERN_FUNC(__imp__sub_0014C460);
+X86_FUNC(sub_0014C460) {
+    constexpr uint32_t kFrustum = 0x32A8C0, kLeft = kFrustum + 0x70, kRight = kFrustum + 0x80;
+    constexpr uint32_t kGame = 0x35ED54, kWideFlag = 0x4C;
+    static float written[4] = {};  // left x, z, right x, z as last widened
+    if (app::Widescreen()) {
+        float game = kernel::G<uint8_t>(kernel::R32(kGame) + kWideFlag) ? 16.0f / 9.0f : 4.0f / 3.0f;
+        float r = app::FrameAspect() / game;
+        float now[4] = {GetF(kLeft), GetF(kLeft + 8), GetF(kRight), GetF(kRight + 8)};
+        if (r > 1.0f + 1e-2f && std::memcmp(now, written, sizeof now) != 0 && now[1] > 0) {
+            // a side plane (x, z) keeps x / z = z-ward tangent: that tangent r times larger, the normal unit length
+            float t = now[1] / std::fabs(now[0]) * r, a = 1 / std::sqrt(1 + t * t), c = t * a;
+            float out[4] = {std::copysign(a, now[0]), c, std::copysign(a, now[2]), c};
+            SetF(kLeft, out[0]);
+            SetF(kLeft + 8, out[1]);
+            SetF(kRight, out[2]);
+            SetF(kRight + 8, out[3]);
+            std::memcpy(written, out, sizeof out);
+            static bool said = false;
+            if (!said) {
+                said = true;
+                LOGR("eon: driving culling %.3f times wider (the game's %.3f:1 for the %.3f:1 frame)", r, game,
+                     app::FrameAspect());
+            }
+        }
+    }
+    __imp__sub_0014C460(ctx, base);
 }

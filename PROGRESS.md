@@ -28,6 +28,18 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-26 - driving pop-in fixed: the visibility pass's frustum
+
+Found by following the draws back: the world's draw list (0x14E9D0, entries queued by 0x2C680 with callback
+0x2C2B0) is filled by the visibility pass 0x14C460, which walks the scene's quadtree (0x3E830 -> 0x34360) testing
+each node's sphere with 0x147300 against the frustum at 0x32A8C0. Logged there: side planes (x, z) (+-0.7505,
+0.6609), top and bottom (+-0.5749, 0.8182), near 0.17, far 225..300, the same at 16:9 and 2.39:1. The game makes it
+for its 16:9 (widescreen flag 0x35ED54 +0x4C), so what lay past the 16:9 edges was never drawn until it came inside.
+src/driving/widescreen.cpp widens the two side planes at the pass's start by the frame's aspect over the game's, in
+tangent, once for each frustum the game writes (no compounding). Headless, Serena St. Germaine with throttle held:
+722233 draws by frame 2700 at 2.39:1 against 695656 at 16:9 (before: the same at every aspect). The frame as before;
+smoke OK.
+
 ### 2026-10-26 - driving pop-in: the terrain chunks, stopped
 
 Continued from 2026-10-25 (Harry: carry on). More measured, all temporary and taken out:
