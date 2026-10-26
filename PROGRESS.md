@@ -28,6 +28,20 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-26 - driving audio: speech and the 6 channel mix
+
+Harry: in the driving missions speech never plays (the music ducks for it) and the car and other sounds pop in and
+out. Headless with XBE_DSOUND_LOG=2: no streams at all in driving; one looping 16 bit PCM buffer B00657B0 of 6
+channels (made at 0x25782B, no mix bins) the game mixes its music and speech into itself, beside a pool of 181 ADPCM
+voices it points at each sound with SetBufferData. The SDK's mixer took a voice's first two channels only (Levels
+gave gains for channels 0 and 1, the render read those two), so the centre (speech), LFE and back pair (the car and
+ambience as they pan behind) were dropped. Now up to 6 channels, each its voice's run of slots; with no bins a
+multichannel voice plays front left, front right, centre, LFE, back left, back right (LFE left out as before), the
+centre and back pair 3 dB down into left and right. Headless, the same drive: identical for the first 20 s (stereo),
+from the drive on the added channels as loud as the mix (steady, about 700 Hz: the car); clipped samples 214 before,
+279 after over 70 s. Also: XBE_DSOUND_LOG's summaries were info level, compiled out of release builds, so Harry's
+Windows log showed none; now release level. Smoke OK. Next: Harry's ear on Windows.
+
 ### 2026-10-26 - driving pop-in fixed: the visibility pass's frustum
 
 Found by following the draws back: the world's draw list (0x14E9D0, entries queued by 0x2C680 with callback
