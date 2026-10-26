@@ -20,6 +20,15 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-26 - driving pop-in at the screen's edges: a culling margin
+
+Harry: buildings and lights pop at the screen's edges as the car turns, at any speed, at 16:9 and (less) at 4:3;
+not with driving_60fps off either. The culling frustum at 0x32A8C0 (logged headless at 16:9: sides (+-0.7505, 0,
+0.6609), 82.7 degrees across (+0xBC), top and bottom (0, +-0.5749, 0.8182), near 0.17, far 250) has its sides on
+the frame's edges: on a TV the overscan hid them. src/driving/widescreen.cpp now widens the side planes at every
+aspect by 15% in tangent on top of the frame's widening (it was ultrawide only). Headless Serena at 16:9: 706497
+draws by frame 2700 against 695656, the frame as before; smoke OK. Next: Harry's drive.
+
 ### 2026-10-26 - ND1b finishes: disc reads at the console's speed
 
 Harry, Windows: with XBE_DISC_RATE=6 ND1b plays to its end (no stall). Now the default for EoN

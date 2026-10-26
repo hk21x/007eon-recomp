@@ -12,7 +12,9 @@
 // side planes as (x, z) normals at +0x70/+0x78 and +0x80/+0x88, top and bottom at +0x94.. and +0xA4..), whose sides
 // are the game's 16:9 (with the widescreen flag 0x35ED54 +0x4C, else 4:3) whatever the frame: far terrain chunks past
 // those edges popped in as they came inside. At the pass's start its sides are widened by the frame's aspect over the
-// game's, in tangent (a plane's x over z), once for each frustum the game writes.
+// game's, in tangent (a plane's x over z), once for each frustum the game writes, and 15% more at every aspect: the
+// console's edges were hidden by a TV's overscan.
+#include <algorithm>
 #include <cmath>
 #include <cstring>
 
@@ -54,12 +56,15 @@ X86_EXTERN_FUNC(__imp__sub_0014C460);
 X86_FUNC(sub_0014C460) {
     constexpr uint32_t kFrustum = 0x32A8C0, kLeft = kFrustum + 0x70, kRight = kFrustum + 0x80;
     constexpr uint32_t kGame = 0x35ED54, kWideFlag = 0x4C;
+    // the console's sides lie on the frame's edges, which a TV's overscan hides: shown whole here, buildings and
+    // lights popped in at the edges as the car turned (at every aspect); culled with a margin past them
+    constexpr float kMargin = 1.15f;
     static float written[4] = {};  // left x, z, right x, z as last widened
-    if (app::Widescreen()) {
+    {
         float game = kernel::G<uint8_t>(kernel::R32(kGame) + kWideFlag) ? 16.0f / 9.0f : 4.0f / 3.0f;
-        float r = app::FrameAspect() / game;
+        float r = (app::Widescreen() ? std::max(app::FrameAspect() / game, 1.0f) : 1.0f) * kMargin;
         float now[4] = {GetF(kLeft), GetF(kLeft + 8), GetF(kRight), GetF(kRight + 8)};
-        if (r > 1.0f + 1e-2f && std::memcmp(now, written, sizeof now) != 0 && now[1] > 0) {
+        if (std::memcmp(now, written, sizeof now) != 0 && now[1] > 0) {
             // a side plane (x, z) keeps x / z = z-ward tangent: that tangent r times larger, the normal unit length
             float t = now[1] / std::fabs(now[0]) * r, a = 1 / std::sqrt(1 + t * t), c = t * a;
             float out[4] = {std::copysign(a, now[0]), c, std::copysign(a, now[2]), c};
@@ -71,8 +76,8 @@ X86_FUNC(sub_0014C460) {
             static bool said = false;
             if (!said) {
                 said = true;
-                LOGR("eon: driving culling %.3f times wider (the game's %.3f:1 for the %.3f:1 frame)", r, game,
-                     app::FrameAspect());
+                LOGR("eon: driving culling %.3f times wider (the game's %.3f:1 for the %.3f:1 frame, a %.0f%% margin)",
+                     r, game, app::FrameAspect(), (kMargin - 1) * 100);
             }
         }
     }
