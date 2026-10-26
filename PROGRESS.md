@@ -20,6 +20,17 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-26 - the ND1b stall: disc timing as the next test
+
+Why the first fix crashed: the stream's packet splitter (0x24A420, on a read's completion) tags packets with their
+reader but leaves them out of its count when their file slot is being cancelled (state 4); the cancel (0x24B1D0)
+deals with them. Live uncounted packets are part of that path, and releasing them from outside left the stream
+handing the loader the wrong data. The async layer copes with reads already done when their callback is registered
+(0x24C910 calls it at once), so fast completion as such is handled; but the stall comes at the same place in every
+run, and here disc reads complete at once where the console's drive takes milliseconds, keeping the 500 KB ring
+full whenever the loader cancels and seeks. sdk: XBE_DISC_RATE=6 paces disc reads at 6 MB a second (off by
+default). Headless ND1b with it: loads and drives as before; smoke OK. Next: Harry's ND1b with XBE_DISC_RATE=6.
+
 ### 2026-10-26 - the ND1b stall: the release fix reverted
 
 Harry's run with src/driving/stream_fix.cpp: at the same point it released 3 packets of reader 1, and the main
