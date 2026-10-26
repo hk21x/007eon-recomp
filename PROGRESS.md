@@ -20,6 +20,23 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-26 - the ND1b stall: abandoned stream packets (fix, untested on Windows)
+
+Harry's guest memory dumps at the stall (F3 with XBE_CAPTURE_DIR), read with sdk/scripts/guestmem.py: the main
+thread polls compartment 0x8205AE20 (vtable 0x2BA4D8, its loaded check 0x3EE40) whose 370 assets (vtable 0x2BA150,
+0x44290) stop at the 181st: its resource entry (0x82DCC8C0, id 2588) has no buffer, its request 0x5DE (0x7000
+bytes) pending at the asset manager's SushiLoader (0x82053290, the stream of data\track\stream\nd1_map.str,
+blocks 0x37F5..0x3802, at 0x37FF). The loader step (0x46500, 48 times a tick from the scheduler 0x46C80) takes
+packets with 0x24AC20 and gets none: its reader (0x82BCF864) has 0 bytes to read. The stream (STRM 0x82BCF480) is
+paused for room (+0x48 = 2): its 500 KB ring is full, and at its read pointer sit two packets of that reader never
+released (blocks 36d0 and 36df, an earlier request's first and last), behind the reader's next packet; the ring
+cannot move past them. A reader never goes back, so src/driving/stream_fix.cpp (hook on 0x24AC20): when a reader
+gets nothing while its stream is paused for room, its packets between the read pointer and its next one are
+released with the game's own release (0x24B140, which resumes the reads). Checked against both dumps offline (finds
+exactly those two and stops at the reader's next); headless ND1b 150 s releases nothing, smoke OK. How they were
+abandoned is not known (the port's disc reads complete at once, so the ring is always full: likely a path the
+console's slower reads rarely took). Next: Harry's ND1b to its end.
+
 ### 2026-10-26 - the ND1b stall, round two
 
 Harry's rerun with XBE_FILES_LOG=1: stalled again, about 92 s into ND1b, right after the game probed for
