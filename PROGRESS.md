@@ -20,6 +20,20 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-26 - a driving mission stalls on its loading screen (diagnosis)
+
+Harry (Windows log, F3): New Orleans, ND1a then ND1b (launched from driving.xbe by driving.xbe); about 150 s into
+ND1b the screen went black with the loading bar, sound kept going, frames kept coming (30 a second) and no relaunch
+followed. driving.xbe's main (0x162280) launches the next image (0x207420: XLaunchNewImage of 0x2D3B78[0 default,
+1 driving]) only after the game loop (0x160980, 0x160CA0, 0x15FD10) returns, so the stall is inside the game loop,
+most likely a streamed load: the F3 stacks show the main thread drawing and every other thread idle in its wait
+(0x264167 from 0x251FBF: the async file system's workers 0x2496F0, 0x23 of them). Headless: ND1b starts from
+.local/launch_nd1b.bin (launch_serena.bin with ND1b at 0x428) and streams from driving\streams.viv and nd1bbr.mad;
+the end of the mission cannot be reached by a pad script. Suspect: disc reads past a file's end complete with 0
+bytes and success (17f1ac0, for Forza), where the console gives STATUS_END_OF_FILE; a loader retrying would wait
+forever. sdk: such reads 100 times in a row are logged, and XBE_FILES_LOG=1's short reads reach release logs.
+Next: Harry's rerun of ND1b with XBE_FILES_LOG=1 (and F3 at the stall).
+
 ### 2026-10-26 - hide_hud
 
 Setting hide_hud (EON_HIDE_HUD=1 headless). Driving: the game's own "hud" option (driving.xbe's profile option
