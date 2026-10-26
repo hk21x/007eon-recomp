@@ -20,6 +20,12 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-26 - ND1b finishes: disc reads at the console's speed
+
+Harry, Windows: with XBE_DISC_RATE=6 ND1b plays to its end (no stall). Now the default for EoN
+(GameInfo::disc_rate = 6, sdk; XBE_DISC_RATE still overrides, 0 for instant reads). Smoke OK (4 minutes, as
+before). The pop-in in driving remains (with driving_60fps off too). Next: the pop-in.
+
 ### 2026-10-26 - the ND1b stall: disc timing as the next test
 
 Why the first fix crashed: the stream's packet splitter (0x24A420, on a read's completion) tags packets with their

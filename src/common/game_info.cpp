@@ -186,6 +186,7 @@ const app::GameInfo app::kGame = {
     .squeeze_screen_programs = true,      // ultrawide: the HUD and menus are drawn by a pass-through program
     .sharpen_2d = true,                   // text and HUD pictures enlarged sharp
     .pal_console = true,                  // a PAL disc's movies are _pal only: a PAL 60 Hz console for it
+    .disc_rate = 6,                       // disc reads at the console drive's speed: instant ones stall ND1b's streaming
     .hide_file = HideFile,                // skip_intro
     .mouse_look = true,                   // the mouse aims
     .mouse_direct = true,                 // straight into the game's look input (src/game/mouse.cpp)
