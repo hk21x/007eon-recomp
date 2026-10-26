@@ -24,7 +24,10 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 Harry: the launcher's game boots from the .iso and his save works once it is at play\hdd (it had been copied a level
 off). Notes renamed docs/releases/v1.0.0.md for the tag (the workflow reads docs/releases/<tag>.md), with where an
-own build's saves go. Tag v1.0.0 on main; the game's SDK is the fork's eon branch (1c5282c), public.
+own build's saves go; the README and notes say Direct3D 11 is supported too. The release workflow had never run:
+GAME_TITLE's colon (007: ...) made it invalid YAML; quoted. v1.0.0 (first put on c672d47, which published nothing)
+re-tagged on c632d9a with Harry's agreement; the workflow published the release with EoNLauncher.exe. The game's SDK
+is the fork's eon branch (1c5282c), public. The SDK's game template leaves GAME_TITLE unquoted too (to quote).
 Next: merge eon into the fork's main after EoN, PGR2 and PGR1 smoke and PGR1's frame check; the soak's memory growth
 (+25 MB an hour); achievement names after Mardi Gras Mayhem.
 
