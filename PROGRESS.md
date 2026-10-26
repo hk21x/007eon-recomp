@@ -20,6 +20,17 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-26 - the launcher's game crashed at boot (from an .iso)
+
+Harry's first launcher build crashed at 0.22 s: a null read at guest 4 in FUN_000145d0 (via 0x1F1BE), the object
+bond3.flb should have made (FUN_00014550 from FUN_0001ebf0) still null. Reproduced headless with an .iso made from
+assets (extract-xiso -c; GAME=.local/iso/eon.iso): the game opened D:\ and then looked only for loose files
+(d:\ASSETS\BOND3.FLB, missing) instead of opening d:\ACTION\*.VIV as it does from a folder. Cause (sdk): a handle
+opened on the mounted disc image did not mark itself cdrom, so the volume query on D:\ answered as a hard disk's,
+and EoN takes a hard disk volume for a development layout of loose files. Fix: disc image handles are cdrom. Headless
+from the .iso: the four VIVs opened, frames to the end of a 30 s run, no exception. Smoke (folder): SMOKE OK.
+Next: Harry rebuilds through the launcher (the SDK changed, so Build again) and plays from the .iso.
+
 ### 2026-10-26 - release checks
 
 - Repo: no game files tracked or in history (EoN and the SDK); .local-tools.log (a Linux build log committed by
