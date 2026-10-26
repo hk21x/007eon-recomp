@@ -28,6 +28,18 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-26 - frame stalls: a shader cache on disk
+
+Harry's Windows logs: past loading, driving has 1 to 5 frames in each 10 s over 25 ms, the longest 50 to 330 ms (the
+menus too). Headless, AUDIT=1 over the Serena drive writes each shader when a draw first needs it: 36 at the drive's
+start, then new ones 1.6, 4.4, 5, 9, 16 and 17 s in. The D3D12 and D3D11 backends compile each with D3DCompile the
+first time (DXC on Linux takes 30 to 60 ms for these vertex shaders; often a vertex and pixel shader together) and
+kept nothing between runs, so every session stalled at the same places. Now the compiled blobs are kept in
+shadercache.bin beside the exe (tested on Linux with the D3D parts stubbed: written, read back, a cut short tail
+trimmed, a foreign file started again); a run finds them and compiles only what it has never seen. The frames lines
+now end with how many shaders were compiled in those 10 s, so a stall left with 0 has another cause. Smoke OK.
+Next: Harry plays the same mission twice; the second run's frames lines should be quieter, with 0 compiled.
+
 ### 2026-10-26 - driving audio: speech and the 6 channel mix
 
 Harry: in the driving missions speech never plays (the music ducks for it) and the car and other sounds pop in and
