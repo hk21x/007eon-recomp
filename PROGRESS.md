@@ -28,6 +28,12 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-26 - README for the release
+
+README rewritten in PGR2's layout with Harry's banner (docs/img/eon-pc-port.webp): supported release (both xbe
+SHA-1s), the launcher and building from source, the keyboard and mouse table (from ShooterKeys), features up to date
+(widescreen driving without side pop-in, the driving mix, the shader cache), status and troubleshooting.
+
 ### 2026-10-26 - SDK published to the fork's main
 
 The eon branch (the shader cache, the 6 channel mix, the ultrawide DrawSpan and Thermovision viewport, texture
