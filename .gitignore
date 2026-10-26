@@ -26,6 +26,7 @@ settings.toml
 
 # Local temporary folder
 .local
+.local-*.log
 
 # harness frame captures (game imagery)
 /captures/
