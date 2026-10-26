@@ -20,6 +20,13 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-26 - the ND1b stall: the release fix reverted
+
+Harry's run with src/driving/stream_fix.cpp: at the same point it released 3 packets of reader 1, and the main
+thread faulted at once in the asset pump (0x442BA, a read at 34AEEF54) and a second thread too: the packets were
+still referenced, not abandoned. Reverted (the stall is back rather than a crash). Also from Harry: the pop-in
+happens with driving_60fps off as well. Next: what keeps packets live behind a reader (0x321F0, 0x32120).
+
 ### 2026-10-26 - the ND1b stall: abandoned stream packets (fix, untested on Windows)
 
 Harry's guest memory dumps at the stall (F3 with XBE_CAPTURE_DIR), read with sdk/scripts/guestmem.py: the main
