@@ -20,6 +20,16 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-26 - sniper scope on ultrawide
+
+Harry: scoped in on ultrawide, the 3D view showed at both sides past the scope's black mask. His F3 capture (173024):
+the mask is untextured black quads (draws 11243..11252, e.g. x 0..176 over the full height), squeezed whole since
+DrawSpan (a draw not spanning the frame's width is squeezed whole, for the driving radar's tiles past the left edge).
+sdk: an untextured fill ending on one edge and not past it keeps that edge (kSpanFrame), the reference renderer
+likewise; the radar's tiles are textured. Headless at 2.39:1, the training level's HUD and the pause menu as before;
+smoke OK. Also from Harry: the title screen ("Press START") shows the menu movie stretched at the sides (capture
+173130: the movie 81D1A000 full screen, the title art's four 256x256 tiles squeezed to 16:9): a choice for Harry.
+
 ### 2026-10-26 - achievements
 
 Harry's saves: the profile is GAME.DAT's image, at 0x652154 (load buffer, the whole file) and live at 0x31EC50 (from
