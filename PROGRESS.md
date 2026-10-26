@@ -27,8 +27,7 @@ in the outer columns (ffmpeg to grey 320x180, pure Python): at 69.2 s a street l
 the left fades out over four frames as its lamp leaves the screen, the lit ground still in view; a light whose
 source is off the screen lights what is on it, so the culling has to reach well past the edges. Margin now 2.2
 times the tangent (headless Serena at 16:9, draws by frame 2700: 695656 none, 706497 at 1.15, 731021 at 1.6,
-750752 at 2.2; the frame right). Smoke OK. Next: Harry's drive; if lights still go, their culling is not this
-frustum.
+750752 at 2.2; the frame right). Smoke OK. Harry, Windows (same day): fixed.
 
 ### 2026-10-26 - driving pop-in at the screen's edges: a culling margin
 
