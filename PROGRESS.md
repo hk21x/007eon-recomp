@@ -28,6 +28,27 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-26 - driving pop-in: the terrain chunks, stopped
+
+Continued from 2026-10-25 (Harry: carry on). More measured, all temporary and taken out:
+- the global projection copy 0x36DA70 (y at +0x14) is read only by 0x2113D0 (its writer) and the per draw transform
+  upload (0x2636BC via 0x220D10 / 0x219BC0): not the culling
+- widening inside the build (the x multiplier +0x140 during 0x2111E0) instead of after: no change; per frame the
+  draws at 4:3 and 6:1 are the same (264.2 and 264.3): the driving scene's culling ignores the view's width outright
+- the screen aspect getter 0xBEBC0 (16:9 with the widescreen flag): its callers 0x2E320 and 0xDD4C0 put HUD markers
+  on screen (world to screen), not culling; answering the frame's aspect changed no draw
+- the scene renderer 0xF1A50's camera argument +0x10 widened: no change
+- Harry's two captures (221850 without the far mountain, 221852 with it): the difference is terrain chunks drawn with
+  vertex program B0102ED1 and rock texture 82EB0480 (397 and 225 vertices) and their B0102EB1 / B0102581 passes
+- the camera's own field of view (camera +0x10, set by 0x14F0A0 from its controller each frame, smoothed by
+  0xBF2E0) widened at 0xC9450: draws move a lot, but the value compounds over the frame's calls (the guard against it
+  fails with the smoothing) and the view breaks; 0xE14D0 also fades objects by size over that field of view, so a
+  wider one drops distant objects
+Reading: the terrain chooses its chunks from the camera's field of view (horizontal, the game's 16:9), not from
+the projection. A fix would widen that field of view for the terrain's choice only (its reader not yet found:
+the chunks' draws come from the scene below 0xEDAE0) or widen the camera's and narrow the projection back, with
+0xE14D0's size fade kept on the old value. Stopped here (past 3 approaches); options for Harry.
+
 ### 2026-10-25 - driving pop-in: what culls (stopped after 3 approaches)
 
 Driving at 2.39:1 pops objects in at the 16:9 edge. Headless with .local/launch_serena.bin (throttle,
