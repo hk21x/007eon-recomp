@@ -20,6 +20,7 @@ bool hide_hud = false;       // no HUD, for screenshots (src/driving/hud.cpp, sr
 uint32_t fov_percent = 100;  // the on-foot views' field of view, percent of the game's (src/game/fov.cpp)
 extern bool modern_buttons;           // src/common/buttons.cpp
 bool ButtonPictures(uint32_t header, uint32_t palette);  // GameInfo::texture_bound
+void TitleScreen(uint32_t header);                       // src/common/title_screen.cpp (default.xbe's)
 void MenuMouse(int port, input::Pad& p);                 // GameInfo::pad: the mouse in the menus
 std::vector<achievements::Def> AchievementSet();         // src/common/achievement_set.cpp
 }
@@ -158,6 +159,11 @@ void SaveKeys(void* table) {
 constexpr void (*LoadKeys)(const void*) = nullptr;
 constexpr void (*SaveKeys)(void*) = nullptr;
 #endif
+// GameInfo::texture_bound: the button pictures (both exes), the title screen (default.xbe)
+bool TextureBound(uint32_t header, uint32_t palette) {
+    if (!eon::kDriving) eon::TitleScreen(header);
+    return eon::ButtonPictures(header, palette);
+}
 }  // namespace
 
 // what the runtime asks of the game; strings must be set, hooks may stay null
@@ -197,7 +203,7 @@ const app::GameInfo app::kGame = {
     .mouse_look = true,                   // the mouse aims
     .mouse_direct = true,                 // straight into the game's look input (src/game/mouse.cpp)
     .default_keys = Keys,                 // a shooter's keys and mouse buttons on foot, a racing game's driving
-    .texture_bound = eon::ButtonPictures, // modern_buttons
+    .texture_bound = TextureBound,         // modern_buttons, the title screen on ultrawide
     // optional, after these: .same_code (other releases' xbe SHA-1s with the same code), .wheel (what a steering
     // wheel's force feedback follows)
 };

@@ -20,6 +20,17 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-26 - title screen pillarboxed on ultrawide
+
+Harry (capture 173130): "Press START" on ultrawide showed the menu movie stretched at the sides. Harry chose black
+bars. The art is four 256x256 DXT tiles (first kilobyte hashed: three distinct), the movie a YUY2 quad (two frames in
+turn, not 2D the squeeze takes), and the title clears nothing, so the sides kept whatever was drawn there. On this
+screen the tiles come by replayed push buffers and the movie by SwitchTexture, neither of which reached
+GameInfo::texture_bound: sdk now reports both (and replayed draws take the hooks' squeeze flags), and
+State::blank_format turns draws of a texture format into a black clear. src/common/title_screen.cpp: while the art
+has been drawn in the last 200 ms, the movie's draws are a black clear. Headless at 2.39:1: the title pillarboxed in
+black; the language screen and the main menu (movie full width) as before. Smoke OK.
+
 ### 2026-10-26 - sniper scope on ultrawide
 
 Harry: scoped in on ultrawide, the 3D view showed at both sides past the scope's black mask. His F3 capture (173024):
