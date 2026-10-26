@@ -40,8 +40,7 @@ multichannel voice plays front left, front right, centre, LFE, back left, back r
 centre and back pair 3 dB down into left and right. Headless, the same drive: identical for the first 20 s (stereo),
 from the drive on the added channels as loud as the mix (steady, about 700 Hz: the car); clipped samples 214 before,
 279 after over 70 s. Also: XBE_DSOUND_LOG's summaries were info level, compiled out of release builds, so Harry's
-Windows log showed none; now release level. Smoke OK. Harry, Windows (same day): fixed, and the music with it (it had been missing channels too; the
-menus' music buffer B01640B0 in default.xbe is also one mixed by the game, now heard whole).
+Windows log showed none; now release level. Smoke OK. Harry, Windows (same day): fixed, and the music with it (it lost the same channels: it is in that buffer).
 
 ### 2026-10-26 - driving pop-in fixed: the visibility pass's frustum
 
