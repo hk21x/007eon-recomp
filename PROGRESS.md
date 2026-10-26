@@ -28,6 +28,15 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-26 - SDK published to the fork's main
+
+The eon branch (the shader cache, the 6 channel mix, the ultrawide DrawSpan and Thermovision viewport, texture
+replacement and Sharpen2D, input and quit) merged with fork main (memory best fit; PGR's squeeze_beyond, which
+conflicted with DrawSpan: both now flag "squeezed whole" by hud.x negative, the shift moving the pivot hud.y) as
+296844d, and fork main fast-forwarded to it. Gate: EoN smoke OK, PGR2 smoke OK, PGR1 smoke OK, PGR1's repro.sh
+a live race (timer running, draws climbing). Test trees put back (PGR2 6e84311, smoke-pgr1 2fbeb57, pgr1-recomp
+pc-features with its harness rebuilt).
+
 ### 2026-10-26 - frame stalls: a shader cache on disk
 
 Harry's Windows logs: past loading, driving has 1 to 5 frames in each 10 s over 25 ms, the longest 50 to 330 ms (the
