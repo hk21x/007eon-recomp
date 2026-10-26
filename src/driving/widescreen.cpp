@@ -12,8 +12,8 @@
 // side planes as (x, z) normals at +0x70/+0x78 and +0x80/+0x88, top and bottom at +0x94.. and +0xA4..), whose sides
 // are the game's 16:9 (with the widescreen flag 0x35ED54 +0x4C, else 4:3) whatever the frame: far terrain chunks past
 // those edges popped in as they came inside. At the pass's start its sides are widened by the frame's aspect over the
-// game's, in tangent (a plane's x over z), once for each frustum the game writes, and 15% more at every aspect: the
-// console's edges were hidden by a TV's overscan.
+// game's, in tangent (a plane's x over z), once for each frustum the game writes, and 2.2 times that at every aspect:
+// the console's edges were hidden by a TV's overscan, and a street light off the screen lights the road on it.
 #include <algorithm>
 #include <cmath>
 #include <cstring>
@@ -57,8 +57,9 @@ X86_FUNC(sub_0014C460) {
     constexpr uint32_t kFrustum = 0x32A8C0, kLeft = kFrustum + 0x70, kRight = kFrustum + 0x80;
     constexpr uint32_t kGame = 0x35ED54, kWideFlag = 0x4C;
     // the console's sides lie on the frame's edges, which a TV's overscan hides: shown whole here, buildings and
-    // lights popped in at the edges as the car turned (at every aspect); culled with a margin past them
-    constexpr float kMargin = 1.15f;
+    // lights popped in at the edges as the car turned (at every aspect), a light's pool on the road went out as its
+    // lamp left the screen; culled well past them (2.2 times the tangent: about 8% more draws at 16:9)
+    constexpr float kMargin = 2.2f;
     static float written[4] = {};  // left x, z, right x, z as last widened
     {
         float game = kernel::G<uint8_t>(kernel::R32(kGame) + kWideFlag) ? 16.0f / 9.0f : 4.0f / 3.0f;
@@ -76,8 +77,8 @@ X86_FUNC(sub_0014C460) {
             static bool said = false;
             if (!said) {
                 said = true;
-                LOGR("eon: driving culling %.3f times wider (the game's %.3f:1 for the %.3f:1 frame, a %.0f%% margin)",
-                     r, game, app::FrameAspect(), (kMargin - 1) * 100);
+                LOGR("eon: driving culling %.3f times wider (the game's %.3f:1 for the %.3f:1 frame, %.1f times for the edges)",
+                     r, game, app::FrameAspect(), kMargin);
             }
         }
     }
