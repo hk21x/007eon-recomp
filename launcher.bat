@@ -1,7 +1,7 @@
 @echo off
 setlocal
 rem the "short" name in launcher\game.json: the launcher is <short>Launcher.exe, its work folder <short>
-set "GAME_SHORT=Game"
+set "GAME_SHORT=EoN"
 rem Builds <short>Launcher.exe (sdk\launcher, set up by launcher\game.json): the one exe a player runs to build and play
 rem the game from their own disc. Needs what build.bat needs (Visual Studio with clang, CMake, Ninja, Git).
 cd /d "%~dp0"

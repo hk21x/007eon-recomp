@@ -11,4 +11,4 @@ del /q "%GAME_EXE%.zip" 2>nul
 rem an empty assets folder beside the exe, where the game (files or .iso) goes
 rd /s /q "%OUT%\release" 2>nul
 mkdir "%OUT%\release\assets"
-7z a "%GAME_EXE%.zip" ".\%OUT%\%GAME_EXE%.exe" ".\%OUT%\release\assets" .\README.md "%SDK%\THIRD_PARTY.txt"
+7z a "%GAME_EXE%.zip" ".\%OUT%\%GAME_EXE%.exe" ".\%OUT%\%GAME_EXE%Driving.exe" ".\%OUT%\release\assets" .\README.md "%SDK%\THIRD_PARTY.txt"

@@ -2,7 +2,15 @@
     "title": "007: Everything or Nothing",
     "short": "EoN",
     "exe": "EoN",
+    "exes": [
+        "EoN",
+        "EoNDriving"
+    ],
     "xbe": "default.xbe",
+    "xbes": [
+        "default.xbe",
+        "driving.xbe"
+    ],
     "releases": {
         "62298fe4e618d9d81863080fb1b00c1667d871c9": "PAL (Europe)"
     },

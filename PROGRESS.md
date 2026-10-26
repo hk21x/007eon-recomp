@@ -20,6 +20,20 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-26 - release checks
+
+- Repo: no game files tracked or in history (EoN and the SDK); .local-tools.log (a Linux build log committed by
+  mistake) untracked and ignored.
+- SDK: fork main merged into eon (the PGR2 session's launcher music work) and published as fork main (b59a851) after
+  EoN, PGR2 and PGR1 smoke and PGR1's frame check (a live race).
+- Launcher blockers found and fixed: it took only default.xbe from the player's copy and installed only EoN.exe, so
+  driving.xbe was never recompiled nor EoNDriving.exe installed. sdk: game.json "xbes" and "exes" (by default xbe
+  and exe); launcher/game.json lists both. launcher_cli on Linux: both xbes written byte for byte, both exes
+  installed, the build's tools left out. launcher.bat named the launcher GameLauncher.exe (GAME_SHORT); EoN now.
+  release.bat's zip left out EoNDriving.exe.
+- docs/releases/v1.0.md written. A 30 minute soak running.
+Next: Harry's launcher run on Windows from the .iso (the one path not testable here), then the release.
+
 ### 2026-10-26 - sniper scope: the right bar
 
 Harry: the left of the scope now reaches the edge, the right not. Capture 173024: the right bar is x 464..641, a
