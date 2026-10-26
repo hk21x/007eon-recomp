@@ -104,6 +104,22 @@ crashes.
 
 In the menus the mouse wheel scrolls, the left button selects and the right button goes back.
 
+**Driving missions** have a layout of their own (rebound apart from the on-foot keys, while driving):
+
+| Action | Keys |
+| --- | --- |
+| Gas / brake and reverse | W / S |
+| Steer | A / D, or the arrow keys |
+| Handbrake | Space |
+| Fire weapon / fire gadget | Left mouse button or Enter / right mouse button or E |
+| Action | F |
+| Next weapon | R, or 3 / 4 |
+| Full screen map | M |
+| Look back / centre the camera | C / V or middle mouse button |
+| Change camera | 1 |
+| Bond sense | Tab |
+| Pause | Esc or P |
+
 **Controllers:** Xbox, PlayStation and Switch controllers, with hot plugging and rumble.
 
 ## Features

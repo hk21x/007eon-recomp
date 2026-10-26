@@ -20,6 +20,18 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-26 - keyboard layout for the driving missions
+
+The driving exe had the on-foot keys (fire on the left mouse button was the gas, RT). The game's own driving map
+(driving\misc.viv, the car's table): RT gas, LT brake/reverse, B handbrake, A weapon, X gadget, Y action, BLACK and
+d-pad left/right next weapon, WHITE full screen map, right stick down look back and click centre, d-pad up camera,
+BACK Bond sense. src/common/game_info.cpp DrivingKeys: W/S gas and brake, A/D or arrows steer, Space handbrake, the
+mouse buttons (or Enter, E) weapon and gadget, F action, R next weapon, M map, C look back, V centre, 1 to 4 the
+d-pad, Tab Bond sense. eon::kDriving (src/game, src/driving hooks.cpp) picks the layout. Both exes share
+settings.toml: the driving exe keeps its changes as [driving_keys] (GameInfo load/save: the runtime's [keys] moved
+there), and each writes the other's table back as read. Windows only (the harness has no settings file). Headless
+drive identical (501636 draws at frame 2100), smoke OK, wincheck OK. Next: Harry's test; achievements; hide HUD.
+
 ### 2026-10-26 - README for the release
 
 README rewritten in PGR2's layout with Harry's banner (docs/img/eon-pc-port.webp): supported release (both xbe

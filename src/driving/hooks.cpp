@@ -6,3 +6,8 @@
 // X86_FUNC(sub_00012345) {
 //     __imp__sub_00012345(ctx, base);  // the original
 // }
+
+namespace eon {
+// which exe this is (driving.xbe): src/common's key layouts and settings tables follow it
+extern const bool kDriving = true;
+}

@@ -3,11 +3,16 @@
 #include <cstdlib>
 #include <string>
 
+#ifdef _WIN32
+#include <toml++/toml.hpp>
+#endif
+
 #include "app/app.h"
 #include "core/input.h"
 #include "core/log.h"
 
 namespace eon {
+extern const bool kDriving;  // driving.xbe's exe (src/driving/hooks.cpp), default.xbe's false (src/game/hooks.cpp)
 bool skip_intro = false;  // no logo movies at start (HideFile)
 bool driving_60fps = true;   // the driving missions at 60 frames a second (src/driving/sixty.cpp)
 uint32_t fov_percent = 100;  // the on-foot views' field of view, percent of the game's (src/game/fov.cpp)
@@ -44,7 +49,7 @@ bool HideFile(const std::string& path) {
 // keyboard and mouse, as a shooter plays (Windows virtual key codes: this file builds for the headless harness too)
 constexpr uint16_t kMouseLeft = 0x01, kMouseRight = 0x02, kMouseMiddle = 0x04, kTab = 0x09, kEnter = 0x0D,
                    kEscape = 0x1B, kSpace = 0x20, kArrowLeft = 0x25, kArrowUp = 0x26, kArrowRight = 0x27, kArrowDown = 0x28,
-                   kLeftShift = 0xA0, kLeftCtrl = 0xA2;
+                   kLeftShift = 0xA0, kLeftCtrl = 0xA2, kBackspace = 0x08;
 std::array<uint16_t, 2> ShooterKeys(int c) {
     using namespace input;
     switch (c) {
@@ -71,6 +76,81 @@ std::array<uint16_t, 2> ShooterKeys(int c) {
         default: return {0, 0};
     }
 }
+
+// the driving missions, as their own control map has them (driving\misc.viv: RT gas, LT brake and reverse, B handbrake,
+// A the weapon, X the gadget, Y action, BLACK and the d-pad's left and right the next weapon, WHITE the full screen map,
+// the right stick down to look back and its click to centre the camera, the d-pad's up the camera, BACK Bond sense):
+// a racing game's keys, the mouse buttons firing (the mouse does not steer)
+std::array<uint16_t, 2> DrivingKeys(int c) {
+    using namespace input;
+    switch (c) {
+        case kRT: return {'W', 0};                   // gas
+        case kLT: return {'S', 0};                   // brake, reverse
+        case kLSLeft: return {'A', kArrowLeft};      // steer
+        case kLSRight: return {'D', kArrowRight};
+        case kLSUp: return {kArrowUp, 0};
+        case kLSDown: return {kArrowDown, 0};
+        case kB: return {kSpace, kBackspace};        // handbrake; back in the menus
+        case kA: return {kMouseLeft, kEnter};        // the weapon; select in the menus
+        case kX: return {kMouseRight, 'E'};          // the gadget
+        case kY: return {'F', 0};                    // action
+        case kBlack: return {'R', 0};                // the next weapon
+        case kWhite: return {'M', 0};                // the full screen map
+        case kRSDown: return {'C', 0};               // look back
+        case kRThumb: return {'V', kMouseMiddle};    // the camera behind the car
+        case kUp: return {'1', 0};                   // the camera
+        case kDown: return {'2', 0};
+        case kLeft: return {'3', 0};                 // the weapons
+        case kRight: return {'4', 0};
+        case kStart: return {kEscape, 'P'};
+        case kBack: return {kTab, 0};                // Bond sense
+        default: return {0, 0};
+    }
+}
+
+std::array<uint16_t, 2> Keys(int c) { return eon::kDriving ? DrivingKeys(c) : ShooterKeys(c); }
+
+#ifdef _WIN32  // the settings file (the headless harness has none)
+// One settings file for both exes, each with its own keys: the runtime reads and writes [keys] as this exe's (only
+// what differs from its defaults); the driving exe's are kept as [driving_keys] instead, and each exe writes the
+// other's table back as it read it.
+constexpr const char* kOtherKeys[2] = {"driving_keys", "keys"};  // by kDriving: the table this exe keeps unread
+toml::table g_other_keys;
+
+void LoadKeys(const void* table) {
+    const toml::table& t = *static_cast<const toml::table*>(table);
+    const toml::table* other = t[kOtherKeys[eon::kDriving]].as_table();
+    g_other_keys = other ? *other : toml::table{};
+    if (!eon::kDriving) return;
+    // the runtime took [keys], default.xbe's, as these: the driving defaults and [driving_keys] instead
+    app::Settings& s = app::Get();
+    for (int c = 0; c < input::kControls && c < int(s.keys.size()); c++) s.keys[c] = DrivingKeys(c);
+    if (const toml::table* mine = t["driving_keys"].as_table())
+        for (auto& [name, v] : *mine) {
+            int c = input::ControlByName(std::string(name.str()).c_str());
+            const toml::array* a = v.as_array();
+            if (c < 0 || c >= int(s.keys.size()) || !a) continue;
+            s.keys[c] = {0, 0};
+            for (size_t i = 0; i < 2 && i < a->size(); i++) s.keys[c][i] = app::KeyFromName((*a)[i].value_or(std::string()));
+        }
+}
+
+void SaveKeys(void* table) {
+    toml::table& t = *static_cast<toml::table*>(table);
+    if (eon::kDriving) {
+        // the runtime wrote this exe's as [keys]
+        if (toml::table* mine = t["keys"].as_table()) {
+            toml::table copy = *mine;
+            t.erase("keys");
+            t.insert("driving_keys", copy);
+        }
+    }
+    if (!g_other_keys.empty()) t.insert_or_assign(kOtherKeys[eon::kDriving], g_other_keys);
+}
+#else
+constexpr void (*LoadKeys)(const void*) = nullptr;
+constexpr void (*SaveKeys)(void*) = nullptr;
+#endif
 }  // namespace
 
 // what the runtime asks of the game; strings must be set, hooks may stay null
@@ -91,8 +171,8 @@ const app::GameInfo app::kGame = {
                  "On foot, 50 to 150; 100 is the game's. Cutscenes widen too."},
                 {"driving_60fps", &eon::driving_60fps, nullptr, "Driving missions at 60 frames a second",
                  "Same simulation, drawn after every tick instead of every second one; from the next driving mission."}},  // kept in the settings file
-    .load = nullptr,                      // reads more from the settings file's toml::table
-    .save = nullptr,                      // writes more into it
+    .load = LoadKeys,                     // the driving exe's keys apart (DrivingKeys)
+    .save = SaveKeys,
     .init = Init,                         // after the settings load, before the window and boot
     .loaded = nullptr,                    // image in memory, before its entry point runs
     .window = nullptr,                    // the game window is up
@@ -106,7 +186,7 @@ const app::GameInfo app::kGame = {
     .hide_file = HideFile,                // skip_intro
     .mouse_look = true,                   // the mouse aims
     .mouse_direct = true,                 // straight into the game's look input (src/game/mouse.cpp)
-    .default_keys = ShooterKeys,          // a shooter's keys and mouse buttons
+    .default_keys = Keys,                 // a shooter's keys and mouse buttons on foot, a racing game's driving
     .texture_bound = eon::ButtonPictures, // modern_buttons
     // optional, after these: .achievements (conditions on guest memory), .same_code (other releases' xbe SHA-1s with
     // the same code), .wheel (what a steering wheel's force feedback follows)
