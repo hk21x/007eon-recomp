@@ -3,28 +3,20 @@
 Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Status
-- Milestone: 3 - headless, playable: the first boot goes from the movies to the training level, drawn with Bond,
-  the soldiers and the helicopter; scripts/pad/explore.txt takes cover (BLACK), locks on (LT) and fires (RT)
-  through the tutorial's first three steps. No trap in any run (up to 4 minutes).
-- XDK: 5659, D3D8 QFE 4. default.xbe 84 of 250 functions by signature, 50 more by hand in config/eon.toml (matched to
-  PGR2's QFE 1 bodies, or by .XTLID export id); 6 D3D globals and 28 CDevice layout offsets for QFE 4 there too
-- Push buffers: YES, both kinds, now drawn (6bded69). Every frame is recorded (BeginPushBuffer 0x26F040 .. EndPushBuffer 0x26F0B0) and run
-  (RunPushBuffer 0x26ED10) at once, which the runtime's API level drawing covers; and after the movies the game runs
-  buffers recorded earlier with fixups, again and again (2 to 26 KB each), which the runtime does not replay
-- SDK: the fork's main at 697c30b (2026-10-25: eon merged after EoN, PGR1 and PGR2 smoke OK); task branch `eon`
-- Windows (Harry, 2026-10-24, D3D12, RX 7900 XT): boots and plays. Fixed since: the black square under Bond
-  (63e43e1), the movies (8068dbc), half the draws (8833e6b). Open: a dark slab on the ground, blue figures at
-  the top left and a bright band with the weapon carousel up (perhaps the movies' cause, to be seen); frame rate
-  (about 23 a second in the level before 8833e6b)
-- Next: Harry's next test (F3 capture with XBE_CAPTURE_DIR and XBE_CAPTURE_DRAWS=1 for what remains); driving.xbe
-  through the game's own launch; the loading screen's strip (0x83043000, the shadow maps' memory, sampled as a
-  640x480 picture with nothing written there before)
-- driving.xbe: named and built (config/driving.toml, 43 D3D names matched from default.xbe, the shared QFE 4
-  layout in config/d3d8_qfe4.toml); run on its own it boots its device and audio, then loads the developer fallback
-  track qlab (not on the disc): it needs the launch data default.xbe passes
-- Smoke: scripts/smoke.sh (explore.txt; the movies as the 2D check, the training level after): SMOKE OK, 1 draw a
-  frame in the movies, 11532 in the level (2026-10-24)
-- Menus: scripts/pad/menus.txt reaches the main menu and the Mission Select (only Ground Zero on a new save)
+- Milestone: release candidate (2026-10-26). Windows (Harry, D3D12, RX 7900 XT, 3440x1440): plays on foot and in the
+  driving missions up to the last mission, with saves. The open issues of 2026-10-24 (the dark slab, the blue figures,
+  the carousel's band, the loading screen's strip) are fixed (Harry, 2026-10-26).
+- Done since: widescreen and ultrawide on foot and driving (culling widened: no side pop-in), the driving radar and
+  Thermovision, mouse aim and menus, keyboard prompts, modern buttons, sharp 2D, FOV, 60 FPS driving, Quit Game,
+  skip intro, the driving 6 channel mix (speech, car, music), the shader cache (no repeat stalls)
+- Before release: the launcher end to end on Windows (both xbes, from an .iso); docs/releases/v1.0.md; untested: the
+  D3D11 renderer, NTSC discs
+- XDK: 5659, D3D8 QFE 4. default.xbe 84 of 250 functions by signature, 50 more by hand in config/eon.toml; driving.xbe
+  in config/driving.toml (the shared QFE 4 layout in config/d3d8_qfe4.toml)
+- Push buffers: both kinds, drawn (6bded69): recorded and run at once, and recorded ones replayed with fixups
+- SDK: the fork's main at 296844d (2026-10-26: eon merged after EoN, PGR1 and PGR2 smoke and PGR1's frame check);
+  task branch `eon`
+- Smoke: scripts/smoke.sh: SMOKE OK (2026-10-26). Soak: 30 minutes, no traps, memory flat
 
 ## Log
 
