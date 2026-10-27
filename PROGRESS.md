@@ -20,6 +20,14 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-27 - MI6 Training's lost device: not the 2x2 mode (main)
+
+The player's run with XBE_NO_SAMPLE_SCALE=1 (the frame buffer "drawn 1x1"): hung the same (draw 2360 of 6314).
+So the mission's multisample mode is not the trigger. In every report the draws after the stop include character
+meshes drawn into a second target, data 03170A00 (in the earlier capture also a depth target at that data): the
+dummy's effect, as the camera turns to it. sdk 6d14cea: XBE_SKIP_TARGET=03170A00 leaves those draws out.
+Smoke OK. Next: the player's run with it; if it still hangs, NVIDIA's Aftermath crash dump.
+
 ### 2026-10-27 - MI6 Training's lost device: both validated runs stop on one mesh
 
 The second player's run with XBE_D3D12_DEBUG=2 (RTX 4060 Ti, MSAA 4x, aniso 16): no error before the hang either,
