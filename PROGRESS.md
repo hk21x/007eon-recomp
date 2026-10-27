@@ -20,6 +20,18 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-27 - MI6 Training's lost device: the descriptor ring wrapped within a frame (main, fix to confirm)
+
+A second player's log (RTX 4060 Ti, MSAA 8x) stops in the same run of grid quads (draw 2339 of 6555). Both stop
+in frames of 5700 to 7800 draws, more as the camera turns to the enemy. AllocSrvSlots gives a frame 32768 views (4 a
+draw when its table is not reused) and on running out started the ring again at 0 within the frame, over views the
+frame's earlier draws, recorded and not yet run, still read; its log line was info level. The sampler heap (2048)
+started again the same way across frames. sdk 72d8bf2: before a draw records anything, when fewer than 16 views
+are left in the frame or 16 sampler slots, the GPU finishes everything recorded (Flush) and the views (and samplers)
+start again; the fallback wrap is logged at report level. D3D11's rings discard properly, so its freeze (one player,
+no log line then) is not explained by this. Smoke OK. Next: the players' logs: no lost device, and "nearly used up"
+lines show the fix is reached.
+
 ### 2026-10-27 - MI6 Training's lost device: the stop is an ordinary draw (main)
 
 The next log found the hung list (7798 draws, stopped at 2474): an indexed strip of 4 from base -5812, 4 vertices
