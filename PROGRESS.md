@@ -20,6 +20,19 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-27 - free aim: what EoN has (branch free-aim)
+
+Harry: lock-on with a mouse plays oddly; wants free aim like the From Russia with Love port's (TGP482/007FRWL-XBERecomp,
+src/game/free_aim.cpp: any gun through the rocket launcher's over the shoulder throw state, shots to where the view's
+centre meets the world). Its code is FRWL's own addresses and classes (PlayerThrowItemSM and the rest are not in EoN),
+so only the approach carries over. EoN has no free aim on foot (FINDINGS, Aiming): MANUALAIMTOGGLE is unbound in the
+button map and only opens the scope's zoom for zoomable weapons; bound in a test copy of actdat1.viv it reaches the
+game (probe on 0xEE630) and nothing opens with the SIG 552. The manual aim crosshair is the mounted guns'.
+Harry chose over the shoulder (right mouse held: Bond faces the camera's way, a crosshair in the middle, shots to it;
+lock-on to another key). sdk b41d997: pad scripts click the sticks (LSC, RSC). Headless: the training level's
+first steps take only their own input (wall cover, LT, LT+RT, wall cover again), then a cutscene, then play.
+Next: where a shot gets its direction without a lock (the gun's fire path), then the player's facing while aiming.
+
 ### 2026-10-26 - release 1.0.0
 
 Harry: the launcher's game boots from the .iso and his save works once it is at play\hdd (it had been copied a level

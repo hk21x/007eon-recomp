@@ -39,3 +39,18 @@ game's own code and data, with its addresses).
 - **[console]** A multisample mode with more samples than the target was made with draws the target as a smaller
   one (4X on a plain 640x480 buffer: 320x240, each pixel 2 by 2); sdk State::aa_x, aa_y.
 
+
+## Aiming
+
+- **[game]** Controls come from global\xbbtnmap.csv (actdat1.viv): ACTION,BUTTON,FLAG,BUTTON,REQUIREDMODE rows, two
+  schemes. The action names are a table of 48-byte records in default.xbe (name, then action bits for word 0 and
+  word 1, a kind, ...): MANUALAIMTOGGLE is word 0 bit 0x1000, MANUALAIMMOVE analog 9, AIMOFFSETMOVE analog 10. The
+  shipped map binds no MANUALAIMTOGGLE; the right stick click is RESETCAMERA. 0x1C330 turns the pad into actions
+  (0xEE5F0 sets bits at +8/+0xC of an action set, 0xEE630(word 0, word 1) tests them; the player keeps this frame's
+  at +0x1230 and last frame's at +0x11F0).
+- **[game]** The only reader of MANUALAIMTOGGLE is 0x153810, the scope's first person zoom: on its release, for a
+  weapon that answers 0xE07689D3 (0x14B640, zoomable), as the lock action 0x4000 also does. Bound in a test copy
+  (BACK), the toggle reaches the game and nothing opens with the SIG 552: there is no free aim on foot.
+- **[game]** The crosshair (0x11AB20, state at +0x2C): 7, UI_HUD_CROSSHAIRITEM_MANUALAIM, only on a mounted gun
+  (0x1500B0/0x1500F0: +0x11D4 set, its flags +0x504 & 0x202); 5/2 locked on (0x148EF0: +0x1275 and action 0x4000);
+  1/4 a target in view (vtable +0x170), PASSIVE; 3 a lock that misses (0x1584A0).
