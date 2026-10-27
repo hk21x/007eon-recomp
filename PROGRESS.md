@@ -20,6 +20,22 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-27 - a player's report: MI6 Training's picture stands still (main, diagnostics)
+
+A player (RTX 3080, 2560x1440 144 Hz): in MI6 Training the picture stops after the third hand to hand strike;
+sound and controls go on. Also with antialiasing off from the start and with D3D11. Their logs: frames presented
+at 60 a second to the end; F3's thread stacks: the main thread in the world's drawing (0x110230 from 0xF5800).
+Their two D3D12 captures 4 s apart (124129, 124133): full frames (5025 and 6378 draws) into the plain set's
+buffers in turn (0x35B9C4 data 03A04000, 0x35B97C data 03A04A00: 640x480, the second one row into the first, as
+src/game/supersample.cpp chooses), and the camera moved between them: the game runs and draws. Neither capture
+has final.bmp, which is written only when a target matches the presented front buffer: the front presented was
+not a surface the frames drew into, so its picture came from guest memory. Their three memory dumps agree on the
+buffer mode (0x35BBF4 = 0x35BF58 = 0, the plain set) and 0x35BF5C = 1 is the frame being recorded (0x604E0).
+Headless with Harry's save in the hand to hand room: the dummy knocks Bond down before a strike counts, so the
+third strike is not reached. sdk 3263421: D3D12 logs a front buffer no target drew into, with the targets at its
+data (on the SDK branch eon-1.0: the release's SDK and this; eon has the pacing work besides).
+Next: the player (or Harry) rebuilds main through the launcher and sends the log from a freeze.
+
 ### 2026-10-26 - release 1.0.0
 
 Harry: the launcher's game boots from the .iso and his save works once it is at play\hdd (it had been copied a level
