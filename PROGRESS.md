@@ -20,6 +20,16 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-27 - MI6 Training's lost device: not the descriptors; the debug layer into the log (main)
+
+The player's log with 72d8bf2: hung again (887A0006, draw 2063 of 6040, the same run of grid strips, 3 valid
+indices), and no "nearly used up" line: the frame never neared its views, so the wrap fix (kept: it was a real
+fault) is not this freeze. The draws around and after the stop are the room's ordinary ones (indices in range).
+Left: a resource state or synchronisation fault the draws do not show. sdk b88d733: XBE_D3D12_DEBUG=1 the debug
+layer, =2 with GPU based validation; its corruption, error and warning messages logged at report level each present
+and in the lost device's report. It needs Windows' Graphics Tools. Smoke OK. Next: a run with XBE_D3D12_DEBUG=2 on an
+NVIDIA PC to the freeze.
+
 ### 2026-10-27 - MI6 Training's lost device: the descriptor ring wrapped within a frame (main, fix to confirm)
 
 A second player's log (RTX 4060 Ti, MSAA 8x) stops in the same run of grid quads (draw 2339 of 6555). Both stop
