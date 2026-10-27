@@ -20,6 +20,22 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-27 - micro stutter: the blanks and the frames on one clock (branch pacing)
+
+Harry: micro stutter throughout. His logs' frame lines (over 25 ms) show few slow frames in play (1 to 6 of 600), so
+the stutter is within the frame rate. Both exes step their world by the console's clock: driving.xbe runs a 1/60 s tick
+per vertical blank (src/driving/sixty.cpp), default.xbe presents immediately (interval 0) at the 60 cap. The runtime
+ran the blanks (a thread at 16667 us) and the frame pacing (1/60 s) on clocks of their own, out of phase and drifting:
+a frame due close to a blank saw none or two by the jitter of a sleep, so the world moved by 0 or 2 ticks a frame.
+Headless (a probe of the blanks between presents): in the first boot's movies 37 to 190 frames in 600 saw 0 or 2.
+sdk 053555d: one clock (app::VblankEpoch, kVblankPeriod); a frame paced at a rate dividing 60 shows half way between
+two blanks (8 ms of slack either side), and a late one rejoins from the blank it missed, so it alone sees one more and
+the next does not see none. New log lines: "blanks: N of 600 frames saw other than 1" (only while the frames keep up)
+and the display's refresh rate on the Desktop line. Headless: in the level and in a driving mission (Serena, 60) the
+only uneven frames are late ones, none with no blank. Smoke OK; Windows sources syntax-checked.
+Above 60: driving.xbe's world is 1/60 s ticks, so more frames would repeat; on foot not yet known.
+Next: Harry builds the branch, plays on foot and driving, sends the log (blanks lines, refresh rate).
+
 ### 2026-10-26 - release 1.0.0
 
 Harry: the launcher's game boots from the .iso and his save works once it is at play\hdd (it had been copied a level
