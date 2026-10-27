@@ -20,6 +20,16 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-27 - MI6 Training's lost device: any scale, both renderers (main)
+
+The player: froze at 50% render scale (D3D12, hung at draw 2820 of 8114, the grid strips again; driver
+32.0.16.2101) and on D3D11 at 100% (d3d11: the GPU device was lost: 887A0006). So not the amount of work and not
+one renderer's code: the shaders both renderers compile from shaders.cpp, or something in what this mission draws,
+on NVIDIA. The generated HLSL's only loop (spreadtap) reads constants zeroed per draw (DrawConstants c{}): no
+runaway count. The one thing every freeze log shows this mission set: MultiSampleMode 2 on the frame buffers, drawn
+2x2 (State::aa_x, aa_y: sample placement, the HUD's half width, point sprite sizes). sdk f392d7e:
+XBE_NO_SAMPLE_SCALE=1 leaves the modes unapplied. Smoke OK. Next: the player's run with it.
+
 ### 2026-10-27 - MI6 Training's lost device: valid API use, a GPU timeout (main)
 
 The player's run with XBE_D3D12_DEBUG=2 (debug layer with GPU based validation): no error or corruption message
