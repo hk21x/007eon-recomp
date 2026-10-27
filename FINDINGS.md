@@ -6,6 +6,9 @@ game's own code and data, with its addresses).
 
 ## The image
 
+- **[console]** LOG_FIRST writes at info level, which a release log leaves out: a diagnostic meant for a
+  player's log has to be report level (LOGR) or an error.
+
 - **[game]** Two executables on the disc: default.xbe (on-foot) and driving.xbe (driving levels), title 45410042,
   each switching to the other with XLaunchNewImage.
 - **[console]** XDK 5659 with D3D8 QFE 4 (the other libraries QFE 1): the D3D8 bodies differ from PGR2's QFE 1, so

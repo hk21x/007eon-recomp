@@ -20,6 +20,19 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-27 - MI6 Training's standing picture: the GPU device is lost (main)
+
+The player's log from 7bfb194: "pipeline creation failed 887A0005" 18 s after the mission began: 887A0005 is
+DXGI_ERROR_DEVICE_REMOVED. The second player's (RTX 4060 Ti) shows the same at 255 s. So the picture stands
+because the GPU device was lost (on NVIDIA; Harry's AMD has not shown it) and nothing is drawn after; sound and
+input go on. The D3D11 freeze is likely the same, unlogged. The earlier diagnostics were LOG_FIRST, which is info
+level and not in a release log (only report level and errors are): the read-back and target lines never showed.
+sdk 6b6cb80: D3D12 turns DRED on (auto breadcrumbs, page faults) and reports a lost device once at report level
+from wherever it is first seen (a command list's close, a GPU wait, a pipeline, a present): the reason, each unfinished
+command list's operations done and draws done with the operations around the stop, a page fault's address and the
+allocations there, and the last 40 draws (list.number, topology, count, target, textures, shader handles); D3D11
+logs a lost device at present. Smoke OK. Next: the log of a freeze with this build: the draw the GPU stopped at.
+
 ### 2026-10-27 - MI6 Training's standing picture: more diagnostics (main)
 
 Two players' logs from 3263421 builds (RTX 3080 and RTX 4060 Ti): no "presenting ... no target drew it", so the
