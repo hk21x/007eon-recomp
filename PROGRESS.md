@@ -20,6 +20,15 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-27 - MI6 Training's lost device: the stop is an ordinary draw (main)
+
+The next log found the hung list (7798 draws, stopped at 2474): an indexed strip of 4 from base -5812, 4 vertices
+of 32 bytes, program 0x27D209, the room's grid quads (as every frame draws thousands of). In the list behind it the
+first draw, a grid quad too. So the stop is where the GPU was, not plainly the culprit: the GPU works on many draws
+at once. sdk 2f20950: the report also lists the draws after the stop that stand out (another target, 300+
+vertices, another primitive, a wide index range) and the 1500 after it by target; indexed draws note their index
+range (base added). Smoke OK.
+
 ### 2026-10-27 - MI6 Training's lost device: matching DRED's lists (main)
 
 The next log: hung (887A0006) at draw 2751 of a 6542 draw list, "no list of 6542 draws kept": DRED counts every
