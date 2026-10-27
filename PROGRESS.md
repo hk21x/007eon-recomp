@@ -20,6 +20,16 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-27 - MI6 Training's lost device: both validated runs stop on one mesh
+
+The second player's run with XBE_D3D12_DEBUG=2 (RTX 4060 Ti, MSAA 4x, aniso 16): no error before the hang either,
+and it stopped on the same draw as the first player's validated run (draw 3198 here, 3222 there): an indexed list
+of 579 indices, 579 vertices of 64 bytes from (3.78623, -3.43547, -0.060722), program 0x27D209, a character mesh,
+followed by the stride 28 meshes. Without validation the GPU runs further ahead, so those stops wandered through the
+grid strips. Checked: the generated vertex programs are straight-line (VertexProgramHlsl), a0 indexing clamped to
+c[0..191]: no runaway loop in our shaders. Next: the XBE_NO_SAMPLE_SCALE run, then NVIDIA's Aftermath crash dump
+(the shader and instruction the GPU hung on).
+
 ### 2026-10-27 - MI6 Training's lost device: any scale, both renderers (main)
 
 The player: froze at 50% render scale (D3D12, hung at draw 2820 of 8114, the grid strips again; driver
