@@ -54,3 +54,12 @@ game's own code and data, with its addresses).
 - **[game]** The crosshair (0x11AB20, state at +0x2C): 7, UI_HUD_CROSSHAIRITEM_MANUALAIM, only on a mounted gun
   (0x1500B0/0x1500F0: +0x11D4 set, its flags +0x504 & 0x202); 5/2 locked on (0x148EF0: +0x1275 and action 0x4000);
   1/4 a target in view (vtable +0x170), PASSIVE; 3 a lock that misses (0x1584A0).
+- **[game]** A gun's shot is 0x180CB0 (from 0x181250, which takes the round with 0x180530): the gun's own forward
+  (its angles at +0x60, 0xEECB0: pitch, yaw, roll in degrees to forward, right and up; forward cos p cos y,
+  cos p sin y, -sin p, z up) unless its owner has an aim (vtable +0x1AC) within 90 degrees (else +0x3D0 bit
+  0x40000), then the bullet (0x222BF0: owner, gun, ..., start, forward, right, up). Enemies (vtable 0x2DF1B8) aim
+  in 0x193360 (the lock +0xE30, or the point +0xE20 while +0xE4C is set); Bond (vtable 0x2E33B8, the object
+  0x153810 runs for) in 0x153CD0 (the camera's angles in the scope view, the lock via 0x14E480, else his aim pose
+  +0x12B0), with the start 0x153BE0 and has-aim 0x1493A0 (false while +0x1550 holds 0x100, 0x800 or 0x1000).
+- **[game]** Bond's camera: the camera manager [0x3210C0] +4, 0x240 bytes a camera, by the player index at +0x1130
+  (0x8D960 copies its +0xC0 position, +0xD0 pitch/yaw/roll in degrees, +0x100 field of view).

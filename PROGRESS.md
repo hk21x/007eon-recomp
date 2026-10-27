@@ -20,6 +20,20 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-27 - free aim: the shot path (branch free-aim, work in progress)
+
+The shot path mapped (FINDINGS, Aiming): an ammo counter found from memory dumps (16, 15, 14 after single shots),
+a gdb watchpoint (the game started under gdb: ptrace_scope 1 stops attaching) gave 0x181250 -> 0x180530, and the
+shot 0x180CB0 asks its owner for an aim. Bond's own class answers with 0x153CD0, whose scope branch aims along the
+camera. src/game/free_aim.cpp (off unless EON_FREE_AIM=1): with no lock, Bond has an aim (0x1493A0), it is the
+camera's angles and their matrix (0xF0A90), and the shot starts on the line through the view's middle, level with
+Bond (0x153BE0). The hooks run on each of Bond's shots and the aim is not rejected, but the bullet's forward
+(0x222BF0) is still neither the camera's nor the gun's (probes kept in .local/free_aim_probes.cpp). Also with the
+angles reversed (pitch negated, yaw + 180): not the camera's. Headless the training level's enemies fire too,
+so tracers cannot tell which shot is whose; the bullet's arguments can.
+Next: what 0x180CB0 does with the aim's matrix (which row, its sign) between the owner's +0x1A8 and 0x222BF0,
+then Bond facing the camera while aiming, the crosshair, the right mouse button as aim and lock-on on another key.
+
 ### 2026-10-27 - free aim: what EoN has (branch free-aim)
 
 Harry: lock-on with a mouse plays oddly; wants free aim like the From Russia with Love port's (TGP482/007FRWL-XBERecomp,
