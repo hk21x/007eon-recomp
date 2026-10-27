@@ -9,7 +9,8 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 - Done since: widescreen and ultrawide on foot and driving (culling widened: no side pop-in), the driving radar and
   Thermovision, mouse aim and menus, keyboard prompts, modern buttons, sharp 2D, FOV, 60 FPS driving, Quit Game,
   skip intro, the driving 6 channel mix (speech, car, music), the shader cache (no repeat stalls)
-- Launcher end to end on Windows from an .iso: confirmed by Harry (2026-10-26). Renderers: Direct3D 12 and 11 (both
+- Known issue (2026-10-27): on NVIDIA GPUs MI6 Training's hand to hand room can lose the GPU device (picture stands
+  still); unsolved, see the log. Launcher end to end on Windows from an .iso: confirmed by Harry (2026-10-26). Renderers: Direct3D 12 and 11 (both
   supported in the docs). Untested: NTSC discs
 - XDK: 5659, D3D8 QFE 4. default.xbe 84 of 250 functions by signature, 50 more by hand in config/eon.toml; driving.xbe
   in config/driving.toml (the shared QFE 4 layout in config/d3d8_qfe4.toml)
@@ -19,6 +20,34 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 - Smoke: scripts/smoke.sh: SMOKE OK (2026-10-26). Soak: 30 minutes, no traps, memory flat
 
 ## Log
+
+### 2026-10-27 - MI6 Training's lost device on NVIDIA: stopped, written up (unsolved)
+
+The player's run with XBE_SKIP_TARGET=03170A00 (no draws into the dummy's second target): hung the same (draw 2468
+of 6446). Past three attempts at this freeze, so stopped here, per the working rules.
+
+What is known. Two players (RTX 3080 driver 32.0.16.2101, RTX 4060 Ti), never Harry's RX 7900 XT: in MI6 Training's
+hand to hand room, as the camera turns to the dummy, Windows resets the GPU for taking over two seconds
+(DXGI_ERROR_DEVICE_HUNG, 887A0006); sound and input go on, the last picture stays. Same on D3D11 and D3D12, at 100%
+and 50% render scale, with MSAA off, 4x, 8x, with the mission's 2x2 multisample mode applied or not, and with the
+dummy's second target's draws left out. The debug layer with GPU based validation reports no error before the hang
+(two warnings only). DRED's stop moves with timing: without validation in the room's grid strips (draw 1700 to 2800
+of 5700 to 8100), with validation on one character mesh on both PCs (579 indices, 64 byte vertices from
+(3.78623, -3.43547, -0.060722)). Every draw around the stops is in range (indices within their vertices).
+
+Ruled out: a presented buffer no draw reached (no log line), CPU writes over the frame buffers (no reloads), the
+descriptor ring wrapping within a frame (fixed anyway: sdk 72d8bf2; never reached in these frames), invalid API use
+(debug layer), the amount of work (50% scale), the 2x2 mode (XBE_NO_SAMPLE_SCALE), the dummy's target
+(XBE_SKIP_TARGET), a runaway shader loop (spreadtap's count is small and its constants zeroed per draw; vertex
+programs are straight line, a0 indexing clamped).
+
+What I think is happening: a shader both renderers compile from shaders.cpp (the same HLSL through FXC for D3D11
+and D3D12) that NVIDIA's driver runs effectively forever for some input in this scene (a driver fault on a
+construct of ours), as no fault of ours shows in the API or the draws. The way to see it: NVIDIA's Aftermath GPU
+crash dump (Nsight Graphics' crash dump monitor on the player's PC) names the shader and the instruction the GPU
+hung on; or an NVIDIA GPU on hand to bisect with XBE_DRAW_SKIP. Diagnostics left in (eon-1.0): DRED and the lost
+device's report, the debug layer to the log (XBE_D3D12_DEBUG), the driver version, XBE_NO_SAMPLE_SCALE and
+XBE_SKIP_TARGET.
 
 ### 2026-10-27 - MI6 Training's lost device: not the 2x2 mode (main)
 
