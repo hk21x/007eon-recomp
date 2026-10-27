@@ -20,6 +20,16 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-27 - MI6 Training's lost device: valid API use, a GPU timeout (main)
+
+The player's run with XBE_D3D12_DEBUG=2 (debug layer with GPU based validation): no error or corruption message
+before the hang, only warnings (clear values unlike the resources' and a depth only pipeline's colour output).
+The removal: DXGI_ERROR_DEVICE_HUNG, Windows' timeout (TDR): the GPU took over two seconds. With validation the
+stop moved to the characters' meshes (draw 3222 of 6220): where the GPU had got to, not a bad draw. Checked:
+spreadtap's loop (n x n taps, n from a constant) is 4 to 6 per axis here, finite. Left: a burst of GPU work as the
+camera turns, or an NVIDIA driver fault on one of the generated shaders. sdk d9761d8: the driver version in
+the log. Smoke OK. Next: the player tries a 50% render scale (less work) and Direct3D 11, with this build.
+
 ### 2026-10-27 - MI6 Training's lost device: not the descriptors; the debug layer into the log (main)
 
 The player's log with 72d8bf2: hung again (887A0006, draw 2063 of 6040, the same run of grid strips, 3 valid
