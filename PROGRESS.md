@@ -20,6 +20,16 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-27 - MI6 Training's lost device: where the GPU stopped (main)
+
+The player's log with DRED: reason 887A0006 (DXGI_ERROR_DEVICE_HUNG), seen at present; the unfinished list had
+1742 of 5709 operations done, 1739 draws done: the GPU hung at the frame's draw 1739 (of 5705). The report's last
+40 draws were the frame's end, not that draw. In their two captures the frame's draws near 1739 are a long run of
+small additive fans (prim 6, 3 vertices, blend 1 1, textures 82CA0180 128x128 DXT and 82939000, the direct-input
+program 0x27D209): a glow or particle effect. sdk b67b216: every draw of the last two command lists kept; the
+report finds the unfinished list by its draw count and logs the draws around the stop, each with its buffers, first
+vertex and the textures' format and size words. Smoke OK. Next: that log.
+
 ### 2026-10-27 - MI6 Training's standing picture: the GPU device is lost (main)
 
 The player's log from 7bfb194: "pipeline creation failed 887A0005" 18 s after the mission began: 887A0005 is
