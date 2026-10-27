@@ -20,6 +20,13 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-27 - MI6 Training's lost device: matching DRED's lists (main)
+
+The next log: hung (887A0006) at draw 2751 of a 6542 draw list, "no list of 6542 draws kept": DRED counts every
+draw, the renderer's blits and the settings window's too, the notes only the title's. sdk 1116e66: blits noted
+with the draws, a kept list matched when it has as many draws or up to 400 fewer (the settings window's, after the
+frame's), and the kept lists' sizes logged when none matches. Smoke OK.
+
 ### 2026-10-27 - MI6 Training's lost device: the hung list was two back (main)
 
 The next log: hung again (887A0006) at draw 1778 of a 5765 draw list; behind it a one operation list and one of 5758
