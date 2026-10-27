@@ -20,6 +20,11 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-27 - MI6 Training's lost device: the hung list was two back (main)
+
+The next log: hung again (887A0006) at draw 1778 of a 5765 draw list; behind it a one operation list and one of 5758
+draws, so the list that hung was not among the two kept. sdk 56974e9: the last six lists' draws kept. Smoke OK.
+
 ### 2026-10-27 - MI6 Training's lost device: where the GPU stopped (main)
 
 The player's log with DRED: reason 887A0006 (DXGI_ERROR_DEVICE_HUNG), seen at present; the unfinished list had
