@@ -20,6 +20,16 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-27 - MI6 Training's standing picture: more diagnostics (main)
+
+Two players' logs from 3263421 builds (RTX 3080 and RTX 4060 Ti): no "presenting ... no target drew it", so the
+front presented is a drawn target and the missing final.bmp has another cause. The player: the picture stops after
+the counter attack step, as the camera turns to the enemy. Suspect: the plain set's two frame buffers share their
+memory one row apart, a read-back (Sync) of one writes guest memory and updates only its own signature, so the
+other can look written by the CPU and be reloaded from guest memory; the reload before a draw is logged (never in
+their logs), the one at present was not. sdk 7bfb194: logs that one, read-backs, and the colour targets made.
+Smoke OK. Next: a log from a freeze with this build.
+
 ### 2026-10-27 - a player's report: MI6 Training's picture stands still (main, diagnostics)
 
 A player (RTX 3080, 2560x1440 144 Hz): in MI6 Training the picture stops after the third hand to hand strike;
