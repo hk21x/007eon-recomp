@@ -21,6 +21,14 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-28 - Aftermath markers that reach the dump
+
+Run 4 (XBE_SYNC_GPU=1 XBE_NV_MARKERS=1) froze at 72.7 s, Hung, same fingerprint, stopped at a grid strip
+(3957.2965), but its dump held no markers: a marker set with size 0 keeps only its pointer, which the dump leaves
+out unless the app resolves it. sdk 08a034a: the marker's 8 bytes are given, so Aftermath copies them, and a lost
+device logs the last marker reached ("Aftermath's last marker: list L draw D", from GFSDK_Aftermath_GetData), so the log
+alone names the draw. Smoke OK. Next: run 4 again.
+
 ### 2026-10-28 - MI6 Training's hang is not a race; a marker per draw
 
 On the L4: XBE_RENDER_THREAD=0 froze at 70.5 s, XBE_SYNC_GPU=1 at 44.3 s, both Hung with fingerprint
