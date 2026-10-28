@@ -21,6 +21,15 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-28 - MI6 Training's hang: two new vertex shaders the present before
+
+Run 15 (plain, logging what is made) froze at 61.3 s, present 3135. Nothing new for 584 presents, then at present
+3134 four pipelines (36 to 39, triangle lists, ordinary state) with two vertex shaders seen nowhere else in the run,
+384A569ABF6339C8 and C20D64B9C2B21341: the second or third fight brings in new vertex programs, and the GPU hangs on
+the next thing it runs. Earlier runs' pipeline counts rose by 2 to 4 at the loss too. sdk 9b01a74: XBE_SKIP_VS=hash,...
+leaves out draws with those vertex shaders; XBE_DUMP_SHADERS=1 writes every shader's HLSL to logs\shaders; each
+vertex shader made is logged with its program handle. Smoke OK. Next: the L4 with XBE_SKIP_VS on both, and the dump.
+
 ### 2026-10-28 - MI6 Training's hang: the first draw of a fresh list hangs
 
 XBE_SPLIT_DRAWS=3000 (each list sent and waited for every 3000 draws) froze at 40.3 s in the second or third fight:
