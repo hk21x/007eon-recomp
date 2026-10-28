@@ -21,6 +21,15 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-28 - MI6 Training's hang: the first draw of a fresh list hangs
+
+XBE_SPLIT_DRAWS=3000 (each list sent and waited for every 3000 draws) froze at 40.3 s in the second or third fight:
+the list before had finished, and the GPU hung on draw 0 of the next, a grid strip, straight after
+BeginCommandList. List size is out; whatever the GPU runs once the moment comes hangs. Checked: the viewport is the
+whole target with depth 0..1 always and the scissor is clamped; the gamma ramp's copy is well formed. sdk ad5eaf7: the
+log names every pipeline, texture and target as it is made and each gamma ramp upload, with the present, to see
+what the fight brings in just before the hang. Smoke OK. Next: one plain run through the fights.
+
 ### 2026-10-28 - MI6 Training's hang: the third fight, not a timer; runs 11 to 13 void
 
 Harry: the hang comes only once fighting the room's third enemy, never at the first. Runs 11, 12 and 13 (no input
