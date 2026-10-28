@@ -21,6 +21,15 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-28 - MI6 Training's hang: not the depth compare pass either
+
+Run 6 (XBE_SKIP_PS=0027B5B4, half of each frame's draws gone) froze at 51.5 s, same fingerprint, the stop again on
+the first grid pass. Nothing left out so far (strides, visibility tests, that pass) or serialised (no render thread,
+a wait after every list) stops it or moves it much in time (37 to 73 s): the stop follows the GPU, the timing
+follows something else. A build-up is the next suspect. sdk db011e4: every 5 seconds the log has video and shared
+memory and the textures, targets, pipelines and releases held. Smoke OK. Next: the L4 with XBE_SKIP_PS=0027B5B4
+XBE_SYNC_GPU=1 XBE_NV_MARKERS=1, and the memory lines up to the hang.
+
 ### 2026-10-28 - MI6 Training's hang: a depth texture compared in a grid pass
 
 5b again (47.1 s): Aftermath's marker at list 2569 draw 6004 of 6767, about 89% in as before, all draws around it
