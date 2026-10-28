@@ -21,6 +21,15 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-28 - MI6 Training's hang: either third-enemy shader alone, edits no help
+
+XBE_VS_EDIT=noprecise,noinf,rcpclamp froze at 37.0 s; leaving out only 384A froze at 36.4 s, only C20D at 52.7 s:
+each hang one present after the shaders are first made, so either alone is enough and precise, the infinite
+literals and the unguarded reciprocals are not it. Shared: skinning by a0 from an int4 input, four lights, the
+NP3 packed normal. sdk 10b3543: the first two draws of every vertex shader are logged with their geometry (topology,
+counts, index range, vertices assembled, buffers) and input layout (register: DXGI format / buffer + offset);
+XBE_VS_EDIT=noskin forces a0 to 0. Smoke OK. Next: a plain run for those lines, and noskin.
+
 ### 2026-10-28 - MI6 Training's hang: the third enemy's vertex shaders
 
 Run 16, XBE_SKIP_VS=384A569ABF6339C8,C20D64B9C2B21341 (with XBE_DUMP_SHADERS=1): no hang, past the third fight, and
