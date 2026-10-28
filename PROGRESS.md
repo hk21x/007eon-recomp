@@ -21,6 +21,20 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-28 - MI6 Training's lost device: a GPU page fault (Aftermath)
+
+The player's NVIDIA Aftermath crash dump (RTX 3080, driver 621.01) decoded here with the Aftermath SDK's decoder
+(Harry's download, kept in .local/aftermath: its licence lets the library ship only built into an application, so
+neither it nor the tool is committed): Device state Error_DMA_PageFault, engine reset. Not a shader running long:
+the GPU read memory it had no page for, which Windows reports as DEVICE_HUNG and AMD's GPUs may read through. The
+dump has no address (page fault details need resource tracking: the Aftermath Monitor's option, or the application's).
+Audited without finding the fault: allocators reset after their frame's fence, idle textures released after 600
+frames into a frame's garbage, late read-back buffers replaced into the frame's garbage, the upload ring flushed past
+56 of 64 MB (no constants at its end). sdk 9e5900b: every GPU resource named (upload rings and own uploads,
+targets with their guest data, textures with data, size and format, MSAA twins, read-backs, shrunk and feedback
+copies), so DRED and Aftermath name the resource at a fault. Smoke OK. Next: a dump with the Monitor's resource
+tracking on: the faulting address and the resource.
+
 ### 2026-10-27 - MI6 Training's lost device on NVIDIA: stopped, written up (unsolved)
 
 The player's run with XBE_SKIP_TARGET=03170A00 (no draws into the dummy's second target): hung the same (draw 2468
