@@ -21,6 +21,14 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-28 - MI6 Training's hang needs the draws
+
+Run 11: XBE_SKIP_STRIDES=all XBE_SKIP_AFTER=32 (the room loaded at about 26 s) ran 138 s without a hang, presenting
+about 60 frames a second to the end, memory steady. The clears, copies, presents and the room's timed logic alone
+do not hang the GPU (Bond standing still). sdk e5073cd: XBE_DRAW_RANGE=a-b keeps only each list's draws a to b-1
+(about one list a frame), from XBE_SKIP_AFTER on, to halve the frame's draws until the ones needed are found.
+Smoke OK.
+
 ### 2026-10-28 - MI6 Training's hang: where it stands after 21 runs on the L4
 
 Facts (NVIDIA L4, every run Hung, Aftermath fingerprint 0x3cbf0f26bce8a45c, DXGI_ERROR_DEVICE_HUNG):
