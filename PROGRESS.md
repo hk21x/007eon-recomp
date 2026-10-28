@@ -21,6 +21,13 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-28 - MI6 Training's hang: not the negative base vertex; bisecting by vertex layout
+
+XBE_REBASE_INDICES=1 on the L4: froze the same, stopped at a grid strip drawn with base 0; Hung, fingerprint
+0x3cbf0f26bce8a45c in two runs (deterministic). sdk 4866ee3: XBE_SKIP_STRIDES=list leaves out draws by their
+vertex stride, to bisect on the test PC: 28 (the dummy's and hologram meshes, packed normals), 32 (grid strips),
+64 (character meshes). Smoke OK.
+
 ### 2026-10-28 - MI6 Training's hang: no copies this time; negative base vertices
 
 The L4 run of 1bdcba9 (Harry's EoN save, the game's own Aftermath dump): hung at 53.6 s, device state Hung (not
