@@ -21,6 +21,16 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-28 - MI6 Training's hang: only a whole frame's draws hang
+
+XBE_DRAW_RANGE (from 32 s, after the room loaded): 0-3300 ran 168 s, 3300- 252 s, 0-4950 153 s, 1650- 197 s, none
+hung; every run with all of the frame's ~6600 draws hung by 57 s. The range check sits just before the draw call:
+binding, uploads, descriptors and flushes are the same in both, only the draws the GPU runs differ. So no draw is
+needed in particular, only enough of them in a list. (Run 6, XBE_SKIP_PS from the start, hung with 3393 draws a
+list: those draws were never bound either, so it is not a plain count of draws.) sdk b7e18cc: XBE_SPLIT_DRAWS=N sends
+the list and waits for it every N draws, the frame's work the same in smaller lists. Smoke OK.
+Next: the L4 with 3000, then 1000.
+
 ### 2026-10-28 - MI6 Training's hang needs the draws
 
 Run 11: XBE_SKIP_STRIDES=all XBE_SKIP_AFTER=32 (the room loaded at about 26 s) ran 138 s without a hang, presenting
