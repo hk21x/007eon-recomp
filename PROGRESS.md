@@ -21,6 +21,18 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-28 - MI6 Training's hang: the third enemy's vertex shaders
+
+Run 16, XBE_SKIP_VS=384A569ABF6339C8,C20D64B9C2B21341 (with XBE_DUMP_SHADERS=1): no hang, past the third fight, and
+the third enemy invisible, nothing else missing. Both are vertex shaders made for program handle 0x27D209 (new
+microcode in the same slot) at the third fight: skinning through c[a0+96..98] with a0 from an int4 ATTR3, four point
+lights each with ilu_rsq, ilu_lit (exp2 of log2) and an unguarded ilu_rcp of the attenuation; C20D adds a
+reflection texgen. No loops; the HLSL is valid. The GPU hangs ahead of their draws (the front end stops on earlier
+grid strips, once on draw 0 of a fresh list): the hang comes as the GPU takes in their state, a driver problem with
+what these shaders compile to, on D3D11 too (same DXBC). sdk 4a2e47a: XBE_VS_EDIT=noprecise,noinf,rcpclamp rewrites
+the generated vertex shaders (no precise, no infinite literals, reciprocals clamped). Smoke OK.
+Next: the L4 with all three, then one at a time; each of the two shaders left out alone.
+
 ### 2026-10-28 - MI6 Training's hang: two new vertex shaders the present before
 
 Run 15 (plain, logging what is made) froze at 61.3 s, present 3135. Nothing new for 584 presents, then at present
