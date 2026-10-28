@@ -21,6 +21,16 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-28 - MI6 Training's NVIDIA hang: vertex element offsets past the input assembler's limit
+
+Run 18's draw lines: the third enemy's two draws (735 and 483 indices, 607 and 575 vertices, stride 28) had input
+elements at offsets 60172, 60184, 60188, 60196: the title points each attribute 2149 vertices into the buffer, and
+the raw path kept those offsets in the input layout, with the buffer starting 60 KB early (77168 bytes = 60172 +
+607 x 28). Every working mesh has offsets under its stride. D3D's AlignedByteOffset limit is 2047; NVIDIA GPUs hang
+taking the layout in (D3D11 and D3D12 alike, ahead of the draw), others read it. XBE_VS_EDIT=noskin froze too: the
+shaders were never it. sdk e703353: AssembleRaw moves each stream's whole vertices' worth of offset to the buffer's start
+(the same bytes read; offsets now 0, 12, 16, 24). Smoke OK. Next: the L4 through the third fight, plain.
+
 ### 2026-10-28 - MI6 Training's hang: either third-enemy shader alone, edits no help
 
 XBE_VS_EDIT=noprecise,noinf,rcpclamp froze at 37.0 s; leaving out only 384A froze at 36.4 s, only C20D at 52.7 s:
