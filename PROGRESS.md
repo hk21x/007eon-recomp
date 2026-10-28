@@ -21,6 +21,17 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-28 - Defender quarantined EoN.exe: no suspended relaunch
+
+Harry's PC, 20:12: Microsoft Defender quarantined EoN\play\EoN.exe as Behavior:Win32/DefenseEvasion.A!ml (a
+behaviour model, not a signature). The one thing the runtime does that reads as defence evasion: kernel::Relaunch
+(XLaunchNewImage, e.g. on foot to the driving missions) started the next exe with CREATE_SUSPENDED, made the
+handover event named after the child's process id, then ResumeThread: the shape of process hollowing. sdk 61c1bc9:
+the event is named after the parent and made first, the child gets --handover=<parent pid> and starts normally
+(app::StartHandover reads it). Smoke OK (the relaunch is Windows only: to check on the test PC by a mission that
+switches exe). The launcher still starts its build tools suspended, to put them in a job before they run; not
+flagged.
+
 ### 2026-10-28 - Release 1.0.1: the NVIDIA MI6 Training freeze
 
 docs/releases/v1.0.1.md: the fix for the hand-to-hand room freeze on NVIDIA cards (vertex element offsets past

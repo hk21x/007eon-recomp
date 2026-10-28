@@ -28,6 +28,9 @@ game's own code and data, with its addresses).
 - **[game]** The vertex programs are loaded with pushed commands (0x1E9C, 0x0B00) inside the recorded frame and
   selected with SelectVertexShader(0x27D209 or 0, slot); 0x27D208 is the library's direct-input shader.
 - **[game]** BLACK is wall cover (the training level's first step).
+- **[console]** Windows: Microsoft Defender's behaviour model quarantines an exe that starts a process suspended and
+  then resumes it (Behavior:Win32/DefenseEvasion.A!ml); the relaunch passes its handover event's name on the
+  command line instead.
 - **[console]** A vertex attribute's offset can lie far past its stream's stride (the console adds it to the
   buffer's address): EoN's third MI6 Training enemy points its four attributes 60172 to 60196 bytes in (2149
   vertices of 28 bytes). Kept as D3D input element offsets, past the input assembler's 2047, they hung NVIDIA GPUs
