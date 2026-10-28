@@ -21,6 +21,15 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-28 - MI6 Training's page fault: always after two copies
+
+With Aftermath initialised (result 1) the dump still has no address (Nsight: "could not determine a cause";
+graphics pipeline busy, every unit idle: the front end). Both runs on the L4 stopped at the same point: DRED
+operations 8 8 15 [4], two CopyTextureRegion and a barrier before a strip of 4 indices from base -1000 (42308 bytes,
+stride 28) with a DXT3 128x128 texture: the faulting operation is likely one of the copies. sdk 30ff9a9: every
+CopyTextureRegion noted with its resources' names, footprint or subresource and box; the report lists those just
+before the stop. Smoke OK. Next: Harry's run with it.
+
 ### 2026-10-28 - MI6 Training's page fault on Harry's rented NVIDIA L4
 
 Reproduced on a rented NVIDIA L4 (Ada, driver 596.86, Windows Server 2025) with the Aftermath Monitor: the same
