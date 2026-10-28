@@ -21,6 +21,16 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-28 - MI6 Training's hang: no copies this time; negative base vertices
+
+The L4 run of 1bdcba9 (Harry's EoN save, the game's own Aftermath dump): hung at 53.6 s, device state Hung (not
+PageFault), a new fingerprint, no address, shaders or markers; the stop (draw 1770 of 5998, 4 4 4 [4]) had no copies
+before it: the copies were not the cause. What every report shares, on D3D11 and D3D12: the stop among indexed draws
+with a negative base vertex (DrawNative passes the title's 16 bit indices with base -first: grid strips at about
+-5950, character meshes at -8 to -30, one at -635). sdk 9c147bb: XBE_REBASE_INDICES=1 copies those indices to
+32 bit with the lowest taken off and draws with base 0 (the headless renderer does not take that path). Smoke OK.
+Next: the L4 run with it.
+
 ### 2026-10-28 - MI6 Training's page fault: always after two copies
 
 With Aftermath initialised (result 1) the dump still has no address (Nsight: "could not determine a cause";
