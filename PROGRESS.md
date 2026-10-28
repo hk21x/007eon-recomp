@@ -21,6 +21,15 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-28 - MI6 Training's hang: memory flat; the stop at a texture's first draw
+
+Run 7 (XBE_SKIP_PS=0027B5B4, sync, markers) froze at 57.0 s. Aftermath's marker and DRED agree for once: draw
+3040.1819 began and never finished, the first draw with texture B005D200 (07780E29: DXT3 128x128, 8 levels; the
+grid's) after ten with B005C320. Memory flat every 5 s: video 141 MB of 21827, 131 textures, 5 targets, 37
+pipelines, nothing waiting release, all settled 11 s before the hang. sdk f397b0e: each draw note in the report adds
+stage 0's texture (size, levels, DXGI format, the present it was made at, its uploads) and its sampler (filter,
+anisotropy, address modes, LOD bias and range). Smoke OK. Next: run 7 again for those.
+
 ### 2026-10-28 - MI6 Training's hang: not the depth compare pass either
 
 Run 6 (XBE_SKIP_PS=0027B5B4, half of each frame's draws gone) froze at 51.5 s, same fingerprint, the stop again on
