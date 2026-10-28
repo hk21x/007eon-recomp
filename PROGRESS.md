@@ -21,6 +21,14 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-28 - MI6 Training's hang: not the shader compile; a freed resource?
+
+XBE_SHADER_FLAGS=skip froze twice (40.1, 37.1 s), ieee at 35.7 s, same fingerprint, stopped at grid strips (either
+address mode). The dumps show no active shaders: the GPU is held before or outside the shaders, on the simplest draws
+and once on a depth clear, on D3D11 as on D3D12, 15 to 25 s into the room. Left unexplored: memory the GPU uses after
+it was let go. sdk 67513a6: the 5 s memory line counts every resource released so far; XBE_KEEP_RELEASED=1 keeps them all
+(none freed). Smoke OK. Next: the L4 with it, and a run standing in the room facing away from the enemy.
+
 ### 2026-10-28 - MI6 Training's hang: the shaders' compilation next
 
 Run 8 froze at 46.1 s; marker and DRED agree on draw 2692, a grid strip with the same textures as its neighbours
