@@ -21,6 +21,16 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-28 - MI6 Training's hang: no draw kind stops it; a race?
+
+On the L4 with XBE_SKIP_STRIDES: 28 froze (a grid strip), 32 froze with the stop at the next frame's first
+operation, its depth clear (0 draws done), 64 froze; 28,32,64,80 could not be played to the room. All Hung with
+fingerprint 0x3cbf0f26bce8a45c, 37 to 54 s after the start. A depth clear cannot take two seconds: the stop is where
+the GPU is when the timeout fires, not the work at fault, and no kind of draw is needed for it. Left: a race between
+the CPU and the GPU (memory changed while a list reads it) or something timed. sdk f971c77: XBE_SYNC_GPU=1 waits for
+every list once sent; with XBE_RENDER_THREAD=0 (drawing on the title's thread) nothing overlaps. Smoke OK.
+Next: the L4 with both.
+
 ### 2026-10-28 - MI6 Training's hang: not the negative base vertex; bisecting by vertex layout
 
 XBE_REBASE_INDICES=1 on the L4: froze the same, stopped at a grid strip drawn with base 0; Hung, fingerprint
