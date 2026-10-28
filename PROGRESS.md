@@ -21,6 +21,15 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-28 - MI6 Training's NVIDIA hang fixed: confirmed on the L4
+
+ece7840 on the NVIDIA L4 (driver 596.86): D3D12 twice and D3D11 once, each played past the third enemy, which
+looks normal; no lost device, no dump. Before the fix every one of about 25 runs today hung there. The diagnostics
+added on the way (XBE_SYNC_GPU, XBE_NV_MARKERS with the Aftermath DLL, XBE_SKIP_*, XBE_DRAW_RANGE, XBE_SPLIT_DRAWS,
+XBE_VS_EDIT, XBE_KEEP_RELEASED, XBE_SHADER_FLAGS, XBE_DUMP_SHADERS) stay, off unless set; the log keeps the memory
+line every 5 s and a line for each pipeline, texture, target and vertex shader made.
+Next: Harry's call on releasing v1.0.1; the fix into fork main with the other games' smoke.
+
 ### 2026-10-28 - MI6 Training's NVIDIA hang: vertex element offsets past the input assembler's limit
 
 Run 18's draw lines: the third enemy's two draws (735 and 483 indices, 607 and 575 vertices, stride 28) had input

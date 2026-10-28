@@ -28,6 +28,11 @@ game's own code and data, with its addresses).
 - **[game]** The vertex programs are loaded with pushed commands (0x1E9C, 0x0B00) inside the recorded frame and
   selected with SelectVertexShader(0x27D209 or 0, slot); 0x27D208 is the library's direct-input shader.
 - **[game]** BLACK is wall cover (the training level's first step).
+- **[console]** A vertex attribute's offset can lie far past its stream's stride (the console adds it to the
+  buffer's address): EoN's third MI6 Training enemy points its four attributes 60172 to 60196 bytes in (2149
+  vertices of 28 bytes). Kept as D3D input element offsets, past the input assembler's 2047, they hung NVIDIA GPUs
+  (D3D11 and D3D12, the GPU stalling ahead of the draw, no shader active, Aftermath "Hung"); the runtime moves whole
+  vertices' worth of offset to the buffer's start.
 - **[game]** Character shadows: a depth-only pass into a D24S8 surface given as colour target and depth buffer
   (0x03043000, 128x128 or 256x256), then the ground patches under the character redrawn with pixel shader
   0x27B5B4 (stage 0 PROJECT2D on the depth texture, border addressing; stage 1 bump env) - about 8000 draws a
