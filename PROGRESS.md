@@ -21,6 +21,15 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-28 - MI6 Training's hang: Aftermath names a draw far past DRED's stop
+
+Run 5 (XBE_NO_QUERIES=1) froze at 52.9 s: the title never turned a visibility test on in the whole run, so the
+queries are out. Run 5b (XBE_SYNC_GPU=1 XBE_NV_MARKERS=1) froze at 41.0 s. Aftermath's marker: list 2218 draw 5985
+executing, 5986 not started (the dump agrees), while DRED's first unfinished draw was 2913 of 6556, a grid strip. DRED
+counts finished draws; the marker is how far the GPU's front end got, so the hang is at or waits on draw 5985, about
+91% into the frame. sdk 79e787d: the report logs the draws 10 either side of the marker's draw, the copies before it and
+DRED's operations around it. Smoke OK. Next: run 5b again.
+
 ### 2026-10-28 - MI6 Training's hang: the visibility tests next
 
 Run 4 again with copied markers (the test PC's local patch, the same as sdk 0a0c7f2's): froze at 56.5 s, but
