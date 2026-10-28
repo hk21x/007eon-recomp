@@ -21,6 +21,15 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-28 - MI6 Training's hang: the third fight, not a timer; runs 11 to 13 void
+
+Harry: the hang comes only once fighting the room's third enemy, never at the first. Runs 11, 12 and 13 (no input
+after the 32 s cut) stood at the first enemy and never reached it: their survivals say nothing, and the two entries
+above built on them (draws needed, only a whole frame hangs) are withdrawn. Run 10b (facing away) did fight through,
+so the view does not matter. Every run played through froze, 10 to 20 s into the room. sdk 25a7d1c: XBE_SKIP_AFTER=f8
+starts the skips (XBE_SKIP_STRIDES, XBE_DRAW_RANGE) at the first press of F8, so they can begin once the second enemy
+is down. XBE_SPLIT_DRAWS stays a fair test played through. Smoke OK.
+
 ### 2026-10-28 - MI6 Training's hang: only a whole frame's draws hang
 
 XBE_DRAW_RANGE (from 32 s, after the room loaded): 0-3300 ran 168 s, 3300- 252 s, 0-4950 153 s, 1650- 197 s, none
