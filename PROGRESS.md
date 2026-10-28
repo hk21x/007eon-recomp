@@ -21,6 +21,15 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-28 - MI6 Training's hang: a depth texture compared in a grid pass
+
+5b again (47.1 s): Aftermath's marker at list 2569 draw 6004 of 6767, about 89% in as before, all draws around it
+alike: 3 index strips, stride 32, vs 0027D209 ps 0027B5B4, target 83A04A00, texture 0 B00CE1A0 format 00012E29
+(LIN_D24S8, 256x256 with a 5120 byte pitch: part of a 640 wide depth buffer) read through a comparison sampler (the
+shadow path), no copies or barriers near. The first grid pass (ps 0, DRED's stop) is the same geometry untextured.
+The sampler's comparison is in range (Cmp maps any value). sdk 518de6d: XBE_SKIP_PS=0027B5B4 leaves that pass out,
+XBE_NO_SHADOW=1 reads depth textures as plain floats. Smoke OK. Next: the L4 with each.
+
 ### 2026-10-28 - MI6 Training's hang: Aftermath names a draw far past DRED's stop
 
 Run 5 (XBE_NO_QUERIES=1) froze at 52.9 s: the title never turned a visibility test on in the whole run, so the
