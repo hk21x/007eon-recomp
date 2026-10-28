@@ -21,6 +21,12 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-28 - Release 1.0.1: the NVIDIA MI6 Training freeze
+
+docs/releases/v1.0.1.md: the fix for the hand-to-hand room freeze on NVIDIA cards (vertex element offsets past
+D3D's limit, sdk e703353) and the descriptor slots reused while still read (sdk 72d8bf2), said plainly to concern
+NVIDIA cards; the log's new detail. Tag v1.0.1 on main; the release workflow builds and publishes EoNLauncher.exe.
+
 ### 2026-10-28 - MI6 Training's NVIDIA hang fixed: confirmed on the L4
 
 ece7840 on the NVIDIA L4 (driver 596.86): D3D12 twice and D3D11 once, each played past the third enemy, which
