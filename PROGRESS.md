@@ -21,6 +21,18 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-28 - MI6 Training's hang: the visibility tests next
+
+Run 4 again with copied markers (the test PC's local patch, the same as sdk 0a0c7f2's): froze at 56.5 s, but
+Aftermath's markers named list 3071 draw 495, a list recorded after the loss on the same command list, while DRED's
+unfinished list was 3070 at draw 2932. One context handle on a reused command list follows the newest recording. sdk
+bfbdc0a: with XBE_SYNC_GPU the loss is checked right after each wait, before more is recorded (and GetData logs the
+marker then). New suspect: the freeze comes when Bond turns to face the enemy, which is when the title may start
+visibility tests (occlusion queries: BeginQuery, EndQuery and a ResolveQueryData per counted draw).
+XBE_NO_QUERIES=1 leaves them out (every test reports 0 pixels), and the report counts the tested draws in the
+stopped list and the nearest to the stop. Smoke OK. Next: the L4 with XBE_NO_QUERIES=1, and with
+XBE_SYNC_GPU=1 XBE_NV_MARKERS=1.
+
 ### 2026-10-28 - Aftermath markers that reach the dump
 
 Run 4 (XBE_SYNC_GPU=1 XBE_NV_MARKERS=1) froze at 72.7 s, Hung, same fingerprint, stopped at a grid strip
