@@ -21,6 +21,15 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-28 - MI6 Training's hang is not a race; a marker per draw
+
+On the L4: XBE_RENDER_THREAD=0 froze at 70.5 s, XBE_SYNC_GPU=1 at 44.3 s, both Hung with fingerprint
+0x3cbf0f26bce8a45c. With the sync the CPU waits on each list, and the GPU hung inside a single list (2521 of 6553
+draws done, on a grid strip) with nothing else running: the work in one list hangs, whatever the CPU does. sdk 3c730e2:
+XBE_NV_MARKERS=1 (test PC with the Aftermath DLL) sets an event marker per draw holding list << 20 | draw; the
+decoder (.local/aftermath/tool) prints the last marker each GPU context reached. Smoke OK.
+Next: the L4 with XBE_SYNC_GPU=1 XBE_NV_MARKERS=1, then that draw's state.
+
 ### 2026-10-28 - MI6 Training's hang: no draw kind stops it; a race?
 
 On the L4 with XBE_SKIP_STRIDES: 28 froze (a grid strip), 32 froze with the stop at the next frame's first
