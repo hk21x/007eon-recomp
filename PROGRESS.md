@@ -21,6 +21,23 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-28 - MI6 Training's hang: where it stands after 21 runs on the L4
+
+Facts (NVIDIA L4, every run Hung, Aftermath fingerprint 0x3cbf0f26bce8a45c, DXGI_ERROR_DEVICE_HUNG):
+- 35.7 to 72.7 s from launch, 10 to 20 s after the room loads, whatever the view: facing away from the dummy froze
+  at 42.8 s. A timed or scripted event in the room fits better than anything drawn.
+- D3D11 freezes as well. Dumps: no page fault, no active shaders, no address.
+- Where the GPU stops follows the work, not the fault: the first grid pass (3 and 4 index strips, vertex program
+  0x27D209, fixed function, a DXT3 128x128 texture) almost always; the next frame's depth clear when the grid was
+  left out. With a wait after each list and Aftermath markers, the GPU's front end and DRED agree on one such strip.
+- Ruled out, each by a frozen run: the render thread (XBE_RENDER_THREAD=0), CPU/GPU overlap (XBE_SYNC_GPU=1), strides
+  28/32/64 left out, visibility tests (never used), the depth compare pass (XBE_SKIP_PS=0027B5B4), anisotropy
+  (off), the shader compile (skip, ieee), freed resources (none are ever released; XBE_KEEP_RELEASED=1), a build-up
+  (video memory flat at 141 MB, 130 textures, 5 targets). In the code: shader loops, a0 indexing, cbuffer sizes,
+  sampler ranges, YUY2 (CPU converted), the shared colour/depth surface binding.
+sdk f9eb5c2: XBE_SKIP_STRIDES=all with XBE_SKIP_AFTER leaves out every draw from then on: if the GPU still hangs with
+only clears, copies and presents, the draws are out entirely. Smoke OK.
+
 ### 2026-10-28 - MI6 Training's hang: not the shader compile; a freed resource?
 
 XBE_SHADER_FLAGS=skip froze twice (40.1, 37.1 s), ieee at 35.7 s, same fingerprint, stopped at grid strips (either
