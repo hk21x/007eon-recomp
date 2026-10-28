@@ -21,6 +21,17 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-28 - MI6 Training's hang: the shaders' compilation next
+
+Run 8 froze at 46.1 s; marker and DRED agree on draw 2692, a grid strip with the same textures as its neighbours
+(run 7's texture change at the stop was chance). The sampler is ordinary: no anisotropy (off in every run, with
+antialiasing off and render 100%), LOD bias -1, linear. The texture lines were empty: a binding memoised for the frame
+skipped them (fixed). Checked in the shaders: the one loop (spreadtap) runs only for upscaled targets, absent at
+100%; the vertex programs' a0 reads are clamped to c[0..191]. Every stop so far is a draw with vertex program
+0x27D209 (the title's own, loaded through the push buffer), on D3D11 as well as D3D12: both take FXC's DXBC, so a
+driver compile problem with one shader would hang both. sdk 6c386bb: XBE_SHADER_FLAGS=skip / o3 / ieee compiles every
+shader otherwise (kept apart in the shader cache). Smoke OK. Next: the L4 with skip, then ieee.
+
 ### 2026-10-28 - MI6 Training's hang: memory flat; the stop at a texture's first draw
 
 Run 7 (XBE_SKIP_PS=0027B5B4, sync, markers) froze at 57.0 s. Aftermath's marker and DRED agree for once: draw
