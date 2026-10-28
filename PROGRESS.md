@@ -21,6 +21,18 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-28 - MI6 Training's page fault on Harry's rented NVIDIA L4
+
+Reproduced on a rented NVIDIA L4 (Ada, driver 596.86, Windows Server 2025) with the Aftermath Monitor: the same
+dump fingerprint as the player's (10562858334710211147), Error_DMA_PageFault, no address (the Monitor's resource
+tracking needs the application to initialise Aftermath). The log's report: the unfinished list stopped at draw 3909
+of 4892, after two CopyTextureRegion and a barrier (DRED operations 8 8 15), a strip of 4 indices from base -1000,
+stride 28, sampling texture B00A89A0 (DXT3 128x128, 8 levels). Audited: texture levels uploaded with
+GetCopyableFootprints sizes, a remade texture's old resource kept in the frame's garbage, the tables cache cleared
+with each ring generation. sdk dca8374: Aftermath initialised (markers, resource tracking, shader debug info,
+error reporting, call stacks) when NVIDIA's GFSDK_Aftermath_Lib.x64.dll is beside the exe (test PC only; declared
+here, no SDK file in the repo). Smoke OK. Next: the dump with it: the faulting address and the resource's name.
+
 ### 2026-10-28 - MI6 Training's lost device: a GPU page fault (Aftermath)
 
 The player's NVIDIA Aftermath crash dump (RTX 3080, driver 621.01) decoded here with the Aftermath SDK's decoder
