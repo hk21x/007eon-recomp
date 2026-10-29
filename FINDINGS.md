@@ -33,6 +33,10 @@ game's own code and data, with its addresses).
   it on PC (a null 0x3722B0 read in 0x23E420). Its 13 entry points are serialised (src/driving/library_lock.cpp).
 - **[game]** 'STRM' (0x4D525453) streams, in both xbes: taking a reader's next packet (driving 0x24AC20, default
   0x7C960) walks the packet chain outside the stream's critical section; run whole inside it (src/*/stream_walk.cpp).
+- **[game]** Releases: both European discs are one code (the En/Es/It/Nl/Sv disc and the Fr/De one, certificate
+  version 4; a media-patched copy differs by a JMP for JGE after XapiVerifyMediaInDrive). The USA disc is another
+  compile: on foot the libraries sit 0x840 lower, driving 0x40; game code and data move by varying amounts. Its
+  addresses come from sdk/tools/symbols/xbe_port.py; the hooks hold both (src/common/release.h).
 - **[console]** Windows: Microsoft Defender's behaviour model quarantines an exe that starts a process suspended and
   then resumes it (Behavior:Win32/DefenseEvasion.A!ml); the relaunch passes its handover event's name on the
   command line instead.

@@ -14,7 +14,8 @@
     "releases": {
         "62298fe4e618d9d81863080fb1b00c1667d871c9": "PAL (Europe), media check patched",
         "65fe0c47889bae5732b93e36215b564c94df9e9f": "PAL (Europe: English, Spanish, Italian, Dutch, Swedish)",
-        "0d2acd66ea75949254916f1f91f7bf31beac9bbe": "PAL (Europe: French, German)"
+        "0d2acd66ea75949254916f1f91f7bf31beac9bbe": "PAL (Europe: French, German)",
+        "1f4db3b7d3f5102ec7a2351e521f545ef4972be6": "NTSC (USA)"
     },
     "repo": "https://github.com/hk21x/007eon-recomp.git",
     "branch": "main",

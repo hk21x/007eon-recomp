@@ -5,7 +5,7 @@ path = "assets/driving.xbe"
 title = 0x45410042
 entry = 0x2642A4
 xdk = 5659
-out = "generated/game"
+out = "generated/driving"
 partitions = 64
 code_sections = [".text", "DSOUND", "XGRPH", "D3D", "XPP"]
 

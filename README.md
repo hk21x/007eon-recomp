@@ -13,18 +13,20 @@ reimplemented for Windows (Direct3D 12 or 11, XAudio2, SDL). It is not an emulat
 
 ## Supported Versions
 
-The European (PAL) Xbox releases of 007: Everything or Nothing (title id 45410042). Both European discs hold the
-same code and work:
+The European (PAL) and USA (NTSC) Xbox releases of 007: Everything or Nothing (title id 45410042). Both European
+discs hold the same code; the USA disc is another build of the game, which the build recognises by its
+`default.xbe` and recompiles with its own configuration (`config/usa_*.toml`):
 
 | Release | `default.xbe` (on foot, menus) SHA-1 | `driving.xbe` (the driving missions) SHA-1 |
 | --- | --- | --- |
 | Europe (English, Spanish, Italian, Dutch, Swedish) | `65fe0c47889bae5732b93e36215b564c94df9e9f` | `93390d82f2a7dd5371fd6d7b725577e806e4f09e` |
 | Europe (French, German) | `0d2acd66ea75949254916f1f91f7bf31beac9bbe` | `08a873cfff115a77164405f7f93890e04ad395f0` |
 | Europe, media check patched | `62298fe4e618d9d81863080fb1b00c1667d871c9` | `da2b27d66d4b5f23af47421b9572fcad06669d22` |
+| USA | `1f4db3b7d3f5102ec7a2351e521f545ef4972be6` | `ef1f8404d459feda02fbbe1ea8641569015280d7` |
 
 The game is two programs: the driving missions are a second xbe that the game launches and returns from. Both are
 recompiled, into `EoN.exe` and `EoNDriving.exe`, and the switch between them happens on its own. The log names the
-SHA-1 of each xbe it found. The USA (NTSC) release is a different build and is not supported yet.
+SHA-1 of each xbe it found.
 
 ## Getting Started
 

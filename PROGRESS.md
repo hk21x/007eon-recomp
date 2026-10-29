@@ -21,6 +21,23 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-29 - The USA release: another compile, ported address by address
+
+The USA xbes are the same game built again (XDK 5659 alike; code and data moved). sdk 98d94c0 adds
+sdk/tools/symbols/xbe_port.py: both xbes disassembled (objdump), each instruction normalised (numbers that point into
+the image masked, branches by kind), a code address matched by the 12 to 96 instructions from it (and before it when
+several places match), a data address by the operands of matched instructions that name it (votes). config/eon.toml
+and driving.toml ported whole (--toml): every value moved by one constant, -0x840 on foot, -0x40 driving (the
+libraries' shift), none missed. config/usa_game.toml and usa_driving_game.toml are xbe_symbols output for the USA
+xbes (--name driving for the second: without it both wrote generated/game). CMakeLists.txt picks the usa_ configs
+when assets/default.xbe is the USA one and defines EON_USA; src/common/release.h gives each hook address as a pair
+(EON_FN / EON_ORIG / EON_VA, European first), every pair from xbe_port.py and checked by hand: object ids, hashes and
+offsets that fall in the image range left alone (quit_item.cpp's FEng ids), the profile 0x31EC50 -> 0x31E148 (the
+data around it moves by 0xB08 from 0x31EB10, several votes; the profile itself is reached only through +0x6C).
+USA: an NTSC console (pal_console off), its own same_code. In .local/usatest (the USA xbes as assets, the USA image as
+the disc, HOST_FLAGS=-DEON_USA=1) both xbes recompile and smoke passes: movies, the training level, 11503 draws a
+frame, no traps, the same two warnings as Europe. Not covered headless: the main menu, driving.xbe, Windows.
+
 ### 2026-10-29 - The three retail discs: both European ones run, the USA one is another build
 
 Harry's .local/win: redump images of the Europe (En,Es,It,Nl,Sv), Europe (Fr,De) and USA releases. Their xbes
