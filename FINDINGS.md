@@ -31,6 +31,8 @@ game's own code and data, with its addresses).
 - **[game]** driving.xbe: a library at 0x23D460 to 0x240E20 (4 slots of 0x928 bytes from 0x36FE10, the current
   one in 0x3722B0) guards its entry points with a plain busy flag at 0x3722C0; the title's threads raced through
   it on PC (a null 0x3722B0 read in 0x23E420). Its 13 entry points are serialised (src/driving/library_lock.cpp).
+- **[game]** 'STRM' (0x4D525453) streams, in both xbes: taking a reader's next packet (driving 0x24AC20, default
+  0x7C960) walks the packet chain outside the stream's critical section; run whole inside it (src/*/stream_walk.cpp).
 - **[console]** Windows: Microsoft Defender's behaviour model quarantines an exe that starts a process suspended and
   then resumes it (Behavior:Win32/DefenseEvasion.A!ml); the relaunch passes its handover event's name on the
   command line instead.

@@ -21,6 +21,18 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-29 - The same player's second crash: a stream's packet walk outside its lock
+
+Next eon.log (D3D12 this time, v1.0.1): driving.xbe 2 s after its launch, C0000005 reading guest 0x8410921E (past
+the 64 MB), thread 14, in 0x24AC20 (from 0x15CE65, a stream reader's loop). 'STRM' (0x4D525453) streams: 0x24AC20
+takes a reader's next packet, updating the counts inside the stream's critical section (0x252840 / 0x252850 wrap
+RtlEnterCriticalSection / RtlLeaveCriticalSection, ordinals 277 and 294, sound in the runtime) but walking the packet
+chain to the reader's next packet after leaving it, while the writer fills packets and other readers free theirs:
+a half written size sent the walk off the end. src/driving/stream_walk.cpp runs the whole call inside the section
+(recursive, so the original's enter and leave nest). default.xbe has the same code at 0x7C960 (0x7F560 / 0x7F570):
+src/game/stream_walk.cpp. Smoke OK (the on-foot hook exercised by the movies and the level). Windows check through a
+driving mission with the earlier fixes.
+
 ### 2026-10-29 - A driving mission's crash: a library's flag lock raced on PC threads
 
 A player (Ryzen Z1 Extreme, Radeon, D3D11) reported repeated crashes. eon.log: driving.xbe, 134 s into the
