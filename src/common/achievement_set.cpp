@@ -19,6 +19,7 @@
 #include <vector>
 
 #include "core/achievements.h"
+#include "common/release.h"
 
 namespace eon {
 extern const bool kDriving;  // driving.xbe's exe (src/driving/hooks.cpp)
@@ -72,8 +73,11 @@ struct Copy {
     const char* guard;  // the profile was there last frame and is now (+0x78)
 };
 const Copy& This() {
-    static const Copy game = {0x31EC50, "d0xX31ecc8!=0_0xX31ecc8!=0_"};
-    static const Copy driving = {0x36CCC8, "d0xX36cd40!=0_0xX36cd40!=0_"};
+    // the European addresses, then the USA ones (src/common/release.h)
+    static const Copy game = {EON_VA(0x31EC50, 0x31E148),
+                              EON_VA("d0xX31ecc8!=0_0xX31ecc8!=0_", "d0xX31e1c0!=0_0xX31e1c0!=0_")};
+    static const Copy driving = {EON_VA(0x36CCC8, 0x36CCA8),
+                                 EON_VA("d0xX36cd40!=0_0xX36cd40!=0_", "d0xX36cd20!=0_0xX36cd20!=0_")};
     return kDriving ? driving : game;
 }
 uint32_t Record(int k) { return This().profile + 0x84 + 0x24 * uint32_t(k); }

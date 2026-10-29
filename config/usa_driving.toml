@@ -1,0 +1,73 @@
+# The USA release's driving.xbe (another compile of the same game): this file is config/driving.toml with
+# every address ported by sdk/tools/symbols/xbe_port.py (code by its instructions, data by the code naming it).
+# The comments cite the European release's addresses.
+# Hand-kept recompiler config for driving.xbe, the file the build reads. config/driving_game.toml is xbe_symbols
+# output and every scan rewrites it, so nothing is edited there: it is included here, and everything added by hand
+# goes below. Sign with this file:
+#   build/linux/xbe_symbols --sign config/driving.toml --out sdk/xdk/5659/signatures.toml
+includes = ["usa_driving_game.toml", "d3d8_qfe4.toml"]
+
+# D3D8 data: each default.xbe value (config/eon.toml) found here by the same instructions (all of their uses agree)
+[data]
+D3D_DirtyFlags           = 0x2AEE38
+D3D_DeferredTextureState = 0x2AEE40
+D3D_RenderState          = 0x2AF040
+D3D_PresentInterval      = 0x2AF23C
+D3D_FvfShader            = 0x2B1960
+
+# D3D8 QFE 4 functions the 5659 signatures miss: default.xbe's (config/eon.toml) matched here by their instructions
+# (numbers masked); several alike by link order. SetGammaRamp starts the D3D section. Not linked here:
+# SetRenderTargetFast, SetVertexShaderConstant1Fast, SetVertexShaderInput(Direct), Begin/EndPushBuffer.
+[symbols]
+D3DDevice_SetGammaRamp                               = 0x29E0A0
+D3DDevice_SetTransform                               = 0x29E160
+D3DDevice_BlockOnFence                               = 0x29E290
+D3DDevice_BlockUntilVerticalBlank                    = 0x29E350
+D3DDevice_SetFlickerFilter                           = 0x29E3C0
+D3DDevice_SetSoftDisplayFilter                       = 0x29E410
+D3DDevice_InsertFence                                = 0x29E470
+D3DDevice_Reset                                      = 0x29E570
+D3DDevice_SetRenderTarget                            = 0x29E620
+D3DDevice_GetBackBuffer2                             = 0x29E8A0
+D3DDevice_GetDepthStencilSurface2                    = 0x29EC20
+D3DDevice_SetViewport                                = 0x29EC40
+D3DDevice_SetPalette                                 = 0x29F020   # pushes 0x1B20 + stage * 0x40 itself (QFE 4)
+D3DDevice_SetTile                                    = 0x29F2A0
+D3DDevice_SetScissors                                = 0x29F390
+D3DDevice_SetScreenSpaceOffset                       = 0x29F840
+D3DDevice_SetRenderState_PSTextureModes              = 0x29FC40
+D3DDevice_SetRenderState_TextureFactor               = 0x2A0130
+D3DDevice_SetRenderState_Dxt1NoiseEnable             = 0x2A0200
+D3DDevice_SetTextureState_BumpEnv                    = 0x2A05F0
+D3DDevice_SetTextureStageStateNotInline              = 0x2A06E0
+D3DDevice_SetRenderState_ZEnable                     = 0x2A0EC0
+D3DDevice_SetRenderState_YuvEnable                   = 0x2A1050
+D3DDevice_SetRenderState_OcclusionCullEnable         = 0x2A1080
+D3DDevice_SetRenderState_StencilCullEnable           = 0x2A10F0
+D3DDevice_SetRenderState_RopZCmpAlwaysRead           = 0x2A1160
+D3DDevice_SetRenderState_RopZRead                    = 0x2A1180
+D3DDevice_SetRenderState_DoNotCullUncompressed       = 0x2A11A0
+D3DDevice_SetRenderState_MultiSampleMode             = 0x2A11C0
+D3DDevice_SetRenderState_MultiSampleRenderTargetMode = 0x2A11F0
+D3DDevice_SetRenderState_MultiSampleAntiAlias        = 0x2A1220
+D3DDevice_Clear                                      = 0x2A1820
+D3DDevice_Swap                                       = 0x2A2740
+D3DDevice_LoadVertexShader                           = 0x2A3300
+CDevice_KickOff                                      = 0x2A41A0
+D3D_SetFence                                         = 0x2A42C0
+D3D_BlockOnTime                                      = 0x2A4380
+D3D_MakeRequestedSpace                               = 0x2A44F0
+D3DDevice_MakeSpace                                  = 0x2A4630
+D3D_KickOffAndWaitForIdle                            = 0x2A4690
+D3D_BlockOnResource                                  = 0x2A46B0
+D3DDevice_End                                        = 0x2A4C90
+D3DDevice_RunPushBuffer                              = 0x2A4EA0
+
+D3DDevice_SetBackBufferScale = 0x2A2830  # (x, y): scales by the multisample type at +0x196C, compares back and front buffer
+
+# DSOUND exports the scan misses, by their .XTLID export ids
+IDirectSoundBuffer_SetEG              = 0x294703  # xtlid B0067
+IDirectSoundBuffer_StopEx             = 0x294793  # xtlid B007E
+IDirectSoundBuffer_GetCurrentPosition = 0x29480F  # xtlid B0053
+IDirectSound_CreateSoundBuffer        = 0x295714  # xtlid B003A
+XAudioCalculatePitch                  = 0x293B57  # xtlid B00A3

@@ -1,0 +1,76 @@
+# The USA release's default.xbe (another compile of the same game): this file is config/eon.toml with
+# every address ported by sdk/tools/symbols/xbe_port.py (code by its instructions, data by the code naming it).
+# The comments cite the European release's addresses.
+# Hand-kept recompiler config for default.xbe, the file the build reads. config/game.toml is xbe_symbols output and
+# every scan rewrites it, so nothing is edited there: it is included here, and everything added by hand goes below
+# ([[hook]], [[function]], [[switch]], [functions], [xbe] data_ranges / trace). Sign with this file:
+#   build/linux/xbe_symbols --sign config/eon.toml --out sdk/xdk/5659/signatures.toml
+includes = ["usa_game.toml", "d3d8_qfe4.toml"]
+
+# D3D8 data the 5659 signatures cannot read here: the library is QFE 4 (sdk/xdk/5659 was made from PGR2's QFE 1).
+# Each value from the default.xbe instruction given; the QFE 1 instruction it matches is PGR2's.
+[data]
+D3D_DirtyFlags           = 0x279FA8  # SelectVertexShader 0x26E668 ors 0x70 into it (PGR2 0x1C0128)
+D3D_DeferredTextureState = 0x279FB0  # 0x26A5F6 stores [stage * 32 + type] (8 past DirtyFlags, as in PGR2)
+D3D_RenderState          = 0x27A1B0  # SetPixelShader 0x2758EF copies 0x39 dwords to it (PGR2 0x1C26AF)
+D3D_Streams              = 0x27C908  # the vertex setup 0x27575F reads [n * 12 + 8] (PGR2 0x1C7A9F)
+D3D_PresentInterval      = 0x27A3AC  # 0x26D40A compares it with 0x80000000 (PGR2 0x1C534A)
+D3D_FvfShader            = 0x27CAE0  # the device init 0x270F7B stores it as the vertex shader (PGR2 0x1C9E1B, 0x1CF808)
+
+# D3D8 QFE 4 functions the 5659 signatures miss: each matched by its instructions (numbers masked) to the QFE 1
+# function PGR2 names; where several bodies match, by link order, which QFE 4 keeps
+[symbols]
+D3DDevice_SetVertexShaderInputDirect                 = 0x26DCF0
+D3DDevice_LoadVertexShader                           = 0x26DD30
+D3DDevice_SetVertexShaderInput                       = 0x26E280
+D3DDevice_End                                        = 0x275800
+D3DDevice_SetRenderState_PSTextureModes              = 0x2693B0
+D3DDevice_SetRenderState_TextureFactor               = 0x2698A0
+D3DDevice_SetRenderState_Dxt1NoiseEnable             = 0x269970
+D3DDevice_SetTextureState_BumpEnv                    = 0x269D60
+D3DDevice_SetTextureStageStateNotInline              = 0x269E50
+D3DDevice_SetRenderState_ZEnable                     = 0x26A630
+D3DDevice_SetRenderState_YuvEnable                   = 0x26A7C0
+D3DDevice_SetRenderState_OcclusionCullEnable         = 0x26A7F0
+D3DDevice_SetRenderState_StencilCullEnable           = 0x26A860
+D3DDevice_SetRenderState_RopZCmpAlwaysRead           = 0x26A8D0
+D3DDevice_SetRenderState_RopZRead                    = 0x26A8F0
+D3DDevice_SetRenderState_DoNotCullUncompressed       = 0x26A910
+D3DDevice_SetRenderState_MultiSampleMode             = 0x26A930
+D3DDevice_SetRenderState_MultiSampleRenderTargetMode = 0x26A960
+D3DDevice_SetRenderState_MultiSampleAntiAlias        = 0x26A990
+D3DDevice_SetGammaRamp                               = 0x26AAB0
+D3DDevice_SetTransform                               = 0x26AB40
+D3DDevice_BlockOnFence                               = 0x26AC70
+D3DDevice_BlockUntilVerticalBlank                    = 0x26AC80
+D3DDevice_SetFlickerFilter                           = 0x26ACF0
+D3DDevice_SetSoftDisplayFilter                       = 0x26AD40
+D3DDevice_InsertFence                                = 0x26ADA0
+D3DDevice_Reset                                      = 0x26AF70
+D3DDevice_SetRenderTarget                            = 0x26B020
+D3DDevice_SetRenderTargetFast                        = 0x26B2A0
+D3DDevice_GetBackBuffer2                             = 0x26B3C0
+D3DDevice_GetDepthStencilSurface2                    = 0x26B740
+D3DDevice_SetViewport                                = 0x26B760
+D3DDevice_SetScissors                                = 0x26BCA0
+D3DDevice_SetScreenSpaceOffset                       = 0x26C150
+D3DDevice_Clear                                      = 0x26D000
+D3DDevice_Swap                                       = 0x26CE50
+CDevice_KickOff                                      = 0x26EED0
+D3D_SetFence                                         = 0x26EFF0
+D3D_BlockOnTime                                      = 0x26F0B0
+D3D_MakeRequestedSpace                               = 0x26F220
+D3DDevice_MakeSpace                                  = 0x26F360
+D3D_KickOffAndWaitForIdle                            = 0x26F3C0
+D3D_BlockOnResource                                  = 0x26F3E0
+D3DDevice_SetTile                                    = 0x26BBB0  # stores the tile at device +0x1AC0 + n * 24, then the miniport (+0x1C28) programs it
+D3DDevice_RunPushBuffer                              = 0x26E4D0  # the frame end 0x60667 runs the frame it recorded (BeginPushBuffer 0x26F040, EndPushBuffer 0x26F0B0)
+# DSOUND exports the scan misses, named by their export ids in .XTLID (ids as other builds' signatures name them)
+IDirectSoundBuffer_SetEG                             = 0x27F32A  # xtlid B0067
+IDirectSoundBuffer_StopEx                            = 0x27F3BA  # xtlid B007E
+IDirectSoundBuffer_GetCurrentPosition                = 0x27F436  # xtlid B0053
+IDirectSoundStream_FlushEx                           = 0x27F47C  # xtlid B0080
+IDirectSound_CreateSoundBuffer                       = 0x28055B  # xtlid B003A
+XAudioCalculatePitch                                 = 0x27E32D  # xtlid B00A3
+D3DDevice_BeginPushBuffer                            = 0x26E800  # points the device's push at the buffer (+0x764 it, +0x770/+0x76C the old push), flag 4
+D3DDevice_EndPushBuffer                              = 0x26E870  # stores the size recorded, puts the push back

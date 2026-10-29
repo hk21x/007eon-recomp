@@ -22,6 +22,7 @@
 #include "core/log.h"
 #include "kernel/kernel.h"
 #include "xdk/hle.h"
+#include "common/release.h"
 
 namespace {
 float GetF(uint32_t va) {
@@ -32,15 +33,15 @@ float GetF(uint32_t va) {
 void SetF(uint32_t va, float f) { std::memcpy(&kernel::G<uint32_t>(va), &f, 4); }
 }  // namespace
 
-X86_EXTERN_FUNC(__imp__sub_002111E0);
-X86_FUNC(sub_002111E0) {
+X86_EXTERN_FUNC(EON_ORIG(002111E0, 002111A0));
+X86_FUNC(EON_FN(002111E0, 002111A0)) {
     float k = app::Widescreen() ? app::FrameAspect() / (4.0f / 3.0f) : 1.0f;
-    if (k <= 1.0f + 1e-3f) return __imp__sub_002111E0(ctx, base);
+    if (k <= 1.0f + 1e-3f) return EON_ORIG(002111E0, 002111A0)(ctx, base);
     uint32_t view = ctx.ecx;
     float left = GetF(view + 0x178), right = GetF(view + 0x17C);
     SetF(view + 0x178, left * k);
     SetF(view + 0x17C, right * k);
-    __imp__sub_002111E0(ctx, base);
+    EON_ORIG(002111E0, 002111A0)(ctx, base);
     SetF(view + 0x178, left);
     SetF(view + 0x17C, right);
     SetF(view + 0x40, GetF(view + 0x40) / k);
@@ -52,10 +53,10 @@ X86_FUNC(sub_002111E0) {
 }
 
 // the visibility pass (once a frame): the culling frustum's sides as wide as the frame
-X86_EXTERN_FUNC(__imp__sub_0014C460);
-X86_FUNC(sub_0014C460) {
-    constexpr uint32_t kFrustum = 0x32A8C0, kLeft = kFrustum + 0x70, kRight = kFrustum + 0x80;
-    constexpr uint32_t kGame = 0x35ED54, kWideFlag = 0x4C;
+X86_EXTERN_FUNC(EON_ORIG(0014C460, 0014C310));
+X86_FUNC(EON_FN(0014C460, 0014C310)) {
+    constexpr uint32_t kFrustum = EON_VA(0x32A8C0, 0x32A8A0), kLeft = kFrustum + 0x70, kRight = kFrustum + 0x80;
+    constexpr uint32_t kGame = EON_VA(0x35ED54, 0x35ED34), kWideFlag = 0x4C;
     // the console's sides lie on the frame's edges, which a TV's overscan hides: shown whole here, buildings and
     // lights popped in at the edges as the car turned (at every aspect), a light's pool on the road went out as its
     // lamp left the screen; culled well past them (2.2 times the tangent: about 8% more draws at 16:9)
@@ -82,5 +83,5 @@ X86_FUNC(sub_0014C460) {
             }
         }
     }
-    __imp__sub_0014C460(ctx, base);
+    EON_ORIG(0014C460, 0014C310)(ctx, base);
 }

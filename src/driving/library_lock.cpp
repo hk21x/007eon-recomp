@@ -10,6 +10,7 @@
 
 #include "core/log.h"
 #include "xdk/hle.h"
+#include "common/release.h"
 
 namespace {
 std::recursive_timed_mutex g_lock;
@@ -29,23 +30,24 @@ struct LibraryEntry {
 };
 }  // namespace
 
-#define LIBRARY_ENTRY(addr)                \
-    X86_EXTERN_FUNC(__imp__sub_##addr);    \
-    X86_FUNC(sub_##addr) {                 \
+// an entry point, its European and USA addresses
+#define LIBRARY_ENTRY(eu, us)              \
+    X86_EXTERN_FUNC(EON_ORIG(eu, us));     \
+    X86_FUNC(EON_FN(eu, us)) {             \
         LibraryEntry entry;                \
-        __imp__sub_##addr(ctx, base);      \
+        EON_ORIG(eu, us)(ctx, base);       \
     }
 
-LIBRARY_ENTRY(0023D510)
-LIBRARY_ENTRY(0023D770)
-LIBRARY_ENTRY(0023DA80)
-LIBRARY_ENTRY(0023E080)
-LIBRARY_ENTRY(0023E1A0)
-LIBRARY_ENTRY(0023E260)
-LIBRARY_ENTRY(0023E320)
-LIBRARY_ENTRY(0023E420)
-LIBRARY_ENTRY(0023E650)
-LIBRARY_ENTRY(0023ED80)
-LIBRARY_ENTRY(0023EE80)
-LIBRARY_ENTRY(0023F4E0)
-LIBRARY_ENTRY(00240E20)
+LIBRARY_ENTRY(0023D510, 0023D4D0)
+LIBRARY_ENTRY(0023D770, 0023D730)
+LIBRARY_ENTRY(0023DA80, 0023DA40)
+LIBRARY_ENTRY(0023E080, 0023E040)
+LIBRARY_ENTRY(0023E1A0, 0023E160)
+LIBRARY_ENTRY(0023E260, 0023E220)
+LIBRARY_ENTRY(0023E320, 0023E2E0)
+LIBRARY_ENTRY(0023E420, 0023E3E0)
+LIBRARY_ENTRY(0023E650, 0023E610)
+LIBRARY_ENTRY(0023ED80, 0023ED40)
+LIBRARY_ENTRY(0023EE80, 0023EE40)
+LIBRARY_ENTRY(0023F4E0, 0023F4A0)
+LIBRARY_ENTRY(00240E20, 00240DE0)

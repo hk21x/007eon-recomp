@@ -7,21 +7,22 @@
 
 #include "kernel/kernel.h"
 #include "xdk/hle.h"
+#include "common/release.h"
 
 namespace eon {
 extern bool hide_hud;  // the setting (src/common/game_info.cpp)
 }
 
-X86_EXTERN_FUNC(__imp__sub_000C15D0);
-X86_FUNC(sub_000C15D0) {
-    constexpr uint32_t kHudManager = 0x2C3F80, kLayersOn = 0x100, kLayers = 3;
+X86_EXTERN_FUNC(EON_ORIG(000C15D0, 000C1170));
+X86_FUNC(EON_FN(000C15D0, 000C1170)) {
+    constexpr uint32_t kHudManager = EON_VA(0x2C3F80, 0x2C34F0), kLayersOn = 0x100, kLayers = 3;
     const uint32_t m = ctx.ecx;
-    if (!eon::hide_hud || kernel::R32(m) != kHudManager) return __imp__sub_000C15D0(ctx, base);
+    if (!eon::hide_hud || kernel::R32(m) != kHudManager) return EON_ORIG(000C15D0, 000C1170)(ctx, base);
     uint8_t kept[kLayers];
     for (uint32_t i = 0; i < kLayers; i++) {
         kept[i] = kernel::G<uint8_t>(m + kLayersOn + i);
         kernel::G<uint8_t>(m + kLayersOn + i) = 0;
     }
-    __imp__sub_000C15D0(ctx, base);
+    EON_ORIG(000C15D0, 000C1170)(ctx, base);
     for (uint32_t i = 0; i < kLayers; i++) kernel::G<uint8_t>(m + kLayersOn + i) = kept[i];
 }

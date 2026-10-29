@@ -12,6 +12,7 @@
 #include "core/log.h"
 #include "kernel/kernel.h"
 #include "xdk/hle.h"
+#include "common/release.h"
 
 namespace eon {
 extern bool driving_60fps;  // the setting (src/common/game_info.cpp; EON_DRIVING60 headless)
@@ -28,33 +29,34 @@ bool On() {
 }  // namespace
 
 // thiscall (interval): 1 every blank, 2 every second blank, 3 every fourth
-X86_EXTERN_FUNC(__imp__sub_00214CB0);
-X86_FUNC(sub_00214CB0) {
+X86_EXTERN_FUNC(EON_ORIG(00214CB0, 00214C70));
+X86_FUNC(EON_FN(00214CB0, 00214C70)) {
     if (On() && kernel::R32(ctx.esp + 4) == 2) kernel::W32(ctx.esp + 4, 1);
-    __imp__sub_00214CB0(ctx, base);
+    EON_ORIG(00214CB0, 00214C70)(ctx, base);
 }
 
 // fastcall (the scheduler object in ecx)
-X86_EXTERN_FUNC(__imp__sub_0015F4D0);
-X86_FUNC(sub_0015F4D0) {
-    if (!On()) return __imp__sub_0015F4D0(ctx, base);
+X86_EXTERN_FUNC(EON_ORIG(0015F4D0, 0015F430));
+X86_FUNC(EON_FN(0015F4D0, 0015F430)) {
+    if (!On()) return EON_ORIG(0015F4D0, 0015F430)(ctx, base);
     uint32_t sched = ctx.ecx;
     uint8_t was = kernel::G<uint8_t>(sched + 0x1E);
     kernel::G<uint8_t>(sched + 0x1E) = 1;
-    __imp__sub_0015F4D0(ctx, base);
+    EON_ORIG(0015F4D0, 0015F430)(ctx, base);
     kernel::G<uint8_t>(sched + 0x1E) = was;
 }
 
 // fastcall (its task object in ecx): a blank gone by since it last ran looks like a new half rate count to it
-X86_EXTERN_FUNC(__imp__sub_00072410);
-X86_FUNC(sub_00072410) {
+X86_EXTERN_FUNC(EON_ORIG(00072410, 000722B0));
+X86_FUNC(EON_FN(00072410, 000722B0)) {
     if (On()) {
-        constexpr uint32_t kBlanks = 0x35FBB4, kHalfBlanks = 0x35FBB8, kDrawnAt = 0x326F30;
+        constexpr uint32_t kBlanks = EON_VA(0x35FBB4, 0x35FB94), kHalfBlanks = EON_VA(0x35FBB8, 0x35FB98);
+        constexpr uint32_t kDrawnAt = EON_VA(0x326F30, 0x326F10);
         static uint32_t last = 0;
         uint32_t blanks = kernel::R32(kBlanks);
         if (blanks != last && kernel::R32(kDrawnAt) == kernel::R32(kHalfBlanks))
             kernel::W32(kDrawnAt, kernel::R32(kHalfBlanks) - 1);
         last = blanks;
     }
-    __imp__sub_00072410(ctx, base);
+    EON_ORIG(00072410, 000722B0)(ctx, base);
 }

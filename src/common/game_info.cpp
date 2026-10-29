@@ -11,6 +11,7 @@
 #include "core/achievements.h"
 #include "core/input.h"
 #include "core/log.h"
+#include "common/release.h"
 
 namespace eon {
 extern const bool kDriving;  // driving.xbe's exe (src/driving/hooks.cpp), default.xbe's false (src/game/hooks.cpp)
@@ -42,6 +43,19 @@ void Init() {
 
 // skip_intro: the boot logos (THX, MGM, the EA logo and its language versions eagdut, eagita, eagswe) reported
 // missing, which the game passes over as it did the EA logo when it asked for an NTSC file
+// the xbes with this build's code. Europe: the media check patched (0x63C73 and 0x2661E8 JMP for JGE, after
+// XapiVerifyMediaInDrive, which the runtime answers 0), the En/Es/It/Nl/Sv disc, the Fr/De disc (version 4, its
+// certificate and signature differ). USA: its one disc. default.xbe then driving.xbe each
+std::vector<const char*> SameCode() {
+#if EON_USA
+    return {"1f4db3b7d3f5102ec7a2351e521f545ef4972be6", "ef1f8404d459feda02fbbe1ea8641569015280d7"};
+#else
+    return {"62298fe4e618d9d81863080fb1b00c1667d871c9", "da2b27d66d4b5f23af47421b9572fcad06669d22",
+            "65fe0c47889bae5732b93e36215b564c94df9e9f", "93390d82f2a7dd5371fd6d7b725577e806e4f09e",
+            "0d2acd66ea75949254916f1f91f7bf31beac9bbe", "08a873cfff115a77164405f7f93890e04ad395f0"};
+#endif
+}
+
 bool HideFile(const std::string& path) {
     if (!eon::skip_intro) return false;
     std::string n;
@@ -197,18 +211,14 @@ const app::GameInfo app::kGame = {
     .achievements = eon::AchievementSet(),  // conditions on the profile, checked each frame (ACHIEVEMENTS.md)
     .squeeze_screen_programs = true,      // ultrawide: the HUD and menus are drawn by a pass-through program
     .sharpen_2d = true,                   // text and HUD pictures enlarged sharp
-    .pal_console = true,                  // a PAL disc's movies are _pal only: a PAL 60 Hz console for it
+    .pal_console = !EON_USA,              // a PAL disc's movies are _pal only: a PAL 60 Hz console for it; the
+                                          // USA disc's an NTSC console in North America (src/common/release.h)
     .disc_rate = 6,                       // disc reads at the console drive's speed: instant ones stall ND1b's streaming
     .hide_file = HideFile,                // skip_intro
     .mouse_look = true,                   // the mouse aims
     .mouse_direct = true,                 // straight into the game's look input (src/game/mouse.cpp)
     .default_keys = Keys,                 // a shooter's keys and mouse buttons on foot, a racing game's driving
     .texture_bound = TextureBound,         // modern_buttons, the title screen on ultrawide
-    // the European releases' xbes, all one code: the media check patched (0x63C73 and 0x2661E8 JMP for JGE, after
-    // XapiVerifyMediaInDrive, which the runtime answers 0), the En/Es/It/Nl/Sv disc, the Fr/De disc (version 4, its
-    // certificate and signature differ); default.xbe then driving.xbe each
-    .same_code = {"62298fe4e618d9d81863080fb1b00c1667d871c9", "da2b27d66d4b5f23af47421b9572fcad06669d22",
-                  "65fe0c47889bae5732b93e36215b564c94df9e9f", "93390d82f2a7dd5371fd6d7b725577e806e4f09e",
-                  "0d2acd66ea75949254916f1f91f7bf31beac9bbe", "08a873cfff115a77164405f7f93890e04ad395f0"},
+    .same_code = SameCode(),              // the other copies of this release's code
     // optional, after these: .wheel (what a steering wheel's force feedback follows)
 };
