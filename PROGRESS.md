@@ -21,6 +21,18 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-29 - The three retail discs: both European ones run, the USA one is another build
+
+Harry's .local/win: redump images of the Europe (En,Es,It,Nl,Sv), Europe (Fr,De) and USA releases. Their xbes
+(streamed out of the zips, .local/regions) against assets/: the En disc differs in one byte of each xbe, 0x63C73 and
+0x2661E8 JGE where ours has JMP, the media check patch after XapiVerifyMediaInDrive (the runtime answers it 0, so the
+same path); the Fr/De disc the same byte plus its header (certificate version 4, signature). The USA xbes differ
+throughout (the same XDK 5659 libraries, about 0x840 lower): another compile. A worktree of main with the En disc's
+xbes recompiled both (the generated code differs at the patch only) and smoke passed; with the Fr/De image as the
+disc (GAME=<iso>) smoke passed too, the game choosing French (the console says English, the disc has none: its
+chatter from streams\chatter\fre). same_code holds the six European SHA-1s, the launcher accepts the three
+default.xbe ones, README lists them. Next: the console language as a setting; the USA build.
+
 ### 2026-10-29 - The same player's second crash: a stream's packet walk outside its lock
 
 Next eon.log (D3D12 this time, v1.0.1): driving.xbe 2 s after its launch, C0000005 reading guest 0x8410921E (past

@@ -204,6 +204,11 @@ const app::GameInfo app::kGame = {
     .mouse_direct = true,                 // straight into the game's look input (src/game/mouse.cpp)
     .default_keys = Keys,                 // a shooter's keys and mouse buttons on foot, a racing game's driving
     .texture_bound = TextureBound,         // modern_buttons, the title screen on ultrawide
-    // optional, after these: .same_code (other releases' xbe SHA-1s with the same code), .wheel (what a steering
-    // wheel's force feedback follows)
+    // the European releases' xbes, all one code: the media check patched (0x63C73 and 0x2661E8 JMP for JGE, after
+    // XapiVerifyMediaInDrive, which the runtime answers 0), the En/Es/It/Nl/Sv disc, the Fr/De disc (version 4, its
+    // certificate and signature differ); default.xbe then driving.xbe each
+    .same_code = {"62298fe4e618d9d81863080fb1b00c1667d871c9", "da2b27d66d4b5f23af47421b9572fcad06669d22",
+                  "65fe0c47889bae5732b93e36215b564c94df9e9f", "93390d82f2a7dd5371fd6d7b725577e806e4f09e",
+                  "0d2acd66ea75949254916f1f91f7bf31beac9bbe", "08a873cfff115a77164405f7f93890e04ad395f0"},
+    // optional, after these: .wheel (what a steering wheel's force feedback follows)
 };
