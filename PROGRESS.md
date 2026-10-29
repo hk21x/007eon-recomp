@@ -21,6 +21,12 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-29 - Release 1.0.2
+
+Harry: a US driving mission plays on Windows (driving.xbe's ported config and hooks). Tag v1.0.2 on main with
+docs/releases/v1.0.2.md; the release workflow builds the first launcher that knows its version (v1.0.2) and offers
+later releases.
+
 ### 2026-10-29 - Each game releases the launcher updates itself; v1.0.2 drafted
 
 Harry: each game's session takes launcher-update (fork branch, 0b5ff49) into fork main with the gate and releases on
