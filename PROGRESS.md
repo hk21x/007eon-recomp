@@ -21,6 +21,18 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-29 - A driving mission's crash: a library's flag lock raced on PC threads
+
+A player (Ryzen Z1 Extreme, Radeon, D3D11) reported repeated crashes. eon.log: driving.xbe, 134 s into the
+driving mission after Death's Door, exception C0000005 reading guest 0x38 on guest thread 14. Return addresses
+0x1BF9FF (a call of 0x23E420). 0x23E420 reads [[0x3722B0] + 0x38] with 0x3722B0 null. 0x3722B0 is the current slot
+(one of 4, 0x928 bytes from 0x36FE10) of a library at 0x23D460 to 0x240E20, whose 13 entry points shut each other
+out with a plain flag at 0x3722C0 (busy -0x12 when set; set, then cleared with 0x3722B0 on the way out): safe on the
+console's one CPU, not with the title's threads running at once. src/driving/library_lock.cpp: the entry points
+run one thread at a time (a recursive timed mutex; after 100 ms a thread goes in as before, logged once, so a wait
+of the library's own cannot deadlock). driving.xbe does not boot alone in the harness (it crashes the same with or
+without the change: it needs default.xbe's launch), so the check is on Windows through a driving mission.
+
 ### 2026-10-28 - Defender quarantined EoN.exe: no suspended relaunch
 
 Harry's PC, 20:12: Microsoft Defender quarantined EoN\play\EoN.exe as Behavior:Win32/DefenseEvasion.A!ml (a

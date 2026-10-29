@@ -28,6 +28,9 @@ game's own code and data, with its addresses).
 - **[game]** The vertex programs are loaded with pushed commands (0x1E9C, 0x0B00) inside the recorded frame and
   selected with SelectVertexShader(0x27D209 or 0, slot); 0x27D208 is the library's direct-input shader.
 - **[game]** BLACK is wall cover (the training level's first step).
+- **[game]** driving.xbe: a library at 0x23D460 to 0x240E20 (4 slots of 0x928 bytes from 0x36FE10, the current
+  one in 0x3722B0) guards its entry points with a plain busy flag at 0x3722C0; the title's threads raced through
+  it on PC (a null 0x3722B0 read in 0x23E420). Its 13 entry points are serialised (src/driving/library_lock.cpp).
 - **[console]** Windows: Microsoft Defender's behaviour model quarantines an exe that starts a process suspended and
   then resumes it (Behavior:Win32/DefenseEvasion.A!ml); the relaunch passes its handover event's name on the
   command line instead.
