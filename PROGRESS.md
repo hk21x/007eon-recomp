@@ -21,6 +21,12 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-29 - The USA release runs on Windows
+
+Harry, with the launcher built from main 368d674 (the v1.0.1 one carries the old release list, so it refused the
+USA default.xbe): the USA disc built and plays on foot. Not yet tried there: a driving mission (driving.xbe's ported
+config and hooks, the library lock and stream walk among them). Next: a driving mission on the USA build, then v1.0.2.
+
 ### 2026-10-29 - The USA release: another compile, ported address by address
 
 The USA xbes are the same game built again (XDK 5659 alike; code and data moved). sdk 98d94c0 adds
