@@ -21,6 +21,19 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-29 - Launcher updates, for every game's launcher
+
+Asked for: launchers that prompt for their own update and for the game's. Harry chose releases as what the game
+follows (not main) and a launcher that replaces itself. sdk 603b572 (sdk/launcher, shared): a launcher knows its
+version (a release's tag when Actions builds one, from GITHUB_REF_TYPE/GITHUB_REF_NAME, so no game's workflow changes;
+else dev); a release launcher asks GitHub's API for the latest release at start and offers a newer one (Update the
+launcher / What's new / Later): <short>Launcher.exe downloaded, checked by the SHA-256 GitHub lists, swapped in
+through <exe>.old, restarted. It builds the game from its own tag and records the version built in launcher.json; a
+game built by another version is offered a rebuild. Checked: launcher_cli latest against this repository (v1.0.1, its
+launcher's SHA-256 listed; v1.0.0 offered, v1.0.1 and dev not), the tag clone and fetch commands against the
+repository (v1.0.0 then v1.0.1), every launcher file through the mingw syntax check. Smoke OK. Next: the Windows
+build on Actions; the same commit onto fork main for PGR2, PGR1, NightFire and Forza.
+
 ### 2026-10-29 - The USA release runs on Windows
 
 Harry, with the launcher built from main 368d674 (the v1.0.1 one carries the old release list, so it refused the
