@@ -21,6 +21,14 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-29 - Each game releases the launcher updates itself; v1.0.2 drafted
+
+Harry: each game's session takes launcher-update (fork branch, 0b5ff49) into fork main with the gate and releases on
+its own, with its own changelog. Sent to the PGR2, PGR1 and NightFire sessions (NightFire told a private repository
+gets no prompt); Forza has no session running. EoN: docs/releases/v1.0.2.md drafted (all three discs, the driving
+crash fixes, the Defender warning, the launcher's updates; one manual launcher download first). The tag waits for a
+US driving mission on Windows.
+
 ### 2026-10-29 - Launcher updates, for every game's launcher
 
 Asked for: launchers that prompt for their own update and for the game's. Harry chose releases as what the game
