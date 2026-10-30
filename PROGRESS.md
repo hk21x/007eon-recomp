@@ -21,6 +21,16 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-30 - Free aim: firing while aiming, punches, the torso's pitch
+
+Harry on 34d1490: stance right, gun off position, no pitch, Q and E moved the gun, the left button did not fire while the
+right was held. Measured: 0x14A740's check +0xD70 & 6 is never set here (0C000008), so my torso code never ran: dropped.
+It then ran but did nothing: +0x114 (0x149D50) applies only with +0xCDC bit 0 (it was 4), now set. Fire: firing needs a
+press edge (0x147B30) and the shot's end flag: my block left +0x328 bit 0x80000 unset, so the gun waited and never fired
+again; the release, 3 polls, was also shorter than a frame, now 70 ms. Headless, left on right: 32 shots, the SIG emptied
+and the game moved to the MP5K; the right alone: 230 calls blocked, no ammo. Looking down his torso leans with it. X and Y
+held let go of the trigger (not seen headless). Smoke OK on both releases.
+
 ### 2026-10-30 - Free aim: the right button is the firing stance, and his torso takes the pitch
 
 Harry: not the lock's pose, no pitch, nothing while moving; the vanishing objects better. Answering 0x14B010 was no use:

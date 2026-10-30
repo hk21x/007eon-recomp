@@ -32,6 +32,7 @@ namespace eon {
 extern bool free_aim;                 // the setting (src/common/game_info.cpp)
 extern void (*frame_ui)(double fps);  // drawn each frame (src/common/game_info.cpp)
 extern std::atomic<bool> aim_trigger;  // the fire input held for the stance (src/common/menu_mouse.cpp)
+extern std::atomic<int64_t> aim_release;  // the fire input let go until then, ms (src/common/menu_mouse.cpp)
 extern std::atomic<int64_t> hud_drawn_ms;  // when the HUD last drew (src/game/hud.cpp): none in movies or the like
 }
 
@@ -158,6 +159,10 @@ X86_FUNC(EON_FN(00156E50, 001566C0)) {
     g_turned = on && (buttons & 3);
     g_aim_only = on && (buttons & 2) && !(buttons & 1);
     eon::aim_trigger = g_aim_only.load();
+    // the left button on top of the right: a gun fired by the press needs one, so the held input lets go first
+    static bool left_was = false;
+    if ((buttons & 1) && !left_was && (buttons & 2)) eon::aim_release = NowMs() + 70;
+    left_was = buttons & 1;
     if (!on || !(buttons & 3)) return;
     float yaw = kernel::G<float>(cam + 0xD4);
     float have = std::atan2(kernel::G<float>(bond + kMatrix + 4), kernel::G<float>(bond + kMatrix));
@@ -178,19 +183,23 @@ X86_FUNC(EON_FN(00181250, 00180AC0)) {
         uint32_t keep = ctx.ecx;
         uint32_t owner = kernel::CallGuest(ctx, kGunOwner, {});
         ctx.ecx = keep;
-        if (owner == g_bond) return kernel::Return(ctx, 0, 1);
+        if (owner == g_bond) {
+            // as the shot ends, or the gun waits for it and fires no more
+            kernel::W32(keep + 0x328, kernel::R32(keep + 0x328) | 0x80000);
+            return kernel::Return(ctx, 0, 1);
+        }
     }
     EON_ORIG(00181250, 00180AC0)(ctx, base);
 }
 
-// Bond's upper body to his aim, fastcall: 0x14A740 goes to the game's own, 0x14A2C0, with +0xD70 & 6 set, which needs a
-// target; here the camera's pitch through its numbers.
+// Bond's upper body to his aim, fastcall: 0x14A740 goes to the game's own, 0x14A2C0, with +0xD70 & 6 set (which is not,
+// measured, in this stance) and that needs a target; here the camera's pitch through its numbers.
 // What it writes: yaw +0x988 (the shoulders' offset for that pitch), +0x98C, pitch +0x990, each within the limits at
 // +0x96C and +0x974; vtable +0x110 and +0x114 then apply them.
 X86_EXTERN_FUNC(EON_ORIG(0014A740, 00149FB0));
 X86_FUNC(EON_FN(0014A740, 00149FB0)) {
     uint32_t bond = ctx.ecx;
-    if (bond != g_bond || !g_turned || !(kernel::R32(bond + 0xD70) & 6)) return EON_ORIG(0014A740, 00149FB0)(ctx, base);
+    if (bond != g_bond || !g_turned) return EON_ORIG(0014A740, 00149FB0)(ctx, base);
     uint32_t cam = Camera(bond);
     float pitch = kernel::G<float>(cam + 0xD0);
     if (pitch > 180) pitch -= 360;
@@ -209,6 +218,8 @@ X86_FUNC(EON_FN(0014A740, 00149FB0)) {
     kernel::G<float>(bond + 0x988) = std::clamp(-b, -yaw_limit, yaw_limit);
     kernel::W32(bond + 0x98C, 0);
     kernel::G<float>(bond + 0x990) = std::clamp(a, -pitch_limit, pitch_limit);
+    // +0xCDC bit 0 lets +0x114 apply them to his spine's bones
+    kernel::W32(bond + 0xCDC, kernel::R32(bond + 0xCDC) | 1);
     uint32_t vtable = kernel::R32(bond);
     for (uint32_t slot : {0x110u, 0x114u}) {
         ctx.ecx = bond;
