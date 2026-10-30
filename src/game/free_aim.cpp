@@ -11,7 +11,7 @@
 // Bond stands in the middle of the view: the camera info every view and aim reads (0x8D960: position, then pitch, yaw,
 // roll in degrees) is moved to the right, over his shoulder. While a mouse button is held he faces the camera's way:
 // his yaw is the angles' +0x64, from which the game rebuilds his matrix (+0x70) each update, so he turns and his shots
-// stay in the gun's 90 degrees. The right button also zooms a little. The crosshair is drawn here.
+// stay in the gun's 90 degrees. The right button also zooms a little, and alone holds the fire input with the shot blocked, for the stance firing gives. The crosshair is drawn here.
 //
 // EON_FREE_AIM (headless, no mouse): 0 off, 1 on, 2 on with a button held.
 #include <algorithm>
@@ -31,6 +31,7 @@
 namespace eon {
 extern bool free_aim;                 // the setting (src/common/game_info.cpp)
 extern void (*frame_ui)(double fps);  // drawn each frame (src/common/game_info.cpp)
+extern std::atomic<bool> aim_trigger;  // the fire input held for the stance (src/common/menu_mouse.cpp)
 extern std::atomic<int64_t> hud_drawn_ms;  // when the HUD last drew (src/game/hud.cpp): none in movies or the like
 }
 
@@ -47,6 +48,8 @@ constexpr uint32_t kMounted = EON_VA(0x1500B0, 0x14F920);        // thiscall on 
 constexpr uint32_t kZoomable = EON_VA(0x14B640, 0x14AEB0);       // thiscall on Bond: a weapon with a scope
 constexpr uint32_t kAnglesToMatrix = EON_VA(0xF0A90, 0xF0610);   // cdecl (angles, matrix out)
 constexpr uint32_t kFollowCamera = EON_VA(0x2E2694, 0X2E1BBC);      // the camera mode's class in play
+constexpr uint32_t kGunOwner = EON_VA(0x1A7A40, 0x1A7270);       // thiscall on a gun
+constexpr uint32_t kBodyTable = EON_VA(0x2DD118, 0x2DC640);      // 0x14A2C0's numbers for the upper body
 constexpr uint32_t kScopeView = 0xBAA3F02;                       // what the scope's camera mode answers (vtable +8)
 constexpr float kRadians = 3.14159265f / 180;
 constexpr float kShoulder = 38;       // world units right of Bond
@@ -57,7 +60,8 @@ std::atomic<uint32_t> g_bond{0};
 std::atomic<float> g_shoulder{0};
 std::atomic<float> g_zoom{1};
 std::atomic<bool> g_crosshair{false};
-std::atomic<bool> g_right_button{false};  // play, and the right button held
+std::atomic<bool> g_turned{false};    // play, and a mouse button held
+std::atomic<bool> g_aim_only{false};  // play, and the right button held without the left
 std::atomic<int64_t> g_updated{0};
 
 int Forced() {
@@ -145,14 +149,15 @@ X86_FUNC(EON_FN(00156E50, 001566C0)) {
     bool scope = plays && ScopeView(ctx, mode);
     uint32_t buttons = Forced() == 2 ? 3 : input::MouseButtons();
     // play: the follow camera (the lock's and the cutscenes' are other classes) with the HUD up
-    g_right_button = false;
     bool on = plays && !scope && kind == kFollowCamera && (Forced() >= 0 || NowMs() - eon::hud_drawn_ms < 500);
     g_crosshair = on;
     float shoulder = g_shoulder, want = on ? kShoulder : 0;
     g_shoulder = shoulder + std::clamp(want - shoulder, -kShoulder * kBlendPerUpdate, kShoulder * kBlendPerUpdate);
     float zoom = g_zoom, zoom_want = on && (buttons & 2) ? kRightButtonZoom : 1;
     g_zoom = zoom + std::clamp(zoom_want - zoom, -0.03f, 0.03f);
-    g_right_button = on && (buttons & 2);
+    g_turned = on && (buttons & 3);
+    g_aim_only = on && (buttons & 2) && !(buttons & 1);
+    eon::aim_trigger = g_aim_only.load();
     if (!on || !(buttons & 3)) return;
     float yaw = kernel::G<float>(cam + 0xD4);
     float have = std::atan2(kernel::G<float>(bond + kMatrix + 4), kernel::G<float>(bond + kMatrix));
@@ -165,11 +170,51 @@ X86_FUNC(EON_FN(00156E50, 001566C0)) {
     }
 }
 
-// Bond's "is he aiming" (vtable +0x14C), fastcall: shooting or a lock with a target, for the stance with the gun up. The
-// right button is the same stance, as the lock's key gives it, with no target
-X86_EXTERN_FUNC(EON_ORIG(0014B010, 0014A880));
-X86_FUNC(EON_FN(0014B010, 0014A880)) {
-    if (ctx.ecx != g_bond || !g_right_button) return EON_ORIG(0014B010, 0014A880)(ctx, base);
+// A gun's shot, thiscall (mode): the right button alone holds the fire input, for the stance firing has (his action
+// state, the kinds 0x161E00 asks for), and Bond's gun does not go off
+X86_EXTERN_FUNC(EON_ORIG(00181250, 00180AC0));
+X86_FUNC(EON_FN(00181250, 00180AC0)) {
+    if (g_aim_only) {
+        uint32_t keep = ctx.ecx;
+        uint32_t owner = kernel::CallGuest(ctx, kGunOwner, {});
+        ctx.ecx = keep;
+        if (owner == g_bond) return kernel::Return(ctx, 0, 1);
+    }
+    EON_ORIG(00181250, 00180AC0)(ctx, base);
+}
+
+// Bond's upper body to his aim, fastcall: 0x14A740 goes to the game's own, 0x14A2C0, with +0xD70 & 6 set, which needs a
+// target; here the camera's pitch through its numbers.
+// What it writes: yaw +0x988 (the shoulders' offset for that pitch), +0x98C, pitch +0x990, each within the limits at
+// +0x96C and +0x974; vtable +0x110 and +0x114 then apply them.
+X86_EXTERN_FUNC(EON_ORIG(0014A740, 00149FB0));
+X86_FUNC(EON_FN(0014A740, 00149FB0)) {
+    uint32_t bond = ctx.ecx;
+    if (bond != g_bond || !g_turned || !(kernel::R32(bond + 0xD70) & 6)) return EON_ORIG(0014A740, 00149FB0)(ctx, base);
+    uint32_t cam = Camera(bond);
+    float pitch = kernel::G<float>(cam + 0xD0);
+    if (pitch > 180) pitch -= 360;
+    pitch *= kRadians;
+    // the table's pairs: pitch scale and offset, then shoulders', each two-handed or not and flipped or not
+    uint32_t held = kernel::R32(kernel::R32(bond + 0x274) + 0x10);
+    uint32_t grip = held ? kernel::R32(held + 0x370) : 0;
+    bool wide = grip >= 0x10000 && grip <= 0x200000;
+    bool flipped = (kernel::R32(bond + 0xD70) & 4) != 0;
+    auto entry = [](uint32_t at) { return kernel::G<float>(kBodyTable + at); };
+    float a = flipped ? pitch * entry(wide ? 0x1C : 0xC) - entry(wide ? 0x18 : 0x8)
+                      : pitch * entry(wide ? 0x14 : 0x4) + entry(wide ? 0x10 : 0x0);
+    float b = flipped ? pitch * entry(wide ? 0x3C : 0x2C) - entry(wide ? 0x38 : 0x28)
+                      : pitch * entry(wide ? 0x34 : 0x24) - entry(wide ? 0x30 : 0x20);
+    float yaw_limit = kernel::G<float>(bond + 0x96C), pitch_limit = kernel::G<float>(bond + 0x974);
+    kernel::G<float>(bond + 0x988) = std::clamp(-b, -yaw_limit, yaw_limit);
+    kernel::W32(bond + 0x98C, 0);
+    kernel::G<float>(bond + 0x990) = std::clamp(a, -pitch_limit, pitch_limit);
+    uint32_t vtable = kernel::R32(bond);
+    for (uint32_t slot : {0x110u, 0x114u}) {
+        ctx.ecx = bond;
+        kernel::CallGuest(ctx, kernel::R32(vtable + slot), {});
+    }
+    ctx.ecx = bond;
     kernel::Return(ctx, 1, 0);
 }
 

@@ -21,6 +21,16 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-30 - Free aim: the right button is the firing stance, and his torso takes the pitch
+
+Harry: not the lock's pose, no pitch, nothing while moving; the vanishing objects better. Answering 0x14B010 was no use:
+the stance is an action state ([+0x11B0] +0x1AC, kinds 1, 0x12, 0x13, 0x16: 0x161E00), which firing enters with no lock.
+Dropped. The right button alone now holds the fire input (GameInfo::pad, eon::aim_trigger) and Bond's gun swallows the
+shot (vtable 0x181250). His upper body: 0x14A740 (the wrapper; 0x14A2C0 is not a function of its own) with +0xD70 & 6
+goes to the game's, which needs a target, so here the camera's pitch through its table 0x2DD118, then vtable +0x110 and
++0x114. Headless (CLICKR through input::MouseButtons): rifle up and forward standing and walking, ammo unchanged (17),
+no traps. Not seen headless: pitch, an empty gun with the right button, a single shot weapon's stance.
+
 ### 2026-10-30 - Free aim: the right button gives the lock's stance
 
 Harry: the pose wanted is the one the lock's key gives, and firing with no lock already raises his upper body. 0x14B010

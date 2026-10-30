@@ -14,6 +14,7 @@
 namespace eon {
 
 std::atomic<int64_t> g_menu_input{-1000};  // when a menu last took the input, ms (src/game/menu_input.cpp)
+std::atomic<bool> aim_trigger{false};  // free aim holds the fire input (src/game/free_aim.cpp)
 
 int64_t NowMs() {
     using namespace std::chrono;
@@ -35,6 +36,7 @@ void MenuMouse(int port, input::Pad& p) {
     was = menu;
     if (!menu) {
         pending = 0;
+        if (eon::aim_trigger) p.analog[7] = 255;  // free aim's right button: the right trigger (src/game/free_aim.cpp)
         return;
     }
     // the buttons out of what they play in play
