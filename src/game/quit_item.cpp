@@ -19,6 +19,7 @@
 #include "kernel/kernel.h"
 #include "kernel/memory.h"
 #include "xdk/hle.h"
+#include "common/release.h"
 
 namespace {
 
@@ -200,8 +201,8 @@ uint32_t GuestString(const char* s) {
 }  // namespace
 
 // the package parser: frontend_spmp.fng with its fourth item made Quit Game
-X86_EXTERN_FUNC(__imp__sub_00138900);
-X86_FUNC(sub_00138900) {
+X86_EXTERN_FUNC(EON_ORIG(00138900, 00138200));
+X86_FUNC(EON_FN(00138900, 00138200)) {
     uint32_t pkg = kernel::R32(ctx.esp + 4);
     static uint32_t from = 0, edited = 0;
     if (pkg && kernel::R32(pkg) == Tag("FEn\xe7") && kernel::R32(pkg + 8) == Tag("PkHd") &&
@@ -224,19 +225,19 @@ X86_FUNC(sub_00138900) {
         }
         if (edited) kernel::W32(ctx.esp + 4, edited);
     }
-    __imp__sub_00138900(ctx, base);
+    EON_ORIG(00138900, 00138200)(ctx, base);
 }
 
 // the string table lookup (thiscall: the table, a string's hash): the Quit item's words
-X86_EXTERN_FUNC(__imp__sub_00142F60);
-X86_FUNC(sub_00142F60) {
+X86_EXTERN_FUNC(EON_ORIG(00142F60, 001427D0));
+X86_FUNC(EON_FN(00142F60, 001427D0)) {
     uint32_t hash = kernel::R32(ctx.esp + 4);
-    if (hash != kQuitLabel && hash != kQuitHelp) return __imp__sub_00142F60(ctx, base);
+    if (hash != kQuitLabel && hash != kQuitHelp) return EON_ORIG(00142F60, 001427D0)(ctx, base);
     if (!g_label) {
         // the game's own Single Player, for its language
         uint32_t ret = kernel::R32(ctx.esp), table = ctx.ecx;
         kernel::W32(ctx.esp + 4, 0x1375CD24);
-        __imp__sub_00142F60(ctx, base);
+        EON_ORIG(00142F60, 001427D0)(ctx, base);
         ctx.esp -= 8;  // it returned (ret 4): the stack back as it was
         kernel::W32(ctx.esp, ret);
         kernel::W32(ctx.esp + 4, hash);
@@ -256,11 +257,11 @@ X86_FUNC(sub_00142F60) {
 }
 
 // a message to the game's code (response type 2): Quit Game's closes the game
-X86_EXTERN_FUNC(__imp__sub_001305A0);
-X86_FUNC(sub_001305A0) {
+X86_EXTERN_FUNC(EON_ORIG(001305A0, 0012FEA0));
+X86_FUNC(EON_FN(001305A0, 0012FEA0)) {
     if (kernel::R32(ctx.esp + 4) == kQuitMessage) {
         LOGR("eon: Quit Game chosen in the main menu");
         app::Quit();
     }
-    __imp__sub_001305A0(ctx, base);
+    EON_ORIG(001305A0, 0012FEA0)(ctx, base);
 }

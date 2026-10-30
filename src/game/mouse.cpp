@@ -12,11 +12,12 @@
 #include "xdk/hle.h"
 
 #include <cstring>
+#include "common/release.h"
 
-X86_EXTERN_FUNC(__imp__sub_0001BC90);
-X86_FUNC(sub_0001BC90) {
+X86_EXTERN_FUNC(EON_ORIG(0001BC90, 0001BA50));
+X86_FUNC(EON_FN(0001BC90, 0001BA50)) {
     uint32_t port = kernel::R32(ctx.esp + 4), out = ctx.esi;
-    __imp__sub_0001BC90(ctx, base);
+    EON_ORIG(0001BC90, 0001BA50)(ctx, base);
     float x, y;
     if (port != 0 || !input::TakeMouse(x, y)) return;
     float rx, ry;

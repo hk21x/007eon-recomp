@@ -17,11 +17,12 @@
 #include "core/log.h"
 #include "kernel/kernel.h"
 #include "xdk/hle.h"
+#include "common/release.h"
 
 namespace {
 
-constexpr uint32_t kWidescreen = 0x5AA59C;
-constexpr uint32_t kWiden = 0x5AA550;
+constexpr uint32_t kWidescreen = EON_VA(0x5AA59C, 0x5A9A7C);
+constexpr uint32_t kWiden = EON_VA(0x5AA550, 0x5A9A30);
 
 float Factor() {
     float f;
@@ -59,17 +60,17 @@ float WidenedFactor(float f) {
 }
 }  // namespace eon
 
-X86_EXTERN_FUNC(__imp__sub_000F6660);
-X86_FUNC(sub_000F6660) {
+X86_EXTERN_FUNC(EON_ORIG(000F6660, 000F61E0));
+X86_FUNC(EON_FN(000F6660, 000F61E0)) {
     float was = Factor(), k = Extra();
     if (k > 1.0f + 1e-3f) SetFactor(was * k);
-    __imp__sub_000F6660(ctx, base);
+    EON_ORIG(000F6660, 000F61E0)(ctx, base);
     if (k > 1.0f + 1e-3f) SetFactor(was);
 }
 
-X86_EXTERN_FUNC(__imp__sub_000F4B60);
-X86_FUNC(sub_000F4B60) {
-    __imp__sub_000F4B60(ctx, base);
+X86_EXTERN_FUNC(EON_ORIG(000F4B60, 000F46E0));
+X86_FUNC(EON_FN(000F4B60, 000F46E0)) {
+    EON_ORIG(000F4B60, 000F46E0)(ctx, base);
     float k = Extra();
     if (k > 1.0f + 1e-3f) SetFactor(Factor() * k);
 }

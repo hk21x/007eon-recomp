@@ -5,6 +5,7 @@
 
 #include "kernel/kernel.h"
 #include "xdk/hle.h"
+#include "common/release.h"
 
 namespace eon {
 extern bool hide_hud;  // the setting (src/common/game_info.cpp)
@@ -12,7 +13,7 @@ extern bool hide_hud;  // the setting (src/common/game_info.cpp)
 
 namespace {
 struct HudHidden {
-    static constexpr uint32_t kHudShown = 0x2FA279;
+    static constexpr uint32_t kHudShown = EON_VA(0x2FA279, 0x2FA259);
     uint8_t kept = kernel::G<uint8_t>(kHudShown);
     HudHidden() {
         if (eon::hide_hud) kernel::G<uint8_t>(kHudShown) = 0;
@@ -21,20 +22,20 @@ struct HudHidden {
 };
 }  // namespace
 
-X86_EXTERN_FUNC(__imp__sub_000DFCB0);
-X86_FUNC(sub_000DFCB0) {
+X86_EXTERN_FUNC(EON_ORIG(000DFCB0, 000DFC20));
+X86_FUNC(EON_FN(000DFCB0, 000DFC20)) {
     HudHidden h;
-    __imp__sub_000DFCB0(ctx, base);
+    EON_ORIG(000DFCB0, 000DFC20)(ctx, base);
 }
 
-X86_EXTERN_FUNC(__imp__sub_001EC000);
-X86_FUNC(sub_001EC000) {
+X86_EXTERN_FUNC(EON_ORIG(001EC000, 001EBF60));
+X86_FUNC(EON_FN(001EC000, 001EBF60)) {
     HudHidden h;
-    __imp__sub_001EC000(ctx, base);
+    EON_ORIG(001EC000, 001EBF60)(ctx, base);
 }
 
-X86_EXTERN_FUNC(__imp__sub_001EC1E0);
-X86_FUNC(sub_001EC1E0) {
+X86_EXTERN_FUNC(EON_ORIG(001EC1E0, 001EC140));
+X86_FUNC(EON_FN(001EC1E0, 001EC140)) {
     HudHidden h;
-    __imp__sub_001EC1E0(ctx, base);
+    EON_ORIG(001EC1E0, 001EC140)(ctx, base);
 }

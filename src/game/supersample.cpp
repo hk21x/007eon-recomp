@@ -14,9 +14,10 @@
 
 #include "core/log.h"
 #include "xdk/hle.h"
+#include "common/release.h"
 
-X86_EXTERN_FUNC(__imp__sub_0005E270);
-X86_FUNC(sub_0005E270) {
+X86_EXTERN_FUNC(EON_ORIG(0005E270, 0005DFA0));
+X86_FUNC(EON_FN(0005E270, 0005DFA0)) {
     // EON_SUPERSAMPLE=1 leaves the game's choice, to compare
     static const bool keep = [] {
         const char* e = std::getenv("EON_SUPERSAMPLE");
@@ -24,10 +25,10 @@ X86_FUNC(sub_0005E270) {
         if (v) LOGR("eon: EON_SUPERSAMPLE=1, the game chooses supersampling itself");
         return v;
     }();
-    if (keep) return __imp__sub_0005E270(ctx, base);
+    if (keep) return EON_ORIG(0005E270, 0005DFA0)(ctx, base);
     static bool told = false;
     if (!told && (ctx.eax & 0xFF)) LOGI("eon: the frame buffers without supersampling (the game asked for it)");
     told = true;
     ctx.eax &= ~0xFFu;  // al: the plain 640x480 set
-    __imp__sub_0005E270(ctx, base);
+    EON_ORIG(0005E270, 0005DFA0)(ctx, base);
 }

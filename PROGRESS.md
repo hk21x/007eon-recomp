@@ -9,7 +9,8 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 - Done since: widescreen and ultrawide on foot and driving (culling widened: no side pop-in), the driving radar and
   Thermovision, mouse aim and menus, keyboard prompts, modern buttons, sharp 2D, FOV, 60 FPS driving, Quit Game,
   skip intro, the driving 6 channel mix (speech, car, music), the shader cache (no repeat stalls)
-- Launcher end to end on Windows from an .iso: confirmed by Harry (2026-10-26). Renderers: Direct3D 12 and 11 (both
+- Known issue (2026-10-27): on NVIDIA GPUs MI6 Training's hand to hand room can lose the GPU device (picture stands
+  still); unsolved, see the log. Launcher end to end on Windows from an .iso: confirmed by Harry (2026-10-26). Renderers: Direct3D 12 and 11 (both
   supported in the docs). Untested: NTSC discs
 - XDK: 5659, D3D8 QFE 4. default.xbe 84 of 250 functions by signature, 50 more by hand in config/eon.toml; driving.xbe
   in config/driving.toml (the shared QFE 4 layout in config/d3d8_qfe4.toml)
@@ -20,6 +21,514 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-29 - Release 1.0.2
+
+Harry: a US driving mission plays on Windows (driving.xbe's ported config and hooks). Tag v1.0.2 on main with
+docs/releases/v1.0.2.md; the release workflow builds the first launcher that knows its version (v1.0.2) and offers
+later releases.
+
+### 2026-10-29 - Each game releases the launcher updates itself; v1.0.2 drafted
+
+Harry: each game's session takes launcher-update (fork branch, 0b5ff49) into fork main with the gate and releases on
+its own, with its own changelog. Sent to the PGR2, PGR1 and NightFire sessions (NightFire told a private repository
+gets no prompt); Forza has no session running. EoN: docs/releases/v1.0.2.md drafted (all three discs, the driving
+crash fixes, the Defender warning, the launcher's updates; one manual launcher download first). The tag waits for a
+US driving mission on Windows.
+
+### 2026-10-29 - Launcher updates, for every game's launcher
+
+Asked for: launchers that prompt for their own update and for the game's. Harry chose releases as what the game
+follows (not main) and a launcher that replaces itself. sdk 603b572 (sdk/launcher, shared): a launcher knows its
+version (a release's tag when Actions builds one, from GITHUB_REF_TYPE/GITHUB_REF_NAME, so no game's workflow changes;
+else dev); a release launcher asks GitHub's API for the latest release at start and offers a newer one (Update the
+launcher / What's new / Later): <short>Launcher.exe downloaded, checked by the SHA-256 GitHub lists, swapped in
+through <exe>.old, restarted. It builds the game from its own tag and records the version built in launcher.json; a
+game built by another version is offered a rebuild. Checked: launcher_cli latest against this repository (v1.0.1, its
+launcher's SHA-256 listed; v1.0.0 offered, v1.0.1 and dev not), the tag clone and fetch commands against the
+repository (v1.0.0 then v1.0.1), every launcher file through the mingw syntax check. Smoke OK. Next: the Windows
+build on Actions; the same commit onto fork main for PGR2, PGR1, NightFire and Forza.
+
+### 2026-10-29 - The USA release runs on Windows
+
+Harry, with the launcher built from main 368d674 (the v1.0.1 one carries the old release list, so it refused the
+USA default.xbe): the USA disc built and plays on foot. Not yet tried there: a driving mission (driving.xbe's ported
+config and hooks, the library lock and stream walk among them). Next: a driving mission on the USA build, then v1.0.2.
+
+### 2026-10-29 - The USA release: another compile, ported address by address
+
+The USA xbes are the same game built again (XDK 5659 alike; code and data moved). sdk 98d94c0 adds
+sdk/tools/symbols/xbe_port.py: both xbes disassembled (objdump), each instruction normalised (numbers that point into
+the image masked, branches by kind), a code address matched by the 12 to 96 instructions from it (and before it when
+several places match), a data address by the operands of matched instructions that name it (votes). config/eon.toml
+and driving.toml ported whole (--toml): every value moved by one constant, -0x840 on foot, -0x40 driving (the
+libraries' shift), none missed. config/usa_game.toml and usa_driving_game.toml are xbe_symbols output for the USA
+xbes (--name driving for the second: without it both wrote generated/game). CMakeLists.txt picks the usa_ configs
+when assets/default.xbe is the USA one and defines EON_USA; src/common/release.h gives each hook address as a pair
+(EON_FN / EON_ORIG / EON_VA, European first), every pair from xbe_port.py and checked by hand: object ids, hashes and
+offsets that fall in the image range left alone (quit_item.cpp's FEng ids), the profile 0x31EC50 -> 0x31E148 (the
+data around it moves by 0xB08 from 0x31EB10, several votes; the profile itself is reached only through +0x6C).
+USA: an NTSC console (pal_console off), its own same_code. In .local/usatest (the USA xbes as assets, the USA image as
+the disc, HOST_FLAGS=-DEON_USA=1) both xbes recompile and smoke passes: movies, the training level, 11503 draws a
+frame, no traps, the same two warnings as Europe. Not covered headless: the main menu, driving.xbe, Windows.
+
+### 2026-10-29 - The three retail discs: both European ones run, the USA one is another build
+
+Harry's .local/win: redump images of the Europe (En,Es,It,Nl,Sv), Europe (Fr,De) and USA releases. Their xbes
+(streamed out of the zips, .local/regions) against assets/: the En disc differs in one byte of each xbe, 0x63C73 and
+0x2661E8 JGE where ours has JMP, the media check patch after XapiVerifyMediaInDrive (the runtime answers it 0, so the
+same path); the Fr/De disc the same byte plus its header (certificate version 4, signature). The USA xbes differ
+throughout (the same XDK 5659 libraries, about 0x840 lower): another compile. A worktree of main with the En disc's
+xbes recompiled both (the generated code differs at the patch only) and smoke passed; with the Fr/De image as the
+disc (GAME=<iso>) smoke passed too, the game choosing French (the console says English, the disc has none: its
+chatter from streams\chatter\fre). same_code holds the six European SHA-1s, the launcher accepts the three
+default.xbe ones, README lists them. Next: the console language as a setting; the USA build.
+
+### 2026-10-29 - The same player's second crash: a stream's packet walk outside its lock
+
+Next eon.log (D3D12 this time, v1.0.1): driving.xbe 2 s after its launch, C0000005 reading guest 0x8410921E (past
+the 64 MB), thread 14, in 0x24AC20 (from 0x15CE65, a stream reader's loop). 'STRM' (0x4D525453) streams: 0x24AC20
+takes a reader's next packet, updating the counts inside the stream's critical section (0x252840 / 0x252850 wrap
+RtlEnterCriticalSection / RtlLeaveCriticalSection, ordinals 277 and 294, sound in the runtime) but walking the packet
+chain to the reader's next packet after leaving it, while the writer fills packets and other readers free theirs:
+a half written size sent the walk off the end. src/driving/stream_walk.cpp runs the whole call inside the section
+(recursive, so the original's enter and leave nest). default.xbe has the same code at 0x7C960 (0x7F560 / 0x7F570):
+src/game/stream_walk.cpp. Smoke OK (the on-foot hook exercised by the movies and the level). Windows check through a
+driving mission with the earlier fixes.
+
+### 2026-10-29 - A driving mission's crash: a library's flag lock raced on PC threads
+
+A player (Ryzen Z1 Extreme, Radeon, D3D11) reported repeated crashes. eon.log: driving.xbe, 134 s into the
+driving mission after Death's Door, exception C0000005 reading guest 0x38 on guest thread 14. Return addresses
+0x1BF9FF (a call of 0x23E420). 0x23E420 reads [[0x3722B0] + 0x38] with 0x3722B0 null. 0x3722B0 is the current slot
+(one of 4, 0x928 bytes from 0x36FE10) of a library at 0x23D460 to 0x240E20, whose 13 entry points shut each other
+out with a plain flag at 0x3722C0 (busy -0x12 when set; set, then cleared with 0x3722B0 on the way out): safe on the
+console's one CPU, not with the title's threads running at once. src/driving/library_lock.cpp: the entry points
+run one thread at a time (a recursive timed mutex; after 100 ms a thread goes in as before, logged once, so a wait
+of the library's own cannot deadlock). driving.xbe does not boot alone in the harness (it crashes the same with or
+without the change: it needs default.xbe's launch), so the check is on Windows through a driving mission.
+
+### 2026-10-28 - Defender quarantined EoN.exe: no suspended relaunch
+
+Harry's PC, 20:12: Microsoft Defender quarantined EoN\play\EoN.exe as Behavior:Win32/DefenseEvasion.A!ml (a
+behaviour model, not a signature). The one thing the runtime does that reads as defence evasion: kernel::Relaunch
+(XLaunchNewImage, e.g. on foot to the driving missions) started the next exe with CREATE_SUSPENDED, made the
+handover event named after the child's process id, then ResumeThread: the shape of process hollowing. sdk 61c1bc9:
+the event is named after the parent and made first, the child gets --handover=<parent pid> and starts normally
+(app::StartHandover reads it). Smoke OK (the relaunch is Windows only: to check on the test PC by a mission that
+switches exe). The launcher still starts its build tools suspended, to put them in a job before they run; not
+flagged.
+
+### 2026-10-28 - Release 1.0.1: the NVIDIA MI6 Training freeze
+
+docs/releases/v1.0.1.md: the fix for the hand-to-hand room freeze on NVIDIA cards (vertex element offsets past
+D3D's limit, sdk e703353) and the descriptor slots reused while still read (sdk 72d8bf2), said plainly to concern
+NVIDIA cards; the log's new detail. Tag v1.0.1 on main; the release workflow builds and publishes EoNLauncher.exe.
+
+### 2026-10-28 - MI6 Training's NVIDIA hang fixed: confirmed on the L4
+
+ece7840 on the NVIDIA L4 (driver 596.86): D3D12 twice and D3D11 once, each played past the third enemy, which
+looks normal; no lost device, no dump. Before the fix every one of about 25 runs today hung there. The diagnostics
+added on the way (XBE_SYNC_GPU, XBE_NV_MARKERS with the Aftermath DLL, XBE_SKIP_*, XBE_DRAW_RANGE, XBE_SPLIT_DRAWS,
+XBE_VS_EDIT, XBE_KEEP_RELEASED, XBE_SHADER_FLAGS, XBE_DUMP_SHADERS) stay, off unless set; the log keeps the memory
+line every 5 s and a line for each pipeline, texture, target and vertex shader made.
+Next: Harry's call on releasing v1.0.1; the fix into fork main with the other games' smoke.
+
+### 2026-10-28 - MI6 Training's NVIDIA hang: vertex element offsets past the input assembler's limit
+
+Run 18's draw lines: the third enemy's two draws (735 and 483 indices, 607 and 575 vertices, stride 28) had input
+elements at offsets 60172, 60184, 60188, 60196: the title points each attribute 2149 vertices into the buffer, and
+the raw path kept those offsets in the input layout, with the buffer starting 60 KB early (77168 bytes = 60172 +
+607 x 28). Every working mesh has offsets under its stride. D3D's AlignedByteOffset limit is 2047; NVIDIA GPUs hang
+taking the layout in (D3D11 and D3D12 alike, ahead of the draw), others read it. XBE_VS_EDIT=noskin froze too: the
+shaders were never it. sdk e703353: AssembleRaw moves each stream's whole vertices' worth of offset to the buffer's start
+(the same bytes read; offsets now 0, 12, 16, 24). Smoke OK. Next: the L4 through the third fight, plain.
+
+### 2026-10-28 - MI6 Training's hang: either third-enemy shader alone, edits no help
+
+XBE_VS_EDIT=noprecise,noinf,rcpclamp froze at 37.0 s; leaving out only 384A froze at 36.4 s, only C20D at 52.7 s:
+each hang one present after the shaders are first made, so either alone is enough and precise, the infinite
+literals and the unguarded reciprocals are not it. Shared: skinning by a0 from an int4 input, four lights, the
+NP3 packed normal. sdk 10b3543: the first two draws of every vertex shader are logged with their geometry (topology,
+counts, index range, vertices assembled, buffers) and input layout (register: DXGI format / buffer + offset);
+XBE_VS_EDIT=noskin forces a0 to 0. Smoke OK. Next: a plain run for those lines, and noskin.
+
+### 2026-10-28 - MI6 Training's hang: the third enemy's vertex shaders
+
+Run 16, XBE_SKIP_VS=384A569ABF6339C8,C20D64B9C2B21341 (with XBE_DUMP_SHADERS=1): no hang, past the third fight, and
+the third enemy invisible, nothing else missing. Both are vertex shaders made for program handle 0x27D209 (new
+microcode in the same slot) at the third fight: skinning through c[a0+96..98] with a0 from an int4 ATTR3, four point
+lights each with ilu_rsq, ilu_lit (exp2 of log2) and an unguarded ilu_rcp of the attenuation; C20D adds a
+reflection texgen. No loops; the HLSL is valid. The GPU hangs ahead of their draws (the front end stops on earlier
+grid strips, once on draw 0 of a fresh list): the hang comes as the GPU takes in their state, a driver problem with
+what these shaders compile to, on D3D11 too (same DXBC). sdk 4a2e47a: XBE_VS_EDIT=noprecise,noinf,rcpclamp rewrites
+the generated vertex shaders (no precise, no infinite literals, reciprocals clamped). Smoke OK.
+Next: the L4 with all three, then one at a time; each of the two shaders left out alone.
+
+### 2026-10-28 - MI6 Training's hang: two new vertex shaders the present before
+
+Run 15 (plain, logging what is made) froze at 61.3 s, present 3135. Nothing new for 584 presents, then at present
+3134 four pipelines (36 to 39, triangle lists, ordinary state) with two vertex shaders seen nowhere else in the run,
+384A569ABF6339C8 and C20D64B9C2B21341: the second or third fight brings in new vertex programs, and the GPU hangs on
+the next thing it runs. Earlier runs' pipeline counts rose by 2 to 4 at the loss too. sdk 9b01a74: XBE_SKIP_VS=hash,...
+leaves out draws with those vertex shaders; XBE_DUMP_SHADERS=1 writes every shader's HLSL to logs\shaders; each
+vertex shader made is logged with its program handle. Smoke OK. Next: the L4 with XBE_SKIP_VS on both, and the dump.
+
+### 2026-10-28 - MI6 Training's hang: the first draw of a fresh list hangs
+
+XBE_SPLIT_DRAWS=3000 (each list sent and waited for every 3000 draws) froze at 40.3 s in the second or third fight:
+the list before had finished, and the GPU hung on draw 0 of the next, a grid strip, straight after
+BeginCommandList. List size is out; whatever the GPU runs once the moment comes hangs. Checked: the viewport is the
+whole target with depth 0..1 always and the scissor is clamped; the gamma ramp's copy is well formed. sdk ad5eaf7: the
+log names every pipeline, texture and target as it is made and each gamma ramp upload, with the present, to see
+what the fight brings in just before the hang. Smoke OK. Next: one plain run through the fights.
+
+### 2026-10-28 - MI6 Training's hang: the third fight, not a timer; runs 11 to 13 void
+
+Harry: the hang comes only once fighting the room's third enemy, never at the first. Runs 11, 12 and 13 (no input
+after the 32 s cut) stood at the first enemy and never reached it: their survivals say nothing, and the two entries
+above built on them (draws needed, only a whole frame hangs) are withdrawn. Run 10b (facing away) did fight through,
+so the view does not matter. Every run played through froze, 10 to 20 s into the room. sdk 25a7d1c: XBE_SKIP_AFTER=f8
+starts the skips (XBE_SKIP_STRIDES, XBE_DRAW_RANGE) at the first press of F8, so they can begin once the second enemy
+is down. XBE_SPLIT_DRAWS stays a fair test played through. Smoke OK.
+
+### 2026-10-28 - MI6 Training's hang: only a whole frame's draws hang
+
+XBE_DRAW_RANGE (from 32 s, after the room loaded): 0-3300 ran 168 s, 3300- 252 s, 0-4950 153 s, 1650- 197 s, none
+hung; every run with all of the frame's ~6600 draws hung by 57 s. The range check sits just before the draw call:
+binding, uploads, descriptors and flushes are the same in both, only the draws the GPU runs differ. So no draw is
+needed in particular, only enough of them in a list. (Run 6, XBE_SKIP_PS from the start, hung with 3393 draws a
+list: those draws were never bound either, so it is not a plain count of draws.) sdk b7e18cc: XBE_SPLIT_DRAWS=N sends
+the list and waits for it every N draws, the frame's work the same in smaller lists. Smoke OK.
+Next: the L4 with 3000, then 1000.
+
+### 2026-10-28 - MI6 Training's hang needs the draws
+
+Run 11: XBE_SKIP_STRIDES=all XBE_SKIP_AFTER=32 (the room loaded at about 26 s) ran 138 s without a hang, presenting
+about 60 frames a second to the end, memory steady. The clears, copies, presents and the room's timed logic alone
+do not hang the GPU (Bond standing still). sdk e5073cd: XBE_DRAW_RANGE=a-b keeps only each list's draws a to b-1
+(about one list a frame), from XBE_SKIP_AFTER on, to halve the frame's draws until the ones needed are found.
+Smoke OK.
+
+### 2026-10-28 - MI6 Training's hang: where it stands after 21 runs on the L4
+
+Facts (NVIDIA L4, every run Hung, Aftermath fingerprint 0x3cbf0f26bce8a45c, DXGI_ERROR_DEVICE_HUNG):
+- 35.7 to 72.7 s from launch, 10 to 20 s after the room loads, whatever the view: facing away from the dummy froze
+  at 42.8 s. A timed or scripted event in the room fits better than anything drawn.
+- D3D11 freezes as well. Dumps: no page fault, no active shaders, no address.
+- Where the GPU stops follows the work, not the fault: the first grid pass (3 and 4 index strips, vertex program
+  0x27D209, fixed function, a DXT3 128x128 texture) almost always; the next frame's depth clear when the grid was
+  left out. With a wait after each list and Aftermath markers, the GPU's front end and DRED agree on one such strip.
+- Ruled out, each by a frozen run: the render thread (XBE_RENDER_THREAD=0), CPU/GPU overlap (XBE_SYNC_GPU=1), strides
+  28/32/64 left out, visibility tests (never used), the depth compare pass (XBE_SKIP_PS=0027B5B4), anisotropy
+  (off), the shader compile (skip, ieee), freed resources (none are ever released; XBE_KEEP_RELEASED=1), a build-up
+  (video memory flat at 141 MB, 130 textures, 5 targets). In the code: shader loops, a0 indexing, cbuffer sizes,
+  sampler ranges, YUY2 (CPU converted), the shared colour/depth surface binding.
+sdk f9eb5c2: XBE_SKIP_STRIDES=all with XBE_SKIP_AFTER leaves out every draw from then on: if the GPU still hangs with
+only clears, copies and presents, the draws are out entirely. Smoke OK.
+
+### 2026-10-28 - MI6 Training's hang: not the shader compile; a freed resource?
+
+XBE_SHADER_FLAGS=skip froze twice (40.1, 37.1 s), ieee at 35.7 s, same fingerprint, stopped at grid strips (either
+address mode). The dumps show no active shaders: the GPU is held before or outside the shaders, on the simplest draws
+and once on a depth clear, on D3D11 as on D3D12, 15 to 25 s into the room. Left unexplored: memory the GPU uses after
+it was let go. sdk 67513a6: the 5 s memory line counts every resource released so far; XBE_KEEP_RELEASED=1 keeps them all
+(none freed). Smoke OK. Next: the L4 with it, and a run standing in the room facing away from the enemy.
+
+### 2026-10-28 - MI6 Training's hang: the shaders' compilation next
+
+Run 8 froze at 46.1 s; marker and DRED agree on draw 2692, a grid strip with the same textures as its neighbours
+(run 7's texture change at the stop was chance). The sampler is ordinary: no anisotropy (off in every run, with
+antialiasing off and render 100%), LOD bias -1, linear. The texture lines were empty: a binding memoised for the frame
+skipped them (fixed). Checked in the shaders: the one loop (spreadtap) runs only for upscaled targets, absent at
+100%; the vertex programs' a0 reads are clamped to c[0..191]. Every stop so far is a draw with vertex program
+0x27D209 (the title's own, loaded through the push buffer), on D3D11 as well as D3D12: both take FXC's DXBC, so a
+driver compile problem with one shader would hang both. sdk 6c386bb: XBE_SHADER_FLAGS=skip / o3 / ieee compiles every
+shader otherwise (kept apart in the shader cache). Smoke OK. Next: the L4 with skip, then ieee.
+
+### 2026-10-28 - MI6 Training's hang: memory flat; the stop at a texture's first draw
+
+Run 7 (XBE_SKIP_PS=0027B5B4, sync, markers) froze at 57.0 s. Aftermath's marker and DRED agree for once: draw
+3040.1819 began and never finished, the first draw with texture B005D200 (07780E29: DXT3 128x128, 8 levels; the
+grid's) after ten with B005C320. Memory flat every 5 s: video 141 MB of 21827, 131 textures, 5 targets, 37
+pipelines, nothing waiting release, all settled 11 s before the hang. sdk f397b0e: each draw note in the report adds
+stage 0's texture (size, levels, DXGI format, the present it was made at, its uploads) and its sampler (filter,
+anisotropy, address modes, LOD bias and range). Smoke OK. Next: run 7 again for those.
+
+### 2026-10-28 - MI6 Training's hang: not the depth compare pass either
+
+Run 6 (XBE_SKIP_PS=0027B5B4, half of each frame's draws gone) froze at 51.5 s, same fingerprint, the stop again on
+the first grid pass. Nothing left out so far (strides, visibility tests, that pass) or serialised (no render thread,
+a wait after every list) stops it or moves it much in time (37 to 73 s): the stop follows the GPU, the timing
+follows something else. A build-up is the next suspect. sdk db011e4: every 5 seconds the log has video and shared
+memory and the textures, targets, pipelines and releases held. Smoke OK. Next: the L4 with XBE_SKIP_PS=0027B5B4
+XBE_SYNC_GPU=1 XBE_NV_MARKERS=1, and the memory lines up to the hang.
+
+### 2026-10-28 - MI6 Training's hang: a depth texture compared in a grid pass
+
+5b again (47.1 s): Aftermath's marker at list 2569 draw 6004 of 6767, about 89% in as before, all draws around it
+alike: 3 index strips, stride 32, vs 0027D209 ps 0027B5B4, target 83A04A00, texture 0 B00CE1A0 format 00012E29
+(LIN_D24S8, 256x256 with a 5120 byte pitch: part of a 640 wide depth buffer) read through a comparison sampler (the
+shadow path), no copies or barriers near. The first grid pass (ps 0, DRED's stop) is the same geometry untextured.
+The sampler's comparison is in range (Cmp maps any value). sdk 518de6d: XBE_SKIP_PS=0027B5B4 leaves that pass out,
+XBE_NO_SHADOW=1 reads depth textures as plain floats. Smoke OK. Next: the L4 with each.
+
+### 2026-10-28 - MI6 Training's hang: Aftermath names a draw far past DRED's stop
+
+Run 5 (XBE_NO_QUERIES=1) froze at 52.9 s: the title never turned a visibility test on in the whole run, so the
+queries are out. Run 5b (XBE_SYNC_GPU=1 XBE_NV_MARKERS=1) froze at 41.0 s. Aftermath's marker: list 2218 draw 5985
+executing, 5986 not started (the dump agrees), while DRED's first unfinished draw was 2913 of 6556, a grid strip. DRED
+counts finished draws; the marker is how far the GPU's front end got, so the hang is at or waits on draw 5985, about
+91% into the frame. sdk 79e787d: the report logs the draws 10 either side of the marker's draw, the copies before it and
+DRED's operations around it. Smoke OK. Next: run 5b again.
+
+### 2026-10-28 - MI6 Training's hang: the visibility tests next
+
+Run 4 again with copied markers (the test PC's local patch, the same as sdk 0a0c7f2's): froze at 56.5 s, but
+Aftermath's markers named list 3071 draw 495, a list recorded after the loss on the same command list, while DRED's
+unfinished list was 3070 at draw 2932. One context handle on a reused command list follows the newest recording. sdk
+bfbdc0a: with XBE_SYNC_GPU the loss is checked right after each wait, before more is recorded (and GetData logs the
+marker then). New suspect: the freeze comes when Bond turns to face the enemy, which is when the title may start
+visibility tests (occlusion queries: BeginQuery, EndQuery and a ResolveQueryData per counted draw).
+XBE_NO_QUERIES=1 leaves them out (every test reports 0 pixels), and the report counts the tested draws in the
+stopped list and the nearest to the stop. Smoke OK. Next: the L4 with XBE_NO_QUERIES=1, and with
+XBE_SYNC_GPU=1 XBE_NV_MARKERS=1.
+
+### 2026-10-28 - Aftermath markers that reach the dump
+
+Run 4 (XBE_SYNC_GPU=1 XBE_NV_MARKERS=1) froze at 72.7 s, Hung, same fingerprint, stopped at a grid strip
+(3957.2965), but its dump held no markers: a marker set with size 0 keeps only its pointer, which the dump leaves
+out unless the app resolves it. sdk 08a034a: the marker's 8 bytes are given, so Aftermath copies them, and a lost
+device logs the last marker reached ("Aftermath's last marker: list L draw D", from GFSDK_Aftermath_GetData), so the log
+alone names the draw. Smoke OK. Next: run 4 again.
+
+### 2026-10-28 - MI6 Training's hang is not a race; a marker per draw
+
+On the L4: XBE_RENDER_THREAD=0 froze at 70.5 s, XBE_SYNC_GPU=1 at 44.3 s, both Hung with fingerprint
+0x3cbf0f26bce8a45c. With the sync the CPU waits on each list, and the GPU hung inside a single list (2521 of 6553
+draws done, on a grid strip) with nothing else running: the work in one list hangs, whatever the CPU does. sdk 3c730e2:
+XBE_NV_MARKERS=1 (test PC with the Aftermath DLL) sets an event marker per draw holding list << 20 | draw; the
+decoder (.local/aftermath/tool) prints the last marker each GPU context reached. Smoke OK.
+Next: the L4 with XBE_SYNC_GPU=1 XBE_NV_MARKERS=1, then that draw's state.
+
+### 2026-10-28 - MI6 Training's hang: no draw kind stops it; a race?
+
+On the L4 with XBE_SKIP_STRIDES: 28 froze (a grid strip), 32 froze with the stop at the next frame's first
+operation, its depth clear (0 draws done), 64 froze; 28,32,64,80 could not be played to the room. All Hung with
+fingerprint 0x3cbf0f26bce8a45c, 37 to 54 s after the start. A depth clear cannot take two seconds: the stop is where
+the GPU is when the timeout fires, not the work at fault, and no kind of draw is needed for it. Left: a race between
+the CPU and the GPU (memory changed while a list reads it) or something timed. sdk f971c77: XBE_SYNC_GPU=1 waits for
+every list once sent; with XBE_RENDER_THREAD=0 (drawing on the title's thread) nothing overlaps. Smoke OK.
+Next: the L4 with both.
+
+### 2026-10-28 - MI6 Training's hang: not the negative base vertex; bisecting by vertex layout
+
+XBE_REBASE_INDICES=1 on the L4: froze the same, stopped at a grid strip drawn with base 0; Hung, fingerprint
+0x3cbf0f26bce8a45c in two runs (deterministic). sdk 4866ee3: XBE_SKIP_STRIDES=list leaves out draws by their
+vertex stride, to bisect on the test PC: 28 (the dummy's and hologram meshes, packed normals), 32 (grid strips),
+64 (character meshes). Smoke OK.
+
+### 2026-10-28 - MI6 Training's hang: no copies this time; negative base vertices
+
+The L4 run of 1bdcba9 (Harry's EoN save, the game's own Aftermath dump): hung at 53.6 s, device state Hung (not
+PageFault), a new fingerprint, no address, shaders or markers; the stop (draw 1770 of 5998, 4 4 4 [4]) had no copies
+before it: the copies were not the cause. What every report shares, on D3D11 and D3D12: the stop among indexed draws
+with a negative base vertex (DrawNative passes the title's 16 bit indices with base -first: grid strips at about
+-5950, character meshes at -8 to -30, one at -635). sdk 9c147bb: XBE_REBASE_INDICES=1 copies those indices to
+32 bit with the lowest taken off and draws with base 0 (the headless renderer does not take that path). Smoke OK.
+Next: the L4 run with it.
+
+### 2026-10-28 - MI6 Training's page fault: always after two copies
+
+With Aftermath initialised (result 1) the dump still has no address (Nsight: "could not determine a cause";
+graphics pipeline busy, every unit idle: the front end). Both runs on the L4 stopped at the same point: DRED
+operations 8 8 15 [4], two CopyTextureRegion and a barrier before a strip of 4 indices from base -1000 (42308 bytes,
+stride 28) with a DXT3 128x128 texture: the faulting operation is likely one of the copies. sdk 30ff9a9: every
+CopyTextureRegion noted with its resources' names, footprint or subresource and box; the report lists those just
+before the stop. Smoke OK. Next: Harry's run with it.
+
+### 2026-10-28 - MI6 Training's page fault on Harry's rented NVIDIA L4
+
+Reproduced on a rented NVIDIA L4 (Ada, driver 596.86, Windows Server 2025) with the Aftermath Monitor: the same
+dump fingerprint as the player's (10562858334710211147), Error_DMA_PageFault, no address (the Monitor's resource
+tracking needs the application to initialise Aftermath). The log's report: the unfinished list stopped at draw 3909
+of 4892, after two CopyTextureRegion and a barrier (DRED operations 8 8 15), a strip of 4 indices from base -1000,
+stride 28, sampling texture B00A89A0 (DXT3 128x128, 8 levels). Audited: texture levels uploaded with
+GetCopyableFootprints sizes, a remade texture's old resource kept in the frame's garbage, the tables cache cleared
+with each ring generation. sdk dca8374: Aftermath initialised (markers, resource tracking, shader debug info,
+error reporting, call stacks) when NVIDIA's GFSDK_Aftermath_Lib.x64.dll is beside the exe (test PC only; declared
+here, no SDK file in the repo). Smoke OK. Next: the dump with it: the faulting address and the resource's name.
+
+### 2026-10-28 - MI6 Training's lost device: a GPU page fault (Aftermath)
+
+The player's NVIDIA Aftermath crash dump (RTX 3080, driver 621.01) decoded here with the Aftermath SDK's decoder
+(Harry's download, kept in .local/aftermath: its licence lets the library ship only built into an application, so
+neither it nor the tool is committed): Device state Error_DMA_PageFault, engine reset. Not a shader running long:
+the GPU read memory it had no page for, which Windows reports as DEVICE_HUNG and AMD's GPUs may read through. The
+dump has no address (page fault details need resource tracking: the Aftermath Monitor's option, or the application's).
+Audited without finding the fault: allocators reset after their frame's fence, idle textures released after 600
+frames into a frame's garbage, late read-back buffers replaced into the frame's garbage, the upload ring flushed past
+56 of 64 MB (no constants at its end). sdk 9e5900b: every GPU resource named (upload rings and own uploads,
+targets with their guest data, textures with data, size and format, MSAA twins, read-backs, shrunk and feedback
+copies), so DRED and Aftermath name the resource at a fault. Smoke OK. Next: a dump with the Monitor's resource
+tracking on: the faulting address and the resource.
+
+### 2026-10-27 - MI6 Training's lost device on NVIDIA: stopped, written up (unsolved)
+
+The player's run with XBE_SKIP_TARGET=03170A00 (no draws into the dummy's second target): hung the same (draw 2468
+of 6446). Past three attempts at this freeze, so stopped here, per the working rules.
+
+What is known. Two players (RTX 3080 driver 32.0.16.2101, RTX 4060 Ti), never Harry's RX 7900 XT: in MI6 Training's
+hand to hand room, as the camera turns to the dummy, Windows resets the GPU for taking over two seconds
+(DXGI_ERROR_DEVICE_HUNG, 887A0006); sound and input go on, the last picture stays. Same on D3D11 and D3D12, at 100%
+and 50% render scale, with MSAA off, 4x, 8x, with the mission's 2x2 multisample mode applied or not, and with the
+dummy's second target's draws left out. The debug layer with GPU based validation reports no error before the hang
+(two warnings only). DRED's stop moves with timing: without validation in the room's grid strips (draw 1700 to 2800
+of 5700 to 8100), with validation on one character mesh on both PCs (579 indices, 64 byte vertices from
+(3.78623, -3.43547, -0.060722)). Every draw around the stops is in range (indices within their vertices).
+
+Ruled out: a presented buffer no draw reached (no log line), CPU writes over the frame buffers (no reloads), the
+descriptor ring wrapping within a frame (fixed anyway: sdk 72d8bf2; never reached in these frames), invalid API use
+(debug layer), the amount of work (50% scale), the 2x2 mode (XBE_NO_SAMPLE_SCALE), the dummy's target
+(XBE_SKIP_TARGET), a runaway shader loop (spreadtap's count is small and its constants zeroed per draw; vertex
+programs are straight line, a0 indexing clamped).
+
+What I think is happening: a shader both renderers compile from shaders.cpp (the same HLSL through FXC for D3D11
+and D3D12) that NVIDIA's driver runs effectively forever for some input in this scene (a driver fault on a
+construct of ours), as no fault of ours shows in the API or the draws. The way to see it: NVIDIA's Aftermath GPU
+crash dump (Nsight Graphics' crash dump monitor on the player's PC) names the shader and the instruction the GPU
+hung on; or an NVIDIA GPU on hand to bisect with XBE_DRAW_SKIP. Diagnostics left in (eon-1.0): DRED and the lost
+device's report, the debug layer to the log (XBE_D3D12_DEBUG), the driver version, XBE_NO_SAMPLE_SCALE and
+XBE_SKIP_TARGET.
+
+### 2026-10-27 - MI6 Training's lost device: not the 2x2 mode (main)
+
+The player's run with XBE_NO_SAMPLE_SCALE=1 (the frame buffer "drawn 1x1"): hung the same (draw 2360 of 6314).
+So the mission's multisample mode is not the trigger. In every report the draws after the stop include character
+meshes drawn into a second target, data 03170A00 (in the earlier capture also a depth target at that data): the
+dummy's effect, as the camera turns to it. sdk 6d14cea: XBE_SKIP_TARGET=03170A00 leaves those draws out.
+Smoke OK. Next: the player's run with it; if it still hangs, NVIDIA's Aftermath crash dump.
+
+### 2026-10-27 - MI6 Training's lost device: both validated runs stop on one mesh
+
+The second player's run with XBE_D3D12_DEBUG=2 (RTX 4060 Ti, MSAA 4x, aniso 16): no error before the hang either,
+and it stopped on the same draw as the first player's validated run (draw 3198 here, 3222 there): an indexed list
+of 579 indices, 579 vertices of 64 bytes from (3.78623, -3.43547, -0.060722), program 0x27D209, a character mesh,
+followed by the stride 28 meshes. Without validation the GPU runs further ahead, so those stops wandered through the
+grid strips. Checked: the generated vertex programs are straight-line (VertexProgramHlsl), a0 indexing clamped to
+c[0..191]: no runaway loop in our shaders. Next: the XBE_NO_SAMPLE_SCALE run, then NVIDIA's Aftermath crash dump
+(the shader and instruction the GPU hung on).
+
+### 2026-10-27 - MI6 Training's lost device: any scale, both renderers (main)
+
+The player: froze at 50% render scale (D3D12, hung at draw 2820 of 8114, the grid strips again; driver
+32.0.16.2101) and on D3D11 at 100% (d3d11: the GPU device was lost: 887A0006). So not the amount of work and not
+one renderer's code: the shaders both renderers compile from shaders.cpp, or something in what this mission draws,
+on NVIDIA. The generated HLSL's only loop (spreadtap) reads constants zeroed per draw (DrawConstants c{}): no
+runaway count. The one thing every freeze log shows this mission set: MultiSampleMode 2 on the frame buffers, drawn
+2x2 (State::aa_x, aa_y: sample placement, the HUD's half width, point sprite sizes). sdk f392d7e:
+XBE_NO_SAMPLE_SCALE=1 leaves the modes unapplied. Smoke OK. Next: the player's run with it.
+
+### 2026-10-27 - MI6 Training's lost device: valid API use, a GPU timeout (main)
+
+The player's run with XBE_D3D12_DEBUG=2 (debug layer with GPU based validation): no error or corruption message
+before the hang, only warnings (clear values unlike the resources' and a depth only pipeline's colour output).
+The removal: DXGI_ERROR_DEVICE_HUNG, Windows' timeout (TDR): the GPU took over two seconds. With validation the
+stop moved to the characters' meshes (draw 3222 of 6220): where the GPU had got to, not a bad draw. Checked:
+spreadtap's loop (n x n taps, n from a constant) is 4 to 6 per axis here, finite. Left: a burst of GPU work as the
+camera turns, or an NVIDIA driver fault on one of the generated shaders. sdk d9761d8: the driver version in
+the log. Smoke OK. Next: the player tries a 50% render scale (less work) and Direct3D 11, with this build.
+
+### 2026-10-27 - MI6 Training's lost device: not the descriptors; the debug layer into the log (main)
+
+The player's log with 72d8bf2: hung again (887A0006, draw 2063 of 6040, the same run of grid strips, 3 valid
+indices), and no "nearly used up" line: the frame never neared its views, so the wrap fix (kept: it was a real
+fault) is not this freeze. The draws around and after the stop are the room's ordinary ones (indices in range).
+Left: a resource state or synchronisation fault the draws do not show. sdk b88d733: XBE_D3D12_DEBUG=1 the debug
+layer, =2 with GPU based validation; its corruption, error and warning messages logged at report level each present
+and in the lost device's report. It needs Windows' Graphics Tools. Smoke OK. Next: a run with XBE_D3D12_DEBUG=2 on an
+NVIDIA PC to the freeze.
+
+### 2026-10-27 - MI6 Training's lost device: the descriptor ring wrapped within a frame (main, fix to confirm)
+
+A second player's log (RTX 4060 Ti, MSAA 8x) stops in the same run of grid quads (draw 2339 of 6555). Both stop
+in frames of 5700 to 7800 draws, more as the camera turns to the enemy. AllocSrvSlots gives a frame 32768 views (4 a
+draw when its table is not reused) and on running out started the ring again at 0 within the frame, over views the
+frame's earlier draws, recorded and not yet run, still read; its log line was info level. The sampler heap (2048)
+started again the same way across frames. sdk 72d8bf2: before a draw records anything, when fewer than 16 views
+are left in the frame or 16 sampler slots, the GPU finishes everything recorded (Flush) and the views (and samplers)
+start again; the fallback wrap is logged at report level. D3D11's rings discard properly, so its freeze (one player,
+no log line then) is not explained by this. Smoke OK. Next: the players' logs: no lost device, and "nearly used up"
+lines show the fix is reached.
+
+### 2026-10-27 - MI6 Training's lost device: the stop is an ordinary draw (main)
+
+The next log found the hung list (7798 draws, stopped at 2474): an indexed strip of 4 from base -5812, 4 vertices
+of 32 bytes, program 0x27D209, the room's grid quads (as every frame draws thousands of). In the list behind it the
+first draw, a grid quad too. So the stop is where the GPU was, not plainly the culprit: the GPU works on many draws
+at once. sdk 2f20950: the report also lists the draws after the stop that stand out (another target, 300+
+vertices, another primitive, a wide index range) and the 1500 after it by target; indexed draws note their index
+range (base added). Smoke OK.
+
+### 2026-10-27 - MI6 Training's lost device: matching DRED's lists (main)
+
+The next log: hung (887A0006) at draw 2751 of a 6542 draw list, "no list of 6542 draws kept": DRED counts every
+draw, the renderer's blits and the settings window's too, the notes only the title's. sdk 1116e66: blits noted
+with the draws, a kept list matched when it has as many draws or up to 400 fewer (the settings window's, after the
+frame's), and the kept lists' sizes logged when none matches. Smoke OK.
+
+### 2026-10-27 - MI6 Training's lost device: the hung list was two back (main)
+
+The next log: hung again (887A0006) at draw 1778 of a 5765 draw list; behind it a one operation list and one of 5758
+draws, so the list that hung was not among the two kept. sdk 56974e9: the last six lists' draws kept. Smoke OK.
+
+### 2026-10-27 - MI6 Training's lost device: where the GPU stopped (main)
+
+The player's log with DRED: reason 887A0006 (DXGI_ERROR_DEVICE_HUNG), seen at present; the unfinished list had
+1742 of 5709 operations done, 1739 draws done: the GPU hung at the frame's draw 1739 (of 5705). The report's last
+40 draws were the frame's end, not that draw. In their two captures the frame's draws near 1739 are a long run of
+small additive fans (prim 6, 3 vertices, blend 1 1, textures 82CA0180 128x128 DXT and 82939000, the direct-input
+program 0x27D209): a glow or particle effect. sdk b67b216: every draw of the last two command lists kept; the
+report finds the unfinished list by its draw count and logs the draws around the stop, each with its buffers, first
+vertex and the textures' format and size words. Smoke OK. Next: that log.
+
+### 2026-10-27 - MI6 Training's standing picture: the GPU device is lost (main)
+
+The player's log from 7bfb194: "pipeline creation failed 887A0005" 18 s after the mission began: 887A0005 is
+DXGI_ERROR_DEVICE_REMOVED. The second player's (RTX 4060 Ti) shows the same at 255 s. So the picture stands
+because the GPU device was lost (on NVIDIA; Harry's AMD has not shown it) and nothing is drawn after; sound and
+input go on. The D3D11 freeze is likely the same, unlogged. The earlier diagnostics were LOG_FIRST, which is info
+level and not in a release log (only report level and errors are): the read-back and target lines never showed.
+sdk 6b6cb80: D3D12 turns DRED on (auto breadcrumbs, page faults) and reports a lost device once at report level
+from wherever it is first seen (a command list's close, a GPU wait, a pipeline, a present): the reason, each unfinished
+command list's operations done and draws done with the operations around the stop, a page fault's address and the
+allocations there, and the last 40 draws (list.number, topology, count, target, textures, shader handles); D3D11
+logs a lost device at present. Smoke OK. Next: the log of a freeze with this build: the draw the GPU stopped at.
+
+### 2026-10-27 - MI6 Training's standing picture: more diagnostics (main)
+
+Two players' logs from 3263421 builds (RTX 3080 and RTX 4060 Ti): no "presenting ... no target drew it", so the
+front presented is a drawn target and the missing final.bmp has another cause. The player: the picture stops after
+the counter attack step, as the camera turns to the enemy. Suspect: the plain set's two frame buffers share their
+memory one row apart, a read-back (Sync) of one writes guest memory and updates only its own signature, so the
+other can look written by the CPU and be reloaded from guest memory; the reload before a draw is logged (never in
+their logs), the one at present was not. sdk 7bfb194: logs that one, read-backs, and the colour targets made.
+Smoke OK. Next: a log from a freeze with this build.
+
+### 2026-10-27 - a player's report: MI6 Training's picture stands still (main, diagnostics)
+
+A player (RTX 3080, 2560x1440 144 Hz): in MI6 Training the picture stops after the third hand to hand strike;
+sound and controls go on. Also with antialiasing off from the start and with D3D11. Their logs: frames presented
+at 60 a second to the end; F3's thread stacks: the main thread in the world's drawing (0x110230 from 0xF5800).
+Their two D3D12 captures 4 s apart (124129, 124133): full frames (5025 and 6378 draws) into the plain set's
+buffers in turn (0x35B9C4 data 03A04000, 0x35B97C data 03A04A00: 640x480, the second one row into the first, as
+src/game/supersample.cpp chooses), and the camera moved between them: the game runs and draws. Neither capture
+has final.bmp, which is written only when a target matches the presented front buffer: the front presented was
+not a surface the frames drew into, so its picture came from guest memory. Their three memory dumps agree on the
+buffer mode (0x35BBF4 = 0x35BF58 = 0, the plain set) and 0x35BF5C = 1 is the frame being recorded (0x604E0).
+Headless with Harry's save in the hand to hand room: the dummy knocks Bond down before a strike counts, so the
+third strike is not reached. sdk 3263421: D3D12 logs a front buffer no target drew into, with the targets at its
+data (on the SDK branch eon-1.0: the release's SDK and this; eon has the pacing work besides).
+Next: the player (or Harry) rebuilds main through the launcher and sends the log from a freeze.
 ### 2026-10-27 - free aim: the shot path (branch free-aim, work in progress)
 
 The shot path mapped (FINDINGS, Aiming): an ammo counter found from memory dumps (16, 15, 14 after single shots),

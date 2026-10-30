@@ -12,14 +12,15 @@
 #include "core/log.h"
 #include "kernel/kernel.h"
 #include "xdk/hle.h"
+#include "common/release.h"
 
 namespace eon {
 extern uint32_t fov_percent;  // the setting (src/common/game_info.cpp; EON_FOV headless)
 float WidenedFactor(float f);  // ultrawide: the widen factor every frustum gets (src/game/ultrawide.cpp)
 }
 
-X86_EXTERN_FUNC(__imp__sub_00061080);
-X86_FUNC(sub_00061080) {
+X86_EXTERN_FUNC(EON_ORIG(00061080, 00060DB0));
+X86_FUNC(EON_FN(00061080, 00060DB0)) {
     // ultrawide: the frustums the game culls with as wide as the views it draws (the widen factor, the 4th argument)
     float kx;
     std::memcpy(&kx, &kernel::G<uint32_t>(ctx.esp + 16), 4);
@@ -37,5 +38,5 @@ X86_FUNC(sub_00061080) {
             LOGR("eon: field of view %u%% (%.1f degrees for the game's %.1f)", pct, wider * 57.29578f, fov * 57.29578f);
         }
     }
-    __imp__sub_00061080(ctx, base);
+    EON_ORIG(00061080, 00060DB0)(ctx, base);
 }
