@@ -21,6 +21,14 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-30 - Free aim: background objects vanished while aiming
+
+Harry's shots: objects in the background gone while aiming. The right button's zoom was applied at 0x61080 only, and
+0xF6170 builds its frustum (0xE59A0) from the unzoomed angle and the zoomed scales together. The zoom moved to the
+camera info (0x8D960 +0x30), the one value they all start from. Headless, aiming, the yard's far enemies, crates and
+lamps are drawn (6383 draws a frame; not the same view as without, as Bond moved). Lock button held with no target
+(.local/scene_lt.txt): his pose is unchanged, rifle low. Smoke OK. Next: Harry on the same spot; the aiming pose.
+
 ### 2026-10-30 - Free aim on foot: shots to the crosshair, Bond facing the camera, over the shoulder
 
 Corrects the 10-27 entry: with no lock the bullet's forward is the camera's, exactly (0.899 0.402 -0.173 both). The

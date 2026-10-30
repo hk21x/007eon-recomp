@@ -11,7 +11,7 @@
 // Bond stands in the middle of the view: the camera info every view and aim reads (0x8D960: position, then pitch, yaw,
 // roll in degrees) is moved to the right, over his shoulder. While a mouse button is held he faces the camera's way:
 // his yaw is the angles' +0x64, from which the game rebuilds his matrix (+0x70) each update, so he turns and his shots
-// stay in the gun's 90 degrees. The right button also zooms a little (src/game/fov.cpp). The crosshair is drawn here.
+// stay in the gun's 90 degrees. The right button also zooms a little. The crosshair is drawn here.
 //
 // EON_FREE_AIM (headless, no mouse): 0 off, 1 on, 2 on with a button held.
 #include <algorithm>
@@ -32,7 +32,6 @@ namespace eon {
 extern bool free_aim;                 // the setting (src/common/game_info.cpp)
 extern void (*frame_ui)(double fps);  // drawn each frame (src/common/game_info.cpp)
 extern std::atomic<int64_t> hud_drawn_ms;  // when the HUD last drew (src/game/hud.cpp): none in movies or the like
-std::atomic<float> aim_zoom{1};       // the views' field of view while aiming (src/game/fov.cpp)
 }
 
 namespace {
@@ -56,6 +55,7 @@ constexpr float kBlendPerUpdate = 0.12f;
 
 std::atomic<uint32_t> g_bond{0};
 std::atomic<float> g_shoulder{0};
+std::atomic<float> g_zoom{1};
 std::atomic<bool> g_crosshair{false};
 std::atomic<int64_t> g_updated{0};
 
@@ -148,8 +148,8 @@ X86_FUNC(EON_FN(00156E50, 001566C0)) {
     g_crosshair = on;
     float shoulder = g_shoulder, want = on ? kShoulder : 0;
     g_shoulder = shoulder + std::clamp(want - shoulder, -kShoulder * kBlendPerUpdate, kShoulder * kBlendPerUpdate);
-    float zoom = eon::aim_zoom, zoom_want = on && (buttons & 2) ? kRightButtonZoom : 1;
-    eon::aim_zoom = zoom + std::clamp(zoom_want - zoom, -0.03f, 0.03f);
+    float zoom = g_zoom, zoom_want = on && (buttons & 2) ? kRightButtonZoom : 1;
+    g_zoom = zoom + std::clamp(zoom_want - zoom, -0.03f, 0.03f);
     if (!on || !(buttons & 3)) return;
     float yaw = kernel::G<float>(cam + 0xD4);
     float have = std::atan2(kernel::G<float>(bond + kMatrix + 4), kernel::G<float>(bond + kMatrix));
@@ -167,8 +167,11 @@ X86_EXTERN_FUNC(EON_ORIG(0008D960, 0008D6D0));
 X86_FUNC(EON_FN(0008D960, 0008D6D0)) {
     uint32_t player = kernel::R32(ctx.esp + 4), out = kernel::R32(ctx.esp + 8), bond = g_bond;
     EON_ORIG(0008D960, 0008D6D0)(ctx, base);
+    if (!bond || player != kernel::R32(bond + kPlayerIndex)) return;
+    // the zoom here, in the one field of view every view and frustum starts from: 0xF6170 builds a frustum from this
+    // value and from the scales 0x61080 makes of it, so changing it at 0x61080 alone culled what was in view
+    kernel::G<float>(out + 0x30) *= g_zoom;
     float shoulder = g_shoulder;
-    if (shoulder <= 0 || !bond || player != kernel::R32(bond + kPlayerIndex)) return;
     float yaw = kernel::G<float>(out + 0x14) * kRadians;
     kernel::G<float>(out) += std::sin(yaw) * shoulder;
     kernel::G<float>(out + 4) -= std::cos(yaw) * shoulder;

@@ -7,7 +7,6 @@
 // and what is culled agree. The game's zooms (the sniper scope, the cameras' own changes) stay in proportion; the
 // cutscenes drawn in the engine widen with it.
 #include <algorithm>
-#include <atomic>
 #include <cstring>
 
 #include "core/log.h"
@@ -17,7 +16,6 @@
 
 namespace eon {
 extern uint32_t fov_percent;  // the setting (src/common/game_info.cpp; EON_FOV headless)
-extern std::atomic<float> aim_zoom;
 float WidenedFactor(float f);  // ultrawide: the widen factor every frustum gets (src/game/ultrawide.cpp)
 }
 
@@ -28,14 +26,6 @@ X86_FUNC(EON_FN(00061080, 00060DB0)) {
     std::memcpy(&kx, &kernel::G<uint32_t>(ctx.esp + 16), 4);
     kx = eon::WidenedFactor(kx);
     std::memcpy(&kernel::G<uint32_t>(ctx.esp + 16), &kx, 4);
-    // free aim's right button: a little zoom, on top of the setting (src/game/free_aim.cpp)
-    float zoom = eon::aim_zoom;
-    if (zoom != 1) {
-        float fov;
-        std::memcpy(&fov, &kernel::G<uint32_t>(ctx.esp + 12), 4);
-        fov *= zoom;
-        std::memcpy(&kernel::G<uint32_t>(ctx.esp + 12), &fov, 4);
-    }
     uint32_t pct = std::clamp<uint32_t>(eon::fov_percent, 50, 150);
     if (pct != 100) {
         float fov;
