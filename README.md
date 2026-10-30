@@ -96,7 +96,8 @@ crashes.
 | --- | --- |
 | Move | W A S D |
 | Look and aim | Mouse |
-| Fire / lock on | Left / right mouse button |
+| Fire / aim | Left / right mouse button (free aim: shots go to the crosshair; F1 turns it off) |
+| Lock on | R (hold) |
 | Jump, confirm (A) | Space or Enter |
 | B | Left Ctrl |
 | Punch left / right (X / Y) | Q / E |

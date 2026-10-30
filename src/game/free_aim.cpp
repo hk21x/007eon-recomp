@@ -57,6 +57,7 @@ std::atomic<uint32_t> g_bond{0};
 std::atomic<float> g_shoulder{0};
 std::atomic<float> g_zoom{1};
 std::atomic<bool> g_crosshair{false};
+std::atomic<bool> g_right_button{false};  // play, and the right button held
 std::atomic<int64_t> g_updated{0};
 
 int Forced() {
@@ -144,12 +145,14 @@ X86_FUNC(EON_FN(00156E50, 001566C0)) {
     bool scope = plays && ScopeView(ctx, mode);
     uint32_t buttons = Forced() == 2 ? 3 : input::MouseButtons();
     // play: the follow camera (the lock's and the cutscenes' are other classes) with the HUD up
+    g_right_button = false;
     bool on = plays && !scope && kind == kFollowCamera && (Forced() >= 0 || NowMs() - eon::hud_drawn_ms < 500);
     g_crosshair = on;
     float shoulder = g_shoulder, want = on ? kShoulder : 0;
     g_shoulder = shoulder + std::clamp(want - shoulder, -kShoulder * kBlendPerUpdate, kShoulder * kBlendPerUpdate);
     float zoom = g_zoom, zoom_want = on && (buttons & 2) ? kRightButtonZoom : 1;
     g_zoom = zoom + std::clamp(zoom_want - zoom, -0.03f, 0.03f);
+    g_right_button = on && (buttons & 2);
     if (!on || !(buttons & 3)) return;
     float yaw = kernel::G<float>(cam + 0xD4);
     float have = std::atan2(kernel::G<float>(bond + kMatrix + 4), kernel::G<float>(bond + kMatrix));
@@ -160,6 +163,14 @@ X86_FUNC(EON_FN(00156E50, 001566C0)) {
         kernel::G<float>(bond + row) = c * x - s * y;
         kernel::G<float>(bond + row + 4) = s * x + c * y;
     }
+}
+
+// Bond's "is he aiming" (vtable +0x14C), fastcall: shooting or a lock with a target, for the stance with the gun up. The
+// right button is the same stance, as the lock's key gives it, with no target
+X86_EXTERN_FUNC(EON_ORIG(0014B010, 0014A880));
+X86_FUNC(EON_FN(0014B010, 0014A880)) {
+    if (ctx.ecx != g_bond || !g_right_button) return EON_ORIG(0014B010, 0014A880)(ctx, base);
+    kernel::Return(ctx, 1, 0);
 }
 
 // the camera info, cdecl (player, out): position, then angles at +0x10

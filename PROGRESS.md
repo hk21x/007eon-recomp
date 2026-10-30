@@ -21,6 +21,13 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-30 - Free aim: the right button gives the lock's stance
+
+Harry: the pose wanted is the one the lock's key gives, and firing with no lock already raises his upper body. 0x14B010
+is Bond's "is he aiming" (vtable +0x14C): 0x161E00 or a lock with a target. It answers yes while the right button is
+held (free aim playing, no lock). Headless (EON_FREE_AIM=2) the rifle comes up in front of him, no traps; the lock
+button held with no target did not do this. The README's keys updated. Smoke OK. Next: Harry plays it, moving too.
+
 ### 2026-10-30 - Free aim: background objects vanished while aiming
 
 Harry's shots: objects in the background gone while aiming. The right button's zoom was applied at 0x61080 only, and
