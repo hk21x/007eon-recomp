@@ -44,6 +44,7 @@ constexpr uint32_t kPlayerIndex = 0x1130;
 constexpr uint32_t kYaw = 0x64;
 constexpr uint32_t kMatrix = 0x70;  // three rows of 16 bytes, forward first
 constexpr uint32_t kPosition = 0xB0;
+constexpr uint32_t kBoom = 0x80;      // the chase camera's position
 constexpr uint32_t kLockedOn = EON_VA(0x151EC0, 0x151730);       // thiscall on Bond
 constexpr uint32_t kMounted = EON_VA(0x1500B0, 0x14F920);        // thiscall on Bond: on a mounted gun
 constexpr uint32_t kZoomable = EON_VA(0x14B640, 0x14AEB0);       // thiscall on Bond: a weapon with a scope
@@ -53,8 +54,8 @@ constexpr uint32_t kGunOwner = EON_VA(0x1A7A40, 0x1A7270);       // thiscall on 
 constexpr uint32_t kBodyTable = EON_VA(0x2DD118, 0x2DC640);      // 0x14A2C0's numbers for the upper body
 constexpr uint32_t kScopeView = 0xBAA3F02;                       // what the scope's camera mode answers (vtable +8)
 constexpr float kRadians = 3.14159265f / 180;
-constexpr float kShoulder = 38;       // world units right of Bond
-constexpr float kRightButtonZoom = 0.8f;
+constexpr float kShoulder = 28;       // world units right of Bond
+constexpr float kRightButtonZoom = 0.9f;
 constexpr float kBlendPerUpdate = 0.12f;
 
 std::atomic<uint32_t> g_bond{0};
@@ -157,12 +158,19 @@ X86_FUNC(EON_FN(00156E50, 001566C0)) {
     float zoom = g_zoom, zoom_want = on && (buttons & 2) ? kRightButtonZoom : 1;
     g_zoom = zoom + std::clamp(zoom_want - zoom, -0.03f, 0.03f);
     g_turned = on && (buttons & 3);
-    g_aim_only = on && (buttons & 2) && !(buttons & 1);
-    eon::aim_trigger = g_aim_only.load();
-    // the left button on top of the right: a gun fired by the press needs one, so the held input lets go first
+    // the left button on top of the right: a gun fired by the press needs one, so the held input lets go first (the
+    // game must see it up: 40 ms), and the shots are real for a while after, or a quick click's press comes when the
+    // button is up again and is blocked
     static bool left_was = false;
-    if ((buttons & 1) && !left_was && (buttons & 2)) eon::aim_release = NowMs() + 70;
+    static int64_t real_until = 0;
+    int64_t now = NowMs();
+    if ((buttons & 1) && !left_was && (buttons & 2)) {
+        eon::aim_release = now + 40;
+        real_until = now + 200;
+    }
     left_was = buttons & 1;
+    g_aim_only = on && (buttons & 2) && !(buttons & 1) && now >= real_until;
+    eon::aim_trigger = on && (buttons & 2);
     if (!on || !(buttons & 3)) return;
     float yaw = kernel::G<float>(cam + 0xD4);
     float have = std::atan2(kernel::G<float>(bond + kMatrix + 4), kernel::G<float>(bond + kMatrix));
@@ -227,6 +235,25 @@ X86_FUNC(EON_FN(0014A740, 00149FB0)) {
     }
     ctx.ecx = bond;
     kernel::Return(ctx, 1, 0);
+}
+
+// The chase camera's update, thiscall (time, ...): a boom on a spring, its position at +0x80 pulled after Bond and its
+// heading the line from there to him, so his sidestep swung the view, and he, facing the view, turned on the spot.
+// While aiming the boom moves by what he moved, the line stays, and only the mouse turns it
+X86_EXTERN_FUNC(EON_ORIG(001D1C70, 001D14A0));
+X86_FUNC(EON_FN(001D1C70, 001D14A0)) {
+    uint32_t bond = g_bond, cam = ctx.ecx;
+    if (bond) {
+        static float last[2] = {0, 0};
+        float x = kernel::G<float>(bond + kPosition), y = kernel::G<float>(bond + kPosition + 4);
+        if (g_turned) {
+            kernel::G<float>(cam + kBoom) += x - last[0];
+            kernel::G<float>(cam + kBoom + 4) += y - last[1];
+        }
+        last[0] = x;
+        last[1] = y;
+    }
+    EON_ORIG(001D1C70, 001D14A0)(ctx, base);
 }
 
 // the camera info, cdecl (player, out): position, then angles at +0x10

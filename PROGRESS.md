@@ -21,6 +21,17 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-30 - Free aim: sidestepping, quick clicks, a closer camera
+
+Harry on 3ad4c48: gun placed right (clips a little), not every left click registers, A and D move the gun. Measured with a
+position and yaw trace: his legs moved, with RT as with the right button, but the view swung (yaw 90 to 148), and he, facing
+it, turned on the spot. The chase camera (class 0x2E2694, update 0x1D1C70) is a boom on a spring: its position +0x80, its
+heading the line from there to him. Hiding his velocity from it did nothing. While a mouse button is held its position now
+moves by what he moved: the same strafe, yaw 90 to 99 and 80 units sideways. Clicks: a quick click's press came with the
+button up and was blocked: shots are real for 200 ms after a left press, the release 40 ms, the fire input held across the
+button with no gap. The shoulder 38 to 28, the zoom 80% to 90% (the shift has no wall test of its own). Smoke OK on both
+releases. Not known until played: leg animation while strafing.
+
 ### 2026-10-30 - Free aim: firing while aiming, punches, the torso's pitch
 
 Harry on 34d1490: stance right, gun off position, no pitch, Q and E moved the gun, the left button did not fire while the
