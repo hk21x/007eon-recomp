@@ -81,5 +81,9 @@ game's own code and data, with its addresses).
   in 0x193360 (the lock +0xE30, or the point +0xE20 while +0xE4C is set); Bond (vtable 0x2E33B8, the object
   0x153810 runs for) in 0x153CD0 (the camera's angles in the scope view, the lock via 0x14E480, else his aim pose
   +0x12B0), with the start 0x153BE0 and has-aim 0x1493A0 (false while +0x1550 holds 0x100, 0x800 or 0x1000).
+- **[game]** Bond's facing is his angles' yaw at +0x64 (degrees); his matrix +0x70 is rebuilt from it each update
+  (0x156E50). With no lock and 0x153CD0 answering the camera's angles the bullet's forward is the camera's exactly.
+  The camera mode in use is camera +8 + [camera +0x80] * 12: class 0x2E2694 the follow camera, 0x2DCF54 during the
+  lock, 0x2E2624 the tutorial's cutscene.
 - **[game]** Bond's camera: the camera manager [0x3210C0] +4, 0x240 bytes a camera, by the player index at +0x1130
   (0x8D960 copies its +0xC0 position, +0xD0 pitch/yaw/roll in degrees, +0x100 field of view).

@@ -21,6 +21,25 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-30 - Free aim on foot: shots to the crosshair, Bond facing the camera, over the shoulder
+
+Corrects the 10-27 entry: with no lock the bullet's forward is the camera's, exactly (0.899 0.402 -0.173 both). The
+"neither" then came from the tutorial's LT+RT shots, which are locked; the headless shots after the tutorial
+(.local/fire4.txt: the steps from vblank 10200, free play by 13000) show it. Enemies were all the earlier shots.
+src/game/free_aim.cpp, keyboard and mouse only (input::UsingKeyboard; a controller plays as before), setting free_aim
+(default on), EON_FREE_AIM=0/1/2 headless:
+- Bond's yaw is his angles' +0x64 (his matrix +0x70 is rebuilt from them each update: writing the matrix alone did not
+  stick, measured); written after his update 0x156E50 while a mouse button is held. No shot of the last 300 rejected.
+- The camera info 0x8D960 moved 38 units right, blended in, so Bond clears the middle of the view (seen in captures).
+  Shots start on the moved line. The right button zooms to 80% (src/game/fov.cpp).
+- A crosshair through GameInfo::ui (eon::frame_ui, set from Bond's update, no static registration).
+- Only with the follow camera (class 0x2E2694; lock 0x2DCF54, the tutorial's cutscene 0x2E2624), the HUD drawn in the
+  last 500 ms, no scope, lock or mounted gun. Lock-on's default key moves from the right button to R.
+USA addresses by xbe_port.py. Smoke OK on Europe, and on the USA disc with EON_FREE_AIM=2 (9992 draws a frame, no
+traps). Not known until played: how it feels, moving while aiming (no strafe animation: he faces the camera and runs),
+cover, the shoulder camera beside walls, hand to hand with a button held. Saved key bindings keep the right button on
+lock-on.
+
 ### 2026-10-29 - Release 1.0.2
 
 Harry: a US driving mission plays on Windows (driving.xbe's ported config and hooks). Tag v1.0.2 on main with
