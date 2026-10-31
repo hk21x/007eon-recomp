@@ -352,7 +352,8 @@ constexpr Group kGroups[3] = {
     {0x42811, 0x4281D, 0x42810, 0x4280F, 0x4280E, 0x4280D, 0x4749B068, 0x5558F74B, 0x3E36916E, 0x38C32A9C, 21},
     {0x4281B, 0x4281F, 0x4281A, 0x42819, 0x42818, 0x42817, 0x6876F5D8, 0xB6776C5B, 0x4928CE1E, 0x8ECFF98C, 67},
 };
-constexpr float kFirstY = -30, kPitch = 40, kArrowWiden = 34;
+// the page row is its value alone, under the title; the settings at Audio Settings' own spacing
+constexpr float kPageY = -62, kFirstY = -17, kPitch = 46, kArrowWiden = 34;
 constexpr uint32_t kCloneGuid = 0x0E100000;
 
 uint32_t CloneGuid(uint32_t guid, int clone) { return kCloneGuid + uint32_t(clone) * 0x10000 + (guid & 0xFFFF); }
@@ -497,7 +498,7 @@ bool EditAudio(std::vector<Chunk>& top) {
             // the arrows wider apart: the values are longer than a volume
             uint32_t id = Guid(*ob) & 0xFFFF;
             float dx = id == (g.arrow_a & 0xFFFF) ? kArrowWiden : id == (g.arrow_b & 0xFFFF) ? -kArrowWiden : 0;
-            Move(*ob, dx, kFirstY + kPitch * float(row) - g.lit_y);
+            Move(*ob, dx, (row ? kFirstY + kPitch * float(row - 1) : kPageY) - g.lit_y);
         }
         WireRow(group, g, row);
         wired++;
@@ -802,7 +803,7 @@ uint32_t Text(uint32_t hash) {
     }
     if (hash >= kRowLabel && hash < kRowLabel + kRows) {
         int row = int(hash - kRowLabel);
-        if (row == 0) return Buffer(hash, "Page");
+        if (row == 0) return Buffer(hash, "");
         const Row& r = kPages[g_page].rows[row - 1];
         return Buffer(hash, r.label ? r.label : "");
     }

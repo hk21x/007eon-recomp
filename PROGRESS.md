@@ -21,6 +21,11 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-31 - PC Settings: less cluttered; Windows tests pass
+
+Harry on Windows: main menu, saving, display, pause menu, Italian, Italian in a driving mission and the F1 dropdown all work (not the French/German disc). His
+complaint: the screen is very cluttered. The main menu's screen: no "Page" label, the settings at Audio Settings' spacing (46, was 40).
+
 ### 2026-10-31 - README: free space
 
 Harry's decision, through the PGR2 session: about 3 GB free, not counting the game files (15 GB before), in both places, as PGR2's README has it. Not measured
