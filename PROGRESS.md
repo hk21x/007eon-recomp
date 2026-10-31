@@ -21,6 +21,14 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-31 - Free aim parked; main is v1.0.2's code again
+
+Harry: park free aim and improve the latest release. main's src and README are back to v1.0.2's by a new commit (nothing
+rewritten); the notes stay. All the work is on branch free-aim (d318c3f): shots to the crosshair, the stance, torso pitch,
+sidestepping. To take it up: merge that branch. Left then: leg animation while strafing, the shoulder camera's wall test,
+quick clicks unconfirmed. Open reports on v1.0.2: choppy slow motion (The High Road; the 60 fps patch a suspect, not
+proved), crashes at the menu and on selecting a level (logs and version asked for).
+
 ### 2026-10-30 - Free aim: sidestepping, quick clicks, a closer camera
 
 Harry on 3ad4c48: gun placed right (clips a little), not every left click registers, A and D move the gun. Measured with a

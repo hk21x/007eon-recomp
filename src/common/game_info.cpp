@@ -18,8 +18,6 @@ extern const bool kDriving;  // driving.xbe's exe (src/driving/hooks.cpp), defau
 bool skip_intro = false;  // no logo movies at start (HideFile)
 bool driving_60fps = true;   // the driving missions at 60 frames a second (src/driving/sixty.cpp)
 bool hide_hud = false;       // no HUD, for screenshots (src/driving/hud.cpp, src/game/hud.cpp)
-bool free_aim = true;        // on foot with the mouse, shots to the middle of the view (src/game/free_aim.cpp)
-void (*frame_ui)(double fps) = nullptr;  // an exe's own drawing each frame, set once it plays (no static registration)
 uint32_t fov_percent = 100;  // the on-foot views' field of view, percent of the game's (src/game/fov.cpp)
 extern bool modern_buttons;           // src/common/buttons.cpp
 bool ButtonPictures(uint32_t header, uint32_t palette);  // GameInfo::texture_bound
@@ -58,10 +56,6 @@ std::vector<const char*> SameCode() {
 #endif
 }
 
-void FrameUi(double fps) {
-    if (eon::frame_ui) eon::frame_ui(fps);
-}
-
 bool HideFile(const std::string& path) {
     if (!eon::skip_intro) return false;
     std::string n;
@@ -86,7 +80,7 @@ std::array<uint16_t, 2> ShooterKeys(int c) {
         case kLSLeft: return {'A', 0};
         case kLSRight: return {'D', 0};
         case kRT: return {kMouseLeft, 0};    // fire
-        case kLT: return {'R', 0};           // lock on; the right button aims (src/game/free_aim.cpp)
+        case kLT: return {kMouseRight, 0};   // lock on
         case kA: return {kSpace, kEnter};
         case kB: return {kLeftCtrl, 0};
         case kX: return {'Q', 0};            // punch left
@@ -200,8 +194,6 @@ const app::GameInfo app::kGame = {
                  "The THX, MGM and EA logos; at the next start."},
                 {"modern_buttons", &eon::modern_buttons, nullptr, "Modern button pictures",
                  "Today's Xbox pad in the prompts (the keys and mouse while playing on the keyboard either way)."},
-                {"free_aim", &eon::free_aim, nullptr, "Free aim (keyboard and mouse)",
-                 "On foot, shots go to a crosshair in the middle of the view; the right mouse button aims. Hold the lock-on key to lock on."},
                 {"fov_percent", nullptr, &eon::fov_percent, "Field of view (%)",
                  "On foot, 50 to 150; 100 is the game's. Cutscenes widen too."},
                 {"hide_hud", &eon::hide_hud, nullptr, "Hide the HUD", "For screenshots; at once, on foot and driving."},
@@ -213,7 +205,7 @@ const app::GameInfo app::kGame = {
     .loaded = nullptr,                    // image in memory, before its entry point runs
     .window = nullptr,                    // the game window is up
     .message = nullptr,                   // window messages first; true takes one
-    .ui = FrameUi,                        // ImGui drawing each frame: the crosshair
+    .ui = nullptr,                        // ImGui drawing each frame
     .pad = eon::MenuMouse,                // changes a polled pad: the mouse in the menus
     .rumble = nullptr,                    // changes a rumble before it is set
     .achievements = eon::AchievementSet(),  // conditions on the profile, checked each frame (ACHIEVEMENTS.md)
