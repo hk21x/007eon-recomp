@@ -13,12 +13,14 @@
 // palette bound with it): told by its look (each 16x16 cell's mean colour), drawn on the same way, each texel changed
 // the palette's nearest colour.
 #include <algorithm>
+#include <atomic>
 #include <cmath>
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
 #include <memory>
 #include <string>
+#include <thread>
 #include <vector>
 
 #include "core/input.h"
@@ -487,7 +489,11 @@ Rgba Straight(const std::array<float, 4>& p) {
 constexpr int kSharp = 4;
 std::vector<uint32_t> Redraw(const Image& before, Image& after, const Look& look) {
     // the old art gone first, so none of it is smeared past the boxes when enlarged
-    static Image cleared;
+    struct Cleared {
+        Image image;
+    };
+    auto held = std::make_unique<Cleared>();
+    Image& cleared = held->image;
     std::memcpy(cleared, before, sizeof(Image));
     for (Box b : kDrawn)
         for (int y = b.y0; y <= b.y1; y++)
@@ -579,6 +585,15 @@ struct Atlas {
         std::vector<uint32_t> sharp;
     };
     std::vector<Drawing> cache;  // the newest last
+    struct Job;
+    std::shared_ptr<Job> job;  // a look being drawn
+};
+// Drawing takes about 150 ms (the sharp picture above all), which the game would stand still for: a thread of its own
+// draws from a copy of what it needs, and the bind after it finishes writes the result. Until then the last pictures show.
+struct Atlas::Job {
+    Look look;
+    std::atomic<bool> done{false};
+    Drawing result;
 };
 std::vector<std::unique_ptr<Atlas>> g_atlases;
 
@@ -669,6 +684,7 @@ bool ButtonPictures(uint32_t header, uint32_t palette) {
         }
         if (!a) return false;
         a->drawn = Look{};  // as the disc has it
+        a->written = Fnv(bytes, kBytes);
         g_atlases.push_back(std::move(a));
         if (g_atlases.size() > 4) g_atlases.erase(g_atlases.begin());
         it = g_atlases.end() - 1;
@@ -681,10 +697,29 @@ bool ButtonPictures(uint32_t header, uint32_t palette) {
     } else {
         auto d = std::find_if(a.cache.begin(), a.cache.end(), [&](const Atlas::Drawing& x) { return x.look == look; });
         if (d == a.cache.end()) {
-            static Image after;
-            Atlas::Drawing drawing{look, {}, Redraw(a.before, after, look)};
-            Encode(a, after, drawing.bytes);
-            a.cache.push_back(std::move(drawing));
+            if (!a.job || !(a.job->look == look)) {
+                auto job = a.job = std::make_shared<Atlas::Job>();
+                job->look = look;
+                auto input = std::make_shared<Atlas>();
+                std::memcpy(input->before, a.before, sizeof(Image));
+                input->disc = a.disc;
+                input->p8 = a.p8;
+                std::memcpy(input->pal, a.pal, sizeof(a.pal));
+                input->colours = a.colours;
+                std::thread([job, input] {
+                    struct After {
+                        Image image;
+                    };
+                    auto after = std::make_unique<After>();
+                    job->result = {job->look, {}, Redraw(input->before, after->image, job->look)};
+                    Encode(*input, after->image, job->result.bytes);
+                    job->done = true;
+                }).detach();
+                return false;
+            }
+            if (!a.job->done) return false;
+            a.cache.push_back(std::move(a.job->result));
+            a.job.reset();
             if (a.cache.size() > 2) a.cache.erase(a.cache.begin());
             d = a.cache.end() - 1;
         }

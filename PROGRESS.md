@@ -21,9 +21,14 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-31 - Button pictures drawn on a thread: the hitch when they first show
+
+Harry: a stutter every time the buttons load as he approaches a vehicle. Measured headless: ButtonPictures stood the game's thread for 158 ms (Redraw 157, the sharp picture above all), his logs' 134 to 145 ms frames. Now a thread of its own draws from a copy, and the bind after it finishes writes the result: the worst bind 0.67 ms.
+The last pictures show for about 160 ms until then. Seen headless on the menus' DXT3 atlas; the driving P8 atlas and a Windows run not yet. Next: Harry's vehicle approach.
+
 ### 2026-10-31 - Slow motion blended: Direct3D 12 only
 
-Harry: with the one pass mix the flicker is fixed on Direct3D 12 and still there on Direct3D 11. The logic and the shader are the same in both, so the fault is in the Direct3D 11 path; reading it did not find it, and it has no GPU here. Blending is taken out of Direct3D 11 (d3d11.cpp as before), which shows the steps. To take up: read back both kept
+Harry: with the one pass mix the flicker is fixed on Direct3D 12 and still there on Direct3D 11. The logic and the shader are the same in both, so the fault is in the Direct3D 11 path; reading it did not find it, and it has no GPU here. Blending is taken out of Direct3D 11 (d3d11.cpp as before), which shows the steps. His Direct3D 11 log and video with the mix (before this): frames blended logged, brightness 83, 46, 83, 46 at weights 0.5 and 1: still the new picture over black. To take up: read back both kept
 textures there and log their brightness, to see if the last one really is black.
 
 ### 2026-10-31 - Slow motion blended: black flicker, attempt 2
