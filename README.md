@@ -22,7 +22,9 @@ discs hold the same code; the USA disc is another build of the game, which the b
 | Europe (English, Spanish, Italian, Dutch, Swedish) | `65fe0c47889bae5732b93e36215b564c94df9e9f` | `93390d82f2a7dd5371fd6d7b725577e806e4f09e` |
 | Europe (French, German) | `0d2acd66ea75949254916f1f91f7bf31beac9bbe` | `08a873cfff115a77164405f7f93890e04ad395f0` |
 | Europe, media check patched | `62298fe4e618d9d81863080fb1b00c1667d871c9` | `da2b27d66d4b5f23af47421b9572fcad06669d22` |
+| Europe (French, German), media check patched | `5fa988c4f64be2527a1fe713e003c6aaeb9d395f` | `f9aecc24ff0e7119050e826616659548036448c3` |
 | USA | `1f4db3b7d3f5102ec7a2351e521f545ef4972be6` | `ef1f8404d459feda02fbbe1ea8641569015280d7` |
+| USA, media check patched | `e0e44575d4df16c85d9d240d2d2a0b8d1c6e2bd1` | `64220c179f58f47d17aba0c3fdb11816537d44c1` |
 
 The game is two programs: the driving missions are a second xbe that the game launches and returns from. Both are
 recompiled, into `EoN.exe` and `EoNDriving.exe`, and the switch between them happens on its own. The log names the
@@ -40,7 +42,7 @@ and no admin rights needed.
 
 **You need:**
 - Windows 10 or 11, 64 bit, and a GPU with Direct3D 12 or Direct3D 11.
-- Your own copy of the game (PAL): an `.iso` image of your disc, or a folder with the disc's files.
+- Your own copy of the game (Europe or USA): an `.iso` image of your disc, or a folder with the disc's files.
 - About 3 GB free, plus room for your copy of the game, and an internet connection for about 1.4 GB of build tools.
 
 **Steps:**

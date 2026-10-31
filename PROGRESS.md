@@ -21,6 +21,12 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-31 - Media patched copies of every disc (issue 12)
+
+A player's USA image was refused: default.xbe e0e44575, which is the USA disc with the media check patch (0x539A3, JGE to JMP; flipping that byte gives exactly that hash).
+Accepted now, with its driving.xbe (0x2561A8, 64220c17), and the Fr/De disc the same way (5fa988c4, f9aecc24): launcher, CMake's USA choice, the runtime's list, README.
+The driving and Fr/De hashes are computed, from the same one byte; no such copy seen.
+
 ### 2026-10-31 - PC Settings: less cluttered; Windows tests pass
 
 Harry on Windows: main menu, saving, display, pause menu, Italian, Italian in a driving mission and the F1 dropdown all work (not the French/German disc). His

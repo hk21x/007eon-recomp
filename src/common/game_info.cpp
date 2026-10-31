@@ -47,14 +47,16 @@ void Init() {
 // missing, which the game passes over as it did the EA logo when it asked for an NTSC file
 // the xbes with this build's code. Europe: the media check patched (0x63C73 and 0x2661E8 JMP for JGE, after
 // XapiVerifyMediaInDrive, which the runtime answers 0), the En/Es/It/Nl/Sv disc, the Fr/De disc (version 4, its
-// certificate and signature differ). USA: its one disc. default.xbe then driving.xbe each
+// certificate and signature differ), each also patched. USA: its one disc, patched or not. default.xbe then driving.xbe each
 std::vector<const char*> SameCode() {
 #if EON_USA
-    return {"1f4db3b7d3f5102ec7a2351e521f545ef4972be6", "ef1f8404d459feda02fbbe1ea8641569015280d7"};
+    return {"1f4db3b7d3f5102ec7a2351e521f545ef4972be6", "ef1f8404d459feda02fbbe1ea8641569015280d7",
+            "e0e44575d4df16c85d9d240d2d2a0b8d1c6e2bd1", "64220c179f58f47d17aba0c3fdb11816537d44c1"};
 #else
     return {"62298fe4e618d9d81863080fb1b00c1667d871c9", "da2b27d66d4b5f23af47421b9572fcad06669d22",
             "65fe0c47889bae5732b93e36215b564c94df9e9f", "93390d82f2a7dd5371fd6d7b725577e806e4f09e",
-            "0d2acd66ea75949254916f1f91f7bf31beac9bbe", "08a873cfff115a77164405f7f93890e04ad395f0"};
+            "0d2acd66ea75949254916f1f91f7bf31beac9bbe", "08a873cfff115a77164405f7f93890e04ad395f0",
+            "5fa988c4f64be2527a1fe713e003c6aaeb9d395f", "f9aecc24ff0e7119050e826616659548036448c3"};
 #endif
 }
 

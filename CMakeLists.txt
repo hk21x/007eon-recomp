@@ -32,7 +32,8 @@ set(EON_PREFIX "")
 set(EON_USA 0)
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/assets/default.xbe)
     file(SHA1 ${CMAKE_CURRENT_SOURCE_DIR}/assets/default.xbe EON_XBE_SHA1)
-    if(EON_XBE_SHA1 STREQUAL "1f4db3b7d3f5102ec7a2351e521f545ef4972be6")
+    if(EON_XBE_SHA1 STREQUAL "1f4db3b7d3f5102ec7a2351e521f545ef4972be6" OR
+       EON_XBE_SHA1 STREQUAL "e0e44575d4df16c85d9d240d2d2a0b8d1c6e2bd1")  # the USA disc, its media check patched or not
         set(EON_PREFIX "usa_")
         set(EON_USA 1)
     endif()
