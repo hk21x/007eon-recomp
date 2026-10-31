@@ -21,6 +21,11 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-31 - README: free space
+
+Harry's decision, through the PGR2 session: about 3 GB free, not counting the game files (15 GB before), in both places, as PGR2's README has it. Not measured
+on EoN, which has two xbes and over twice PGR2's generated code (218 MB against 95 MB on Linux); check against a real first build.
+
 ### 2026-10-31 - PC Settings in the pause menu
 
 Harry: yes; the row names' translation waits. The pause Options tab has a PC Settings row on Controller's line (below the volumes it hit the help line). It
