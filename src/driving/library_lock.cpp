@@ -4,11 +4,16 @@
 // threads run at once, two got in, and the one leaving cleared 0x3722B0 under the other: a player's driving mission
 // stopped on a read of 0x38 (0x23E420 reading [0x3722B0] + 0x38). The entry points are run one thread at a time. A
 // thread that waits too long goes in as before, so no wait of the library's own can deadlock.
+//
+// The periodic update 0x23F4E0 never waits: its thread could hold what the thread inside the library was waiting for,
+// and the two stood until the 100 ms ran out, a hitch of the game's every few seconds in Train Chase. Finding the
+// library busy it returned at once on the console (cdecl, nothing returned), and now does.
 #include <chrono>
 #include <cstdint>
 #include <mutex>
 
 #include "core/log.h"
+#include "kernel/kernel.h"
 #include "xdk/hle.h"
 #include "common/release.h"
 
@@ -49,5 +54,13 @@ LIBRARY_ENTRY(0023E420, 0023E3E0)
 LIBRARY_ENTRY(0023E650, 0023E610)
 LIBRARY_ENTRY(0023ED80, 0023ED40)
 LIBRARY_ENTRY(0023EE80, 0023EE40)
-LIBRARY_ENTRY(0023F4E0, 0023F4A0)
+X86_EXTERN_FUNC(EON_ORIG(0023F4E0, 0023F4A0));
+X86_FUNC(EON_FN(0023F4E0, 0023F4A0)) {
+    std::unique_lock<std::recursive_timed_mutex> entry(g_lock, std::try_to_lock);
+    if (!entry.owns_lock()) {
+        kernel::Return(ctx, 0, 0);
+        return;
+    }
+    EON_ORIG(0023F4E0, 0023F4A0)(ctx, base);
+}
 LIBRARY_ENTRY(00240E20, 00240DE0)

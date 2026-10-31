@@ -21,6 +21,13 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-31 - Driving stutter: the library lock stood for 100 ms at a time
+
+Harry's Train Chase log (Windows, D3D11, 60 fps driving): frames of 54 to 181 ms, 0 shaders compiled, and the once-only line "waited 100 ms for the library". Measured headless over 95 s: 10 waits of
+exactly 100 ms, all the periodic update 0x23F4E0, each with another thread holding the lock exactly as long (in 0x23E420 or 0x23F4E0): each stood waiting on the other until the timeout. That lock came
+with the crash fix of 2026-10-28. The update now returns when the library is busy, as its own check did on the console. 150 s of Train Chase: no timeout, no crash. Not shown: that this is all of Harry's stutter; the first 10 s (132 of 463
+frames over 25 ms, loading included) is not explained. His XBE_PERF and XBE_FILES_LOG did not reach that run (no such lines). Next: his Train Chase rerun.
+
 ### 2026-10-31 - PC Settings: one line a row
 
 Harry: still hard to navigate, wants the text smaller, like the Options screen's links. The main menu's screen: each row one line, "name: value", at 80% (the description's scale),
