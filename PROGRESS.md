@@ -3,14 +3,14 @@
 Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Status
+- Latest release: 1.0.3 (2026-10-31, tag v1.0.3).
 - Milestone: released 1.0.0 (2026-10-26, tag v1.0.0; the launcher built and published by .github/workflows/release.yml). Windows (Harry, D3D12, RX 7900 XT, 3440x1440): plays on foot and in the
   driving missions up to the last mission, with saves. The open issues of 2026-10-24 (the dark slab, the blue figures,
   the carousel's band, the loading screen's strip) are fixed (Harry, 2026-10-26).
 - Done since: widescreen and ultrawide on foot and driving (culling widened: no side pop-in), the driving radar and
   Thermovision, mouse aim and menus, keyboard prompts, modern buttons, sharp 2D, FOV, 60 FPS driving, Quit Game,
   skip intro, the driving 6 channel mix (speech, car, music), the shader cache (no repeat stalls)
-- Known issue (2026-10-27): on NVIDIA GPUs MI6 Training's hand to hand room can lose the GPU device (picture stands
-  still); unsolved, see the log. Launcher end to end on Windows from an .iso: confirmed by Harry (2026-10-26). Renderers: Direct3D 12 and 11 (both
+- Launcher end to end on Windows from an .iso: confirmed by Harry (2026-10-26). Renderers: Direct3D 12 and 11 (both
   supported in the docs). Untested: NTSC discs
 - XDK: 5659, D3D8 QFE 4. default.xbe 84 of 250 functions by signature, 50 more by hand in config/eon.toml; driving.xbe
   in config/driving.toml (the shared QFE 4 layout in config/d3d8_qfe4.toml)
@@ -20,6 +20,11 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 - Smoke: scripts/smoke.sh: SMOKE OK (2026-10-26). Soak: 30 minutes, no traps, memory flat
 
 ## Log
+
+### 2026-10-31 - Release 1.0.3
+
+Harry on Windows: the button stutter, slow motion on both renderers (the fade on Direct3D 12, the steps on Direct3D 11) all fixed; "Push the patch." Notes in docs/releases/v1.0.3.md; tag v1.0.3. Open: why Direct3D 11's kept picture is black; reports of a crash at the menu and on selecting Battle in the Big Easy (no dumps yet);
+the SDK merge from the fork's main and the settings comparison for the README, next.
 
 ### 2026-10-31 - Button pictures drawn on a thread: the hitch when they first show
 
