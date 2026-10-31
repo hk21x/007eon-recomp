@@ -25,7 +25,8 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 Harry: yes; the row names' translation waits. The pause Options tab has a PC Settings row on Controller's line (below the volumes it hit the help line). It
 opens an edited copy of pm_options.fng, as Audio Settings does not load in a mission: first row the page, seven settings a page, Controller's row
-Back, the volume sounds the ordinary click (the main menu's screen too). Row names shortened to clear the arrows. Seen headless: see the next commit's test.
+Back, the volume sounds the ordinary click (the main menu's screen too). Row names shortened to clear the arrows. Seen headless: Europe, the row, the screen, pages, a value, Back, reopening, Start back to the mission; US, the row, the
+screen and Start back. Not done: driving.xbe's pause menu (its package and code are its own). Windows not run.
 
 ### 2026-10-31 - Launcher: MinGit's busybox edition
 
