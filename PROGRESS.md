@@ -21,6 +21,11 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-31 - Slow motion blended: Direct3D 12 only
+
+Harry: with the one pass mix the flicker is fixed on Direct3D 12 and still there on Direct3D 11. The logic and the shader are the same in both, so the fault is in the Direct3D 11 path; reading it did not find it, and it has no GPU here. Blending is taken out of Direct3D 11 (d3d11.cpp as before), which shows the steps. To take up: read back both kept
+textures there and log their brightness, to see if the last one really is black.
+
 ### 2026-10-31 - Slow motion blended: black flicker, attempt 2
 
 Harry on Windows: black flicker. His recording: brightness repeats 48, 83, 112, 132 in step with the weights (0.25 to 1), no trace of the last picture, so the new one faded in over black. Each shader has its own key, so it was not the wrong shader; the cause in the two passes is not found. Now one pass reads both

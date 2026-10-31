@@ -206,7 +206,7 @@ const app::GameInfo app::kGame = {
                  "On foot, 50 to 150; 100 is the game's. Cutscenes widen too."},
                 {"hide_hud", &eon::hide_hud, nullptr, "Hide the HUD", "For screenshots; at once, on foot and driving."},
                 {"slow_motion_blend", &eon::slow_motion_blend, nullptr, "Smooth slow motion",
-                 "Driving missions at 60: slow motion's pictures fade into each other instead of each showing three times."},
+                 "Direct3D 12, driving missions at 60: slow motion's pictures fade into each other instead of each showing three times."},
                 {"driving_60fps", &eon::driving_60fps, nullptr, "Driving missions at 60 frames a second",
                  "Same simulation, drawn after every tick instead of every second one; from the next driving mission."}},  // kept in the settings file
     .load = LoadKeys,                     // the driving exe's keys apart (DrivingKeys)

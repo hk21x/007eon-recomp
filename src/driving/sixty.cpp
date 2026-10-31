@@ -12,7 +12,8 @@
 //
 // Slow motion: the scheduler's speed +0x20 runs a tick only every few blanks and nothing moves between them, so at 60
 // the same picture shows three times (20 changes a second, where the console's 25 fall to 17). With slow_motion_blend
-// each new tick's picture fades in over the blanks until the next, the renderers keeping the last two (SetFrameBlend).
+// each new tick's picture fades in over the blanks until the next, Direct3D 12 keeping the last two (SetFrameBlend);
+// Direct3D 11 shows the steps.
 #include <algorithm>
 #include <cstring>
 
