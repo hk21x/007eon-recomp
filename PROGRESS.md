@@ -21,6 +21,12 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-31 - Launcher: MinGit's busybox edition
+
+From the PGR2 session: a PGR2 player's builds stopped at `git submodule` (MinGit's script under MSYS2's sh, forks dying 0xC0000142); the
+busybox edition fixed it on that PC (Harry's report). Same version here; the download's size and SHA-256 checked. Not reported on EoN,
+not run on Windows here. Launchers read this file from main at each build, so each player's reinstalls Git once.
+
 ### 2026-10-31 - PC Settings in the game's menus
 
 Harry: "PC settings too". src/game/pc_settings.cpp: Options' unused third row opens a new screen, an edited copy of Audio Settings

@@ -35,9 +35,9 @@
             "id": "git",
             "title": "MinGit 2.56.0",
             "kind": "zip",
-            "url": "https://github.com/git-for-windows/git/releases/download/v2.56.0.windows.2/MinGit-2.56.0.2-64-bit.zip",
-            "sha256": "da35e72aa21c005a5a0d298cfbae110bc1609a815730ea0dde84b01a1b3cd3be",
-            "size": 39806486
+            "url": "https://github.com/git-for-windows/git/releases/download/v2.56.0.windows.2/MinGit-2.56.0.2-busybox-64-bit.zip",
+            "sha256": "a8a9172a6747926648b78a3411f3b94813dd22da8a8ec5dbe61122bc414edd63",
+            "size": 35287516
         }
     ],
     "msvc": {
