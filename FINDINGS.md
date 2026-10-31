@@ -103,3 +103,16 @@ game's own code and data, with its addresses).
   screen; the first reading decides for the whole run. Text follows it. Measured speech stays on the disc's chatter\eng
   under Italian at the tutorial; chatter\ger on the Fr/De disc. Not proved: that default.xbe writes the set language to the
   launch data (the name there was ENG in every run kept; the run set to Italian did not reach a driving mission headless).
+
+
+## Menu packages
+
+- **[game]** Response kind 0x200 opens a package by path: 0x1302B0 looks for it open, else asks the loader (first virtual of the
+  FEng manager's +0x10C object, 0x121680, thiscall path, two outs, ret 12). The string lookup 0x142F60 runs every frame for every
+  text object, so a string's words can change while it shows. Script tracks: a type, a key size, then at byte 6 the field (7 the
+  position), a key count, keys of a time and the data; the first key (time -1) is the value, later keys are moves from it.
+- **[game]** frontend_options.fng's third row (button 0x1BD72): its starting script ends in an event that disables it, as well as
+  its focus check. frontend_options_audio.fng: the code finds the value rows by object name and writes the volumes into them.
+- **[port]** Holding a direction 10 frames in a pad script can move twice (the menu's repeat); 3 frames moves once. A first boot, with
+  no save, plays the training level and never shows the main menu.
+

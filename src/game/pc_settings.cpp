@@ -24,6 +24,8 @@
 #include "kernel/kernel.h"
 #include "xdk/hle.h"
 #if defined(_WIN32)
+#define NOMINMAX
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #endif
 
@@ -277,12 +279,12 @@ uint32_t Guid(Chunk& ob) {
     Chunk* d = ObjD(ob);
     if (!d) return 0;
     size_t at = OtWord(*d, 2);
-    return at + 4 <= d->body.size() ? Rd(d->body, at) : 0;
+    return at != SIZE_MAX && at + 4 <= d->body.size() ? Rd(d->body, at) : 0;
 }
 void SetString(Chunk& ob, uint32_t hash) {
     Chunk* d = ObjD(ob);
     size_t at = d ? OtWord(*d, 7) : SIZE_MAX;
-    if (at + 4 <= d->body.size()) PutU32(d->body, at, hash);
+    if (at != SIZE_MAX && at + 4 <= d->body.size()) PutU32(d->body, at, hash);
 }
 
 // a MsgR's messages without one of them

@@ -21,6 +21,15 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-31 - PC Settings in the game's menus
+
+Harry: "PC settings too". src/game/pc_settings.cpp: Options' unused third row opens a new screen, an edited copy of Audio Settings
+served by the package loader (five rows, the first turns the page; Game, Driving and HUD, Display, Graphics, Graphics 2, Mouse). Left,
+right and accept step a value, saved at once as the F1 window's are. Package helpers moved to src/game/fng.h. Seen headless: Europe and
+US, Options with the row, the screen, values changing in the log; Back to Options. Not seen: the Fr/De disc's menu (that run ignored
+the save and played the tutorial; if its package differed it is left as it is and logged), Windows (Resolution's list, the display
+changes, the settings file). Row names are English; the Options label and title are translated. Idea: the pause menu has an Options tab.
+
 ### 2026-10-31 - Language setting
 
 Settings window (F1): Language, a dropdown, at the next start (EON_LANGUAGE headless). default.xbe's set-language function
