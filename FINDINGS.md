@@ -87,3 +87,14 @@ game's own code and data, with its addresses).
   lock, 0x2E2624 the tutorial's cutscene.
 - **[game]** Bond's camera: the camera manager [0x3210C0] +4, 0x240 bytes a camera, by the player index at +0x1130
   (0x8D960 copies its +0xC0 position, +0xD0 pitch/yaw/roll in degrees, +0x100 field of view).
+
+
+## Language
+
+- **[game]** A disc's languages come from its files; the tables at 0x2C3D38 name swe spa jap ita ger fre eng dut. Europe
+  disc: ENG, DUT, ITA, SPA, SWE; Fr/De disc: FRE, GER. 0xC18C0 (thiscall, name; 0 the first listed) sets it, 0xC11A0 is
+  the list's count, 0xC11C0 an entry, 0xC0800 gets the UI object. 0x1C9D0 (cdecl, name out) says whether to show
+  fe_language_select.fng; with two languages the console's language picks instead. Boot (0x23F10) tries the saved language
+  first. driving.xbe: set 0x1F3310, count 0x1ECAD0, entry 0x1E8810. USA: EON_VA in src/game/language.cpp, src/driving/language.cpp.
+- **[port]** The setting replaces the name at both entries, so it beats the saved language and skips the screen. Text
+  follows it. Measured speech stays on the disc's chatter\eng under Italian at the tutorial; chatter\ger on the Fr/De disc.

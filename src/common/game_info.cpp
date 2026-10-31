@@ -11,6 +11,7 @@
 #include "core/achievements.h"
 #include "core/input.h"
 #include "core/log.h"
+#include "common/language.h"
 #include "common/release.h"
 
 namespace eon {
@@ -35,6 +36,7 @@ void Init() {
     if (const char* e = std::getenv("EON_DRIVING60")) eon::driving_60fps = *e == '1';
     if (const char* e = std::getenv("EON_HIDE_HUD"); e && *e == '1') eon::hide_hud = true;
     if (const char* e = std::getenv("EON_FOV")) eon::fov_percent = uint32_t(std::atoi(e));
+    if (const char* e = std::getenv("EON_LANGUAGE")) eon::language = uint32_t(std::atoi(e));
     if (eon::skip_intro) LOGR("eon: the intro logos are skipped (skip_intro)");
     // every achievement's condition parses (a typo would leave it never met)
     for (const achievements::Def& d : app::kGame.achievements)
@@ -194,6 +196,8 @@ const app::GameInfo app::kGame = {
                  "The THX, MGM and EA logos; at the next start."},
                 {"modern_buttons", &eon::modern_buttons, nullptr, "Modern button pictures",
                  "Today's Xbox pad in the prompts (the keys and mouse while playing on the keyboard either way)."},
+                {"language", nullptr, &eon::language, "Language",
+                 "At the next start. Your disc's languages: a language it does not have is ignored.", eon::kLanguageChoices},
                 {"fov_percent", nullptr, &eon::fov_percent, "Field of view (%)",
                  "On foot, 50 to 150; 100 is the game's. Cutscenes widen too."},
                 {"hide_hud", &eon::hide_hud, nullptr, "Hide the HUD", "For screenshots; at once, on foot and driving."},

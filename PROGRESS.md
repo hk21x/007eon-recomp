@@ -21,6 +21,14 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-31 - Language setting
+
+Settings window (F1): Language, a dropdown, at the next start (EON_LANGUAGE headless). The game's set-language function and
+its screen's check are hooked in both xbes; a language not on the disc is ignored and logged once. Sdk: Option::choices.
+Measured at the tutorial, frame 10800, no traps: Fr/De disc set to German "Kampfgrundlagen 3", Europe disc set to Italian
+"Combattimento di base, fase 3", Europe default "Basic combat, step 3". Not run: the driving hook (needs Harry's Windows
+check). Next: the same setting in the game's own menus.
+
 ### 2026-10-31 - Free aim parked; main is v1.0.2's code again
 
 Harry: park free aim and improve the latest release. main's src and README are back to v1.0.2's by a new commit (nothing
