@@ -21,6 +21,12 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-31 - PC Settings in the pause menu
+
+Harry: yes; the row names' translation waits. The pause Options tab has a PC Settings row on Controller's line (below the volumes it hit the help line). It
+opens an edited copy of pm_options.fng, as Audio Settings does not load in a mission: first row the page, seven settings a page, Controller's row
+Back, the volume sounds the ordinary click (the main menu's screen too). Row names shortened to clear the arrows. Seen headless: see the next commit's test.
+
 ### 2026-10-31 - Launcher: MinGit's busybox edition
 
 From the PGR2 session: a PGR2 player's builds stopped at `git submodule` (MinGit's script under MSYS2's sh, forks dying 0xC0000142); the

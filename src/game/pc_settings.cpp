@@ -42,8 +42,14 @@ namespace app = ::app;
 constexpr uint32_t kLabel = 0x0E0E0010, kTitle = 0x0E0E0011;   // made up, unused
 constexpr uint32_t kRowLabel = 0x0E0E0020, kRowValue = 0x0E0E0030, kRowMessage = 0x0E0E0040;  // + row, + row * 2 + right
 constexpr int kRows = 5;
+constexpr int kPauseRowCount = 8;
+constexpr uint32_t kBack = 0x0E0E0012, kBlank = 0x0E0E0013;
+constexpr uint32_t kPauseLabel = 0x0E0E0060, kPauseValue = 0x0E0E0070, kPauseMessage = 0x0E0E0080;
 constexpr const char* kPath = "\\Bond3\\assets\\frontend\\frontend_options_pc.fng";
 constexpr const char* kAudioPath = "\\Bond3\\assets\\frontend\\frontend_options_audio.fng";
+// the same screen from the pause menu: Back returns there
+constexpr const char* kPausePath = "\\bond3\\assets\\common\\ui\\hud\\pm_options2.fng";
+constexpr const char* kPauseBack = "\\bond3\\assets\\common\\ui\\hud\\pm_options.fng";
 
 // settings: a name, its value's words, a step left (-1) or right (+1)
 struct Row {
@@ -89,7 +95,7 @@ std::vector<Mode> Modes() {
 }
 
 const char* const kModes[] = {"Fullscreen", "Borderless", "Window"};
-const char* const kAspects[] = {"From the screen", "4:3", "16:9", "Fill the screen"};
+const char* const kAspects[] = {"Auto", "4:3", "16:9", "Fill"};
 const char* const kAaNames[] = {"Off", "FXAA", "MSAA 2x", "MSAA 4x", "MSAA 8x"};
 constexpr uint32_t kAnisos[] = {0, 2, 4, 8, 16};
 constexpr uint32_t kCaps[] = {30, 60, 120, 144, 240, 0};
@@ -100,7 +106,7 @@ struct Page {
 };
 const Page kPages[] = {
     {"Game",
-     {{"Language (on restart)", [] { return std::string(eon::language ? eon::kLanguageChoices[eon::language] : "Disc default"); },
+     {{"Language (restart)", [] { return std::string(eon::language ? eon::kLanguageChoices[eon::language] : "Default"); },
        [](int d) {
            int n = 0;
            while (eon::kLanguageChoices[n]) n++;
@@ -117,7 +123,7 @@ const Page kPages[] = {
     {"Driving and HUD",
      {FLAG("Driving at 60 FPS", eon::driving_60fps),
       FLAG("Hide the HUD", eon::hide_hud),
-      FLAG("Keyboard as controller", app::Get().keyboard),
+      FLAG("Keyboard play", app::Get().keyboard),
       FLAG("Pause in background", app::Get().pause_unfocused)}},
     {"Display",
      {{"Display mode", [] { return std::string(kModes[uint32_t(app::Get().display_mode) % 3]); },
@@ -142,7 +148,7 @@ const Page kPages[] = {
            app::ApplyDisplay();
        }},
       FLAG("Vertical sync", app::Get().vsync),
-      {"Aspect (on restart)", [] { return std::string(kAspects[app::Get().aspect % 4]); },
+      {"Aspect (restart)", [] { return std::string(kAspects[app::Get().aspect % 4]); },
        [](int d) {
            auto& s = app::Get();
            s.aspect = (s.aspect % 4 + uint32_t(d + 4)) % 4;
@@ -158,7 +164,7 @@ const Page kPages[] = {
       {"Anisotropic filter",
        [] {
            uint32_t a = app::Get().aniso;
-           return a ? std::to_string(a) + "x" : std::string("Game default");
+           return a ? std::to_string(a) + "x" : std::string("Default");
        },
        [](int d) {
            auto& s = app::Get();
@@ -184,7 +190,7 @@ const Page kPages[] = {
     {"Graphics 2",
      {FLAG("Show FPS", app::Get().show_fps),
       FLAG("Sharp text and HUD", app::Get().sharp_2d),
-      {"Renderer (on restart)", [] { return std::string(app::Get().renderer % 2 ? "Direct3D 11" : "Direct3D 12"); },
+      {"Renderer (restart)", [] { return std::string(app::Get().renderer % 2 ? "Direct3D 11" : "Direct3D 12"); },
        [](int) {
            auto& s = app::Get();
            s.renderer = (s.renderer + 1) % 2;
@@ -377,6 +383,30 @@ void WireRow(std::vector<Chunk*>& objs, const Group& g, int row) {
     }
 }
 
+// the volume rows' sounds, the volume's sample at each step: the ordinary click
+void PlainSounds(Chunk& button) {
+    for (Chunk& k : button.kids) {
+        if (k.tag != Tag("MsgR")) continue;
+        Records(k.body, [&](char a, char b, size_t at, size_t) {
+            if (a != 'R' || b != 'u') return;
+            uint32_t v = Rd(k.body, at);
+            if (v == 0x90A98729 || v == 0xE2819A4A || v == 0x88ECEFDA) PutU32(k.body, at, 0x44615BAF);
+        });
+    }
+}
+
+// the accept message of a row's button: a step right
+void AcceptSteps(Chunk& button, uint32_t right) {
+    for (Chunk& k : button.kids) {
+        if (k.tag != Tag("MsgR")) continue;
+        Record(k.body, "Mi", 0x0C407210);
+        Record(k.body, "MC", 1);
+        Record(k.body, "Ri", 1);
+        Record(k.body, "Ru", right);
+        Record(k.body, "Rt", 0);
+    }
+}
+
 bool EditAudio(std::vector<Chunk>& top) {
     Chunk* objs = Find(top, "Obj\xcc");
     Chunk* targ = Find(top, "Targ");
@@ -390,14 +420,8 @@ bool EditAudio(std::vector<Chunk>& top) {
     for (const Group& g : kGroups) {
         for (Chunk& ob : objs->kids) {
             if (ob.tag != Tag("FOb\xea") || Guid(ob) != g.button) continue;
-            for (Chunk& k : ob.kids) {
-                if (k.tag != Tag("MsgR")) continue;
-                Record(k.body, "Mi", 0x0C407210);
-                Record(k.body, "MC", 1);
-                Record(k.body, "Ri", 1);
-                Record(k.body, "Ru", g.right);
-                Record(k.body, "Rt", 0);
-            }
+            AcceptSteps(ob, g.right);
+            PlainSounds(ob);
         }
         std::vector<uint32_t>* t = TargetsOf(targets, 0x0C407210);
         if (!t) return false;
@@ -484,7 +508,116 @@ bool EditAudio(std::vector<Chunk>& top) {
     return wired == kRows;
 }
 
-uint32_t g_package = 0;  // the edited copy
+uint32_t g_packages[2] = {};  // the edited copies: from the main menu, from the pause menu
+
+// the pause menu's rows in pm_options.fng, top to bottom
+struct PauseRow {
+    uint32_t button, value, right;
+    uint32_t labels[4], helps[2];
+};
+constexpr PauseRow kPauseRows[kPauseRowCount] = {
+    {0x43BE1, 0x43BDB, 0x8D5372D0, {0x43BDC, 0x43BDA}, {0x444D0}},
+    {0x3F0A1, 0x3F0A3, 0x0ABB13A7, {0x3F0A4, 0x3F0A2}, {0x3F0F0}},
+    {0x3BDE0, 0x3BDED, 0xECDF0889, {0x3BE2B, 0x3BDE3}, {0x3BDE1}},
+    {0x4268E, 0x4268B, 0x96D96B39, {0x4268F, 0x4268A, 0x42D33, 0x42CCD}, {0x42D4F, 0x3BDDE}},
+    {0x42717, 0x426E8, 0x51B5338A, {0x426EB, 0x426E7}, {0x43224}},
+    {0x4170E, 0x416FC, 0x9936EC7D, {0x416FF, 0x416FB}, {0x3BDEA}},
+    {0x425C3, 0x425C0, 0x38C32A9C, {0x425C4, 0x425BF}, {0x3BDEB}},
+    {0x42651, 0x4264E, 0x8ECFF98C, {0x42652, 0x4264D}, {0x427B0}},
+};
+
+// every setting, in order: the pause screen's seven rows a page
+const std::vector<const Row*>& AllRows() {
+    static const std::vector<const Row*> rows = [] {
+        std::vector<const Row*> r;
+        for (const Page& p : kPages)
+            for (const Row& row : p.rows)
+                if (row.label) r.push_back(&row);
+        return r;
+    }();
+    return rows;
+}
+int PausePages() { return (int(AllRows().size()) + kPauseRowCount - 2) / (kPauseRowCount - 1); }
+int g_pause_page = 0;
+const Row* PauseRowOf(int row) {
+    size_t i = size_t(g_pause_page) * size_t(kPauseRowCount - 1) + size_t(row - 1);
+    return row > 0 && i < AllRows().size() ? AllRows()[i] : nullptr;
+}
+
+// the PC Settings screen from the pause menu: a copy of pm_options.fng, its rows the settings, Controller's Back
+bool EditPausePc(std::vector<Chunk>& top) {
+    Chunk* objs = Find(top, "Obj\xcc");
+    Chunk* targ = Find(top, "Targ");
+    Chunk* head = Find(top, "PkHd");
+    if (!objs || !targ || !head || head->body.size() < 4 + 16) return false;
+    std::memset(&head->body[4], 0, head->body.size() - 4);
+    std::memcpy(&head->body[4], "pm_options2.fng", 16);
+    Targets t = ReadTargets(*targ);
+    auto* accept = TargetsOf(t, 0x0C407210);
+    if (!accept) return false;
+    int found = 0;
+    for (Chunk& ob : objs->kids) {
+        if (ob.tag != Tag("FOb\xea")) continue;
+        uint32_t guid = Guid(ob);
+        if (guid == 0x430E1 || guid == 0x430C6) SetString(ob, kBack);
+        if (guid == 0x3BDE4) SetString(ob, kBlank);
+        if (guid == 0x430BE)
+            for (Chunk& k : ob.kids)
+                if (k.tag == Tag("MsgR")) {
+                    std::vector<uint8_t> out;
+                    Records(k.body, [&](char a, char b, size_t at, size_t len) {
+                        out.push_back(uint8_t(a));
+                        out.push_back(uint8_t(b));
+                        if (a == 'R' && b == 's') {
+                            std::string v(kPauseBack);
+                            v.resize((v.size() + 4) & ~size_t(3));
+                            out.push_back(uint8_t(v.size()));
+                            out.push_back(uint8_t(v.size() >> 8));
+                            out.insert(out.end(), v.begin(), v.end());
+                        } else {
+                            out.push_back(uint8_t(len));
+                            out.push_back(uint8_t(len >> 8));
+                            out.insert(out.end(), k.body.begin() + long(at), k.body.begin() + long(at + len));
+                        }
+                    });
+                    k.body = std::move(out);
+                }
+        for (int row = 0; row < kPauseRowCount; row++) {
+            const PauseRow& r = kPauseRows[row];
+            for (uint32_t l : r.labels)
+                if (l && guid == l) SetString(ob, kPauseLabel + uint32_t(row)), found++;
+            for (uint32_t h : r.helps)
+                if (h && guid == h) SetString(ob, kBlank);
+            if (guid == r.button) {
+                // the code's own switches for the row off
+                for (Chunk& k : ob.kids)
+                    if (k.tag == Tag("MsgR")) k.body = Without(k.body, 0xA5654E4E), k.body = Without(k.body, 0x520F1A50);
+                AcceptSteps(ob, r.right);
+                PlainSounds(ob);
+                accept->push_back(guid);
+                found++;
+            }
+            if (guid == r.value) {
+                SetString(ob, kPauseValue + uint32_t(row));
+                Chunk* d = ObjD(ob);
+                PutU32(d->body, OtWord(*d, 1), kPauseValue + 0x100 + uint32_t(row));
+                PutU32(d->body, OtWord(*d, 3), kPauseValue + 0x100 + uint32_t(row));
+                for (Chunk& k : ob.kids) {
+                    if (k.tag != Tag("MsgR")) continue;
+                    Records(k.body, [&](char a, char b, size_t at, size_t) {
+                        if (a != 'R' || b != 'u') return;
+                        uint32_t v = Rd(k.body, at);
+                        if (v == 0xAF065097) PutU32(k.body, at, kPauseMessage + uint32_t(row) * 2);
+                        if (v == 0x43C50185) PutU32(k.body, at, kPauseMessage + uint32_t(row) * 2 + 1);
+                    });
+                }
+                found++;
+            }
+        }
+    }
+    WriteTargets(*targ, t);
+    return found == 2 * kPauseRowCount + 2 * kPauseRowCount + 2;  // 2 labels a row, 2 more on one, a button and a value
+}
 
 }  // namespace
 
@@ -573,8 +706,100 @@ bool EditOptions(std::vector<Chunk>& top) {
     return true;
 }
 
+bool EditPauseOptions(std::vector<Chunk>& top) {
+    // a row below the volumes, a clone of Controller's (a label lit, a label plain, a button)
+    constexpr uint32_t kButton = 0x430BE, kLit = 0x430E1, kPlain = 0x430C6, kNew = 0x0E200000;
+    constexpr uint32_t kShowLit = 0x75C4820E, kShowPlain = 0xCC5C9467, kFocusSound = 0x44615BAF;
+    // on Controller's line, to the right; its button between that line and the next, for the focus's order
+    constexpr float kRight = 260, kButtonDown = 14;
+    Chunk* objs = Find(top, "Obj\xcc");
+    Chunk* targ = Find(top, "Targ");
+    Chunk* butn = objs ? Find(objs->kids, "Butn") : nullptr;
+    if (!objs || !targ || !butn || butn->body.size() != 4) return false;
+    std::vector<Chunk> clones;
+    for (Chunk& ob : objs->kids)
+        if (ob.tag == Tag("FOb\xea") && (Guid(ob) == kButton || Guid(ob) == kLit || Guid(ob) == kPlain)) clones.push_back(ob);
+    if (clones.size() != 3) return false;
+    for (Chunk& ob : clones) {
+        uint32_t guid = Guid(ob);
+        Chunk* d = ObjD(ob);
+        PutU32(d->body, OtWord(*d, 2), kNew + (guid & 0xFFFF));
+        uint32_t name = kNew + 0x100000 + (guid & 0xFFFF);
+        PutU32(d->body, OtWord(*d, 1), name);
+        PutU32(d->body, OtWord(*d, 3), name);
+        if (guid == kButton) Move(ob, 0, kButtonDown);
+        else Move(ob, kRight, 0);
+        if (guid != kButton) {
+            SetString(ob, kLabel);
+            continue;
+        }
+        for (Chunk& k : ob.kids) {
+            if (k.tag != Tag("MsgR")) continue;
+            std::vector<uint8_t> b;
+            auto msg = [&](uint32_t m, uint32_t n) {
+                Record(b, "Mi", m);
+                Record(b, "MC", n);
+            };
+            auto resp = [&](uint32_t kind, uint32_t ru, uint32_t rt) {
+                Record(b, "Ri", kind);
+                Record(b, "Ru", ru);
+                Record(b, "Rt", rt);
+            };
+            msg(0xABC08912, 3);
+            resp(3, kFocusSound, 0);
+            resp(1, kShowLit, kNew + (kLit & 0xFFFF));
+            resp(1, kShowPlain, kNew + (kPlain & 0xFFFF));
+            msg(0x55D1E635, 2);
+            resp(1, kShowPlain, kNew + (kLit & 0xFFFF));
+            resp(1, kShowLit, kNew + (kPlain & 0xFFFF));
+            msg(0x0C407210, 2);
+            resp(3, kFocusSound, 0);
+            Record(b, "Ri", 0x200);
+            std::string path(kPausePath);
+            path.resize((path.size() + 4) & ~size_t(3));
+            b.push_back('R');
+            b.push_back('s');
+            b.push_back(uint8_t(path.size()));
+            b.push_back(uint8_t(path.size() >> 8));
+            b.insert(b.end(), path.begin(), path.end());
+            Record(b, "Rt", 0);
+            k.body = std::move(b);
+        }
+    }
+    for (Chunk& ob : clones) objs->kids.push_back(ob);
+    PutU32(butn->body, 0, Rd(butn->body, 0) + 1);
+    Targets t = ReadTargets(*targ);
+    for (uint32_t m : {kShowLit, kShowPlain}) {
+        auto* g = TargetsOf(t, m);
+        if (!g) return false;
+        g->push_back(kNew + (kLit & 0xFFFF));
+        g->push_back(kNew + (kPlain & 0xFFFF));
+    }
+    for (uint32_t m : {0xABC08912u, 0x55D1E635u, 0x0C407210u}) {
+        auto* g = TargetsOf(t, m);
+        if (!g) return false;
+        g->push_back(kNew + (kButton & 0xFFFF));
+    }
+    WriteTargets(*targ, t);
+    return true;
+}
+
 uint32_t Text(uint32_t hash) {
     if (hash == kLabel || hash == kTitle) return Buffer(hash, g_words);
+    if (hash == kBack) return Buffer(hash, "Back");
+    if (hash == kBlank) return Buffer(hash, "");
+    if (hash >= kPauseLabel && hash < kPauseLabel + kPauseRowCount) {
+        int row = int(hash - kPauseLabel);
+        if (row == 0) return Buffer(hash, g_words);
+        const Row* r = PauseRowOf(row);
+        return Buffer(hash, r ? r->label : "");
+    }
+    if (hash >= kPauseValue && hash < kPauseValue + kPauseRowCount) {
+        int row = int(hash - kPauseValue);
+        if (row == 0) return Buffer(hash, std::to_string(g_pause_page + 1) + " of " + std::to_string(PausePages()));
+        const Row* r = PauseRowOf(row);
+        return Buffer(hash, r ? r->text() : "");
+    }
     if (hash >= kRowLabel && hash < kRowLabel + kRows) {
         int row = int(hash - kRowLabel);
         if (row == 0) return Buffer(hash, "Page");
@@ -591,6 +816,16 @@ uint32_t Text(uint32_t hash) {
 }
 
 bool Message(uint32_t hash) {
+    if (hash >= kPauseMessage && hash < kPauseMessage + kPauseRowCount * 2) {
+        int row = int(hash - kPauseMessage) / 2, d = (hash - kPauseMessage) % 2 ? 1 : -1;
+        if (row == 0) {
+            g_pause_page = (g_pause_page + d + PausePages()) % PausePages();
+        } else if (const Row* r = PauseRowOf(row)) {
+            r->step(d);
+            LOGR("eon: PC Settings: %s: %s", r->label, r->text().c_str());
+        }
+        return true;
+    }
     if (hash < kRowMessage || hash >= kRowMessage + kRows * 2) return false;
     int row = int(hash - kRowMessage) / 2, d = (hash - kRowMessage) % 2 ? 1 : -1;
     if (row == 0) {
@@ -604,30 +839,37 @@ bool Message(uint32_t hash) {
 
 }  // namespace eon::pc
 
-// the FEng package loader (thiscall: a path, two out values; ret 12): PC Settings is an edited Audio Settings
+// the FEng package loader (thiscall: a path, two out values; ret 12): PC Settings is an edited Audio Settings, or
+// from the pause menu an edited pm_options.fng (Audio Settings is not loaded in a mission)
 X86_EXTERN_FUNC(EON_ORIG(00121680, 00120F80));
 X86_FUNC(EON_FN(00121680, 00120F80)) {
     uint32_t path = kernel::R32(ctx.esp + 4);
-    bool ours = path && std::strcmp(static_cast<const char*>(kernel::HostPtr(path)), kPath) == 0;
+    const char* name = path ? static_cast<const char*>(kernel::HostPtr(path)) : "";
+    bool pause = std::strcmp(name, kPausePath) == 0, ours = pause || std::strcmp(name, kPath) == 0;
     if (ours) {
-        static uint32_t audio = GuestString(kAudioPath);
-        kernel::W32(ctx.esp + 4, audio);
+        static uint32_t audio = GuestString(kAudioPath), options = GuestString(kPauseBack);
+        kernel::W32(ctx.esp + 4, pause ? options : audio);
     }
     EON_ORIG(00121680, 00120F80)(ctx, base);
-    if (!ours || !ctx.eax) return;
-    if (!g_package) {
+    if (!ours) return;
+    if (!ctx.eax) {
+        LOGW("eon: PC Settings: its base screen did not load");
+        return;
+    }
+    uint32_t& package = g_packages[pause];
+    if (!package) {
         uint32_t pkg = ctx.eax, size = kernel::R32(pkg + 4);
         std::vector<Chunk> top = Parse(static_cast<const uint8_t*>(kernel::HostPtr(pkg + 8)), size);
-        if (EditAudio(top)) {
+        if (pause ? EditPausePc(top) : EditAudio(top)) {
             Chunk whole{Tag("FEn\xe7"), {}, std::move(top)};
             std::vector<uint8_t> bytes;
             Write(whole, bytes);
-            g_package = mem::AllocSystem(uint32_t(bytes.size()));
-            if (g_package) std::memcpy(kernel::HostPtr(g_package), bytes.data(), bytes.size());
-            LOGR("eon: PC Settings screen: %u bytes, was %u", uint32_t(bytes.size()), size + 8);
+            package = mem::AllocSystem(uint32_t(bytes.size()));
+            if (package) std::memcpy(kernel::HostPtr(package), bytes.data(), bytes.size());
+            LOGR("eon: PC Settings screen%s: %u bytes, was %u", pause ? " (pause)" : "", uint32_t(bytes.size()), size + 8);
         } else {
-            LOGW("eon: PC Settings: Audio Settings is not as expected");
+            LOGW("eon: PC Settings: its base screen is not as expected");
         }
     }
-    if (g_package) ctx.eax = g_package;
+    if (package) ctx.eax = package;
 }

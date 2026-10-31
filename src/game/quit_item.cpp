@@ -131,24 +131,24 @@ X86_FUNC(EON_FN(00138900, 00138200)) {
     uint32_t pkg = kernel::R32(ctx.esp + 4);
     if (pkg && kernel::R32(pkg) == Tag("FEn\xe7") && kernel::R32(pkg + 8) == Tag("PkHd")) {
         const std::string name = static_cast<const char*>(kernel::HostPtr(pkg + 0x14));
-        bool main_menu = name == "frontend_spmp.fng", options = name == "frontend_options.fng";
-        if (main_menu || options) {
+        bool main_menu = name == "frontend_spmp.fng", options = name == "frontend_options.fng", pause = name == "pm_options.fng";
+        if (main_menu || options || pause) {
             struct Copy {
                 uint32_t from = 0, edited = 0;
             };
-            static Copy copies[2];
-            Copy& c = copies[options];
+            static Copy copies[3];
+            Copy& c = copies[options ? 1 : pause ? 2 : 0];
             if (pkg != c.from) {
                 c = {pkg, 0};
                 uint32_t size = kernel::R32(pkg + 4);
                 std::vector<Chunk> top = Parse(static_cast<const uint8_t*>(kernel::HostPtr(pkg + 8)), size);
-                if (options ? eon::pc::EditOptions(top) : Edit(top)) {
+                if (options ? eon::pc::EditOptions(top) : pause ? eon::pc::EditPauseOptions(top) : Edit(top)) {
                     Chunk whole{Tag("FEn\xe7"), {}, std::move(top)};
                     std::vector<uint8_t> bytes;
                     Write(whole, bytes);
                     c.edited = mem::AllocSystem(uint32_t(bytes.size()));
                     if (c.edited) std::memcpy(kernel::HostPtr(c.edited), bytes.data(), bytes.size());
-                    LOGR("eon: %s: %s (%u bytes, was %u)", name.c_str(), options ? "the unused row made PC Settings" : "Online made Quit Game",
+                    LOGR("eon: %s: %s (%u bytes, was %u)", name.c_str(), main_menu ? "Online made Quit Game" : "a row for PC Settings",
                          uint32_t(bytes.size()), size + 8);
                 } else {
                     LOGW("eon: %s: not as expected, left as it is", name.c_str());

@@ -115,4 +115,7 @@ game's own code and data, with its addresses).
   its focus check. frontend_options_audio.fng: the code finds the value rows by object name and writes the volumes into them.
 - **[port]** Holding a direction 10 frames in a pad script can move twice (the menu's repeat); 3 frames moves once. A first boot, with
   no save, plays the training level and never shows the main menu.
+- **[game]** Pause menu: pm_bg.fng behind tabs pm_objectives, pm_game, pm_options. A tab is a button whose left and right open the next package. Audio
+  Settings' package does not load in a mission (the loader answers 0). PkHd holds only so many name bytes: pm_options.fng's has 16.
+- **[port]** Volume rows play the volume's sample on each step (0x90A98729, 0xE2819A4A, 0x88ECEFDA): the copies use the ordinary click.
 

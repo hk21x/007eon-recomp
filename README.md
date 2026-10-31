@@ -90,8 +90,8 @@ crashes.
 **Settings window:** press **F1**. Display, graphics, game options and controls; changes are saved at once to
 `settings.toml`.
 
-**In the game's own menus:** Options, then **PC Settings**, has most of the same settings on six pages: the first row
-turns the page, left and right (or a click) change a value. Key bindings, the wheel and the monitor are in the F1 window.
+**In the game's own menus:** Options, then **PC Settings**, has most of the same settings, in the main menu and in the
+pause menu's Options tab: the first row turns the page, left and right (or a click) change a value. Key bindings, the wheel and the monitor are in the F1 window.
 
 **Language:** the settings window's Language choice takes effect at the next start and carries into the driving
 missions. Each disc has its own languages: English, Spanish, Italian, Dutch and Swedish on one European disc, French and
