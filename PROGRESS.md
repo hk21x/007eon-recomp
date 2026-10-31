@@ -21,6 +21,11 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-31 - Slow motion blended: black flicker, attempt 2
+
+Harry on Windows: black flicker. His recording: brightness repeats 48, 83, 112, 132 in step with the weights (0.25 to 1), no trace of the last picture, so the new one faded in over black. Each shader has its own key, so it was not the wrong shader; the cause in the two passes is not found. Now one pass reads both
+pictures and mixes them (psmix), no blending over the target. If it still goes dark, the kept picture itself is black. The log names the blend's first use. Attempt 1 of 3 failed; after 3, drop it.
+
 ### 2026-10-31 - Slow motion blended (driving)
 
 A player's report and Harry's recording of The High Road: choppy slow motion. Measured: the picture changes 60 times a second in play and 20 in slow motion, the frames presented on time. The game runs fewer ticks and nothing moves between them. The
