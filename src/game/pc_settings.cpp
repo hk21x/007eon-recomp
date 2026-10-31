@@ -190,7 +190,7 @@ const Page kPages[] = {
     {"Graphics 2",
      {FLAG("Show FPS", app::Get().show_fps),
       FLAG("Sharp text and HUD", app::Get().sharp_2d),
-      {"Renderer (restart)", [] { return std::string(app::Get().renderer % 2 ? "Direct3D 11" : "Direct3D 12"); },
+      {"Renderer (restart)", [] { return std::string(app::Get().renderer % 2 ? "D3D11" : "D3D12"); },
        [](int) {
            auto& s = app::Get();
            s.renderer = (s.renderer + 1) % 2;
@@ -341,6 +341,17 @@ void Move(Chunk& ob, float dx, float dy) {
         });
 }
 
+// a text's size: the description's scale
+void Scale(Chunk& ob, float scale) {
+    Chunk* d = ObjD(ob);
+    if (!d) return;
+    Records(d->body, [&](char a, char c, size_t at, size_t len) {
+        if (a != 'S' || c != 'A' || len < 24) return;
+        std::memcpy(&d->body[at + 16], &scale, 4);
+        std::memcpy(&d->body[at + 20], &scale, 4);
+    });
+}
+
 // one row's objects and messages in Audio Settings
 struct Group {
     uint32_t button, lit, arrow_a, arrow_b, value, label;
@@ -353,7 +364,9 @@ constexpr Group kGroups[3] = {
     {0x4281B, 0x4281F, 0x4281A, 0x42819, 0x42818, 0x42817, 0x6876F5D8, 0xB6776C5B, 0x4928CE1E, 0x8ECFF98C, 67},
 };
 // the page row is its value alone, under the title; the settings at Audio Settings' own spacing
-constexpr float kPageY = -62, kFirstY = -17, kPitch = 46, kArrowWiden = 34;
+constexpr float kPageY = -40, kFirstY = -2, kPitch = 30, kArrowWiden = 62;
+constexpr float kArrowRaise = 20;   // to the label's line: a row is one line, "name: value"
+constexpr float kTextScale = 0.8f;
 constexpr uint32_t kCloneGuid = 0x0E100000;
 
 uint32_t CloneGuid(uint32_t guid, int clone) { return kCloneGuid + uint32_t(clone) * 0x10000 + (guid & 0xFFFF); }
@@ -498,7 +511,9 @@ bool EditAudio(std::vector<Chunk>& top) {
             // the arrows wider apart: the values are longer than a volume
             uint32_t id = Guid(*ob) & 0xFFFF;
             float dx = id == (g.arrow_a & 0xFFFF) ? kArrowWiden : id == (g.arrow_b & 0xFFFF) ? -kArrowWiden : 0;
-            Move(*ob, dx, (row ? kFirstY + kPitch * float(row - 1) : kPageY) - g.lit_y);
+            float raise = id == (g.arrow_a & 0xFFFF) || id == (g.arrow_b & 0xFFFF) ? kArrowRaise : 0;
+            Move(*ob, dx, (row ? kFirstY + kPitch * float(row - 1) : kPageY) - g.lit_y - raise);
+            if (id == (g.lit & 0xFFFF) || id == (g.label & 0xFFFF)) Scale(*ob, kTextScale);
         }
         WireRow(group, g, row);
         wired++;
@@ -803,15 +818,12 @@ uint32_t Text(uint32_t hash) {
     }
     if (hash >= kRowLabel && hash < kRowLabel + kRows) {
         int row = int(hash - kRowLabel);
-        if (row == 0) return Buffer(hash, "");
-        const Row& r = kPages[g_page].rows[row - 1];
-        return Buffer(hash, r.label ? r.label : "");
-    }
-    if (hash >= kRowValue && hash < kRowValue + kRows) {
-        int row = int(hash - kRowValue);
         if (row == 0) return Buffer(hash, kPages[g_page].name);
         const Row& r = kPages[g_page].rows[row - 1];
-        return Buffer(hash, r.text ? r.text() : "");
+        return Buffer(hash, r.label ? std::string(r.label) + ": " + r.text() : std::string());
+    }
+    if (hash >= kRowValue && hash < kRowValue + kRows) {
+        return Buffer(hash, "");  // the row's value is in its label
     }
     return 0;
 }

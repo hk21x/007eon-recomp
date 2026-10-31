@@ -21,6 +21,11 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-31 - PC Settings: one line a row
+
+Harry: still hard to navigate, wants the text smaller, like the Options screen's links. The main menu's screen: each row one line, "name: value", at 80% (the description's scale),
+30 apart, the arrows on that line and wider. The pause screen is unchanged.
+
 ### 2026-10-31 - Media patched copies of every disc (issue 12)
 
 A player's USA image was refused: default.xbe e0e44575, which is the USA disc with the media check patch (0x539A3, JGE to JMP; flipping that byte gives exactly that hash).
