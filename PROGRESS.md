@@ -23,11 +23,14 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ### 2026-10-31 - Language setting
 
-Settings window (F1): Language, a dropdown, at the next start (EON_LANGUAGE headless). The game's set-language function and
-its screen's check are hooked in both xbes; a language not on the disc is ignored and logged once. Sdk: Option::choices.
-Measured at the tutorial, frame 10800, no traps: Fr/De disc set to German "Kampfgrundlagen 3", Europe disc set to Italian
-"Combattimento di base, fase 3", Europe default "Basic combat, step 3". Not run: the driving hook (needs Harry's Windows
-check). Next: the same setting in the game's own menus.
+Settings window (F1): Language, a dropdown, at the next start (EON_LANGUAGE headless). default.xbe's set-language function
+and its screen's check are hooked; sdk: Option::choices. A US smoke set to German passed but ran without STRGER.VIV or
+movies\ger: a later reading of the list names languages the disc has no files for. So the first reading decides, and is
+logged. The first driving hook is gone: driving's list always names all 8, and it takes the language from the launch data.
+Measured at the tutorial, frame 10800, no traps: Fr/De set to German "Kampfgrundlagen 3",
+Europe set to Italian "Combattimento di base, fase 3", default "Basic combat, step 3". Set to German on Europe and on US:
+the game's own choice, chatter\eng, smoke OK. Not proved: the language reaching a driving mission (Harry's Windows check).
+Next: the same setting in the game's own menus.
 
 ### 2026-10-31 - Free aim parked; main is v1.0.2's code again
 

@@ -95,6 +95,11 @@ game's own code and data, with its addresses).
   disc: ENG, DUT, ITA, SPA, SWE; Fr/De disc: FRE, GER. 0xC18C0 (thiscall, name; 0 the first listed) sets it, 0xC11A0 is
   the list's count, 0xC11C0 an entry, 0xC0800 gets the UI object. 0x1C9D0 (cdecl, name out) says whether to show
   fe_language_select.fng; with two languages the console's language picks instead. Boot (0x23F10) tries the saved language
-  first. driving.xbe: set 0x1F3310, count 0x1ECAD0, entry 0x1E8810. USA: EON_VA in src/game/language.cpp, src/driving/language.cpp.
-- **[port]** The setting replaces the name at both entries, so it beats the saved language and skips the screen. Text
-  follows it. Measured speech stays on the disc's chatter\eng under Italian at the tutorial; chatter\ger on the Fr/De disc.
+  first. The list's first reading is the disc's; US disc: ENG alone. Later readings can name more: set to GER on the US
+  disc, a later call found it and STRGER.VIV and movies\ger were missing. driving.xbe's list names all 8 on any disc
+  (ENG DUT FRE GER ITA JAP SPA SWE), so it cannot say what the disc has; it sets its language from the launch data (+0x44C,
+  "ENG"; 0x203E70 returns the data's +0x4C). USA: EON_VA in src/game/language.cpp.
+- **[port]** The setting replaces the name at default.xbe's two entries, so it beats the saved language and skips the
+  screen; the first reading decides for the whole run. Text follows it. Measured speech stays on the disc's chatter\eng
+  under Italian at the tutorial; chatter\ger on the Fr/De disc. Not proved: that default.xbe writes the set language to the
+  launch data (the name there was ENG in every run kept; the run set to Italian did not reach a driving mission headless).

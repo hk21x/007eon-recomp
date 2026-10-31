@@ -90,9 +90,9 @@ crashes.
 **Settings window:** press **F1**. Display, graphics, game options and controls; changes are saved at once to
 `settings.toml`.
 
-**Language:** the settings window's Language choice takes effect at the next start, on foot and in the driving
+**Language:** the settings window's Language choice takes effect at the next start and carries into the driving
 missions. Each disc has its own languages: English, Spanish, Italian, Dutch and Swedish on one European disc, French and
-German on the other. A language your disc does not have is ignored.
+German on the other, English alone on the US disc. A language your disc does not have is ignored.
 
 **Keyboard and mouse** (remappable in the Controls tab, two keys per input):
 
