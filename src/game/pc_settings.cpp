@@ -30,7 +30,7 @@
 #endif
 
 namespace eon {
-extern bool skip_intro, modern_buttons, driving_60fps, hide_hud;
+extern bool skip_intro, modern_buttons, driving_60fps, hide_hud, slow_motion_blend;
 extern uint32_t fov_percent;
 }
 
@@ -196,7 +196,7 @@ const Page kPages[] = {
            s.renderer = (s.renderer + 1) % 2;
            app::Save();
        }},
-      {nullptr, nullptr, nullptr}}},
+      FLAG("Smooth slow motion", eon::slow_motion_blend)}},
     {"Mouse",
      {FLAG("Mouse look", app::Get().mouse_look),
       FLAG("Invert mouse", app::Get().mouse_invert_y),

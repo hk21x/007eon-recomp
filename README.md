@@ -95,6 +95,8 @@ crashes.
 **In the game's own menus:** Options, then **PC Settings**, has most of the same settings, in the main menu and in the
 pause menu's Options tab: the first row turns the page, left and right (or a click) change a value. Key bindings, the wheel and the monitor are in the F1 window.
 
+**Smooth slow motion** (driving missions at 60): slow motion moves in steps, as on the console; this fades each step into the next. It can show some ghosting on fast movement, and turning it off shows the steps.
+
 **Language:** the settings window's Language choice takes effect at the next start and carries into the driving
 missions. Each disc has its own languages: English, Spanish, Italian, Dutch and Swedish on one European disc, French and
 German on the other, English alone on the US disc. A language your disc does not have is ignored.

@@ -9,16 +9,45 @@
 // drew at (0x326F30). So for 60: the interval asked for is 1, +0x1E is set while the scheduler runs (put back after:
 // nothing else reads it here), and the drawing task sees a new count at each blank. The game's speed stays real time:
 // the ticks follow the blanks either way.
+//
+// Slow motion: the scheduler's speed +0x20 runs a tick only every few blanks and nothing moves between them, so at 60
+// the same picture shows three times (20 changes a second, where the console's 25 fall to 17). With slow_motion_blend
+// each new tick's picture fades in over the blanks until the next, the renderers keeping the last two (SetFrameBlend).
+#include <algorithm>
+#include <cstring>
+
 #include "core/log.h"
 #include "kernel/kernel.h"
+#include "xdk/d3d8.h"
 #include "xdk/hle.h"
 #include "common/release.h"
 
 namespace eon {
 extern bool driving_60fps;  // the setting (src/common/game_info.cpp; EON_DRIVING60 headless)
+extern bool slow_motion_blend;  // the setting (src/common/game_info.cpp; EON_SLOW_BLEND headless)
 }
 
 namespace {
+uint32_t g_scheduler = 0;
+
+// slow motion: the ticks' spacing and how far into it this blank is, for the swap that follows. Under 1 so the renderers
+// keep blending at a tick's last blank: what stays on screen is all but this tick's picture
+void SlowMotionBlend() {
+    constexpr uint32_t kBlanks = EON_VA(0x35FBB4, 0x35FB94), kTicks = EON_VA(0x316600, 0x3165E0);
+    static uint32_t last_tick = 0, tick_blank = 0, spacing = 1;
+    uint32_t blank = kernel::R32(kBlanks), tick = kernel::R32(kTicks);
+    bool fresh = tick != last_tick;
+    if (fresh) {
+        spacing = std::clamp<uint32_t>(blank - tick_blank, 1, 8);
+        tick_blank = blank;
+        last_tick = tick;
+    }
+    float speed = 1;
+    if (g_scheduler) std::memcpy(&speed, kernel::HostPtr(g_scheduler + 0x20), 4);
+    if (eon::slow_motion_blend && speed < 1 && speed > 0)
+        d3d::SetFrameBlend(std::min(0.999f, float(blank - tick_blank + 1) / float(spacing)), fresh);
+}
+
 bool On() {
     static const bool on = [] {
         if (eon::driving_60fps) LOGR("eon: driving at 60 frames a second");
@@ -39,7 +68,7 @@ X86_FUNC(EON_FN(00214CB0, 00214C70)) {
 X86_EXTERN_FUNC(EON_ORIG(0015F4D0, 0015F430));
 X86_FUNC(EON_FN(0015F4D0, 0015F430)) {
     if (!On()) return EON_ORIG(0015F4D0, 0015F430)(ctx, base);
-    uint32_t sched = ctx.ecx;
+    uint32_t sched = g_scheduler = ctx.ecx;
     uint8_t was = kernel::G<uint8_t>(sched + 0x1E);
     kernel::G<uint8_t>(sched + 0x1E) = 1;
     EON_ORIG(0015F4D0, 0015F430)(ctx, base);
@@ -57,6 +86,7 @@ X86_FUNC(EON_FN(00072410, 000722B0)) {
         if (blanks != last && kernel::R32(kDrawnAt) == kernel::R32(kHalfBlanks))
             kernel::W32(kDrawnAt, kernel::R32(kHalfBlanks) - 1);
         last = blanks;
+        SlowMotionBlend();
     }
     EON_ORIG(00072410, 000722B0)(ctx, base);
 }

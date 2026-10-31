@@ -21,6 +21,12 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-31 - Slow motion blended (driving)
+
+A player's report and Harry's recording of The High Road: choppy slow motion. Measured: the picture changes 60 times a second in play and 20 in slow motion, the frames presented on time. The game runs fewer ticks and nothing moves between them. The
+Xbox video Harry gave steps too (25 a second falling to 17, identical frames), but the drop is far smaller. Setting slow_motion_blend (on; PC Settings, Graphics 2): the renderers keep the last two pictures and fade each new one in (sdk: Surface::blend, d3d::SetFrameBlend, psfade, HoldFrame). The weight is set in
+the drawing task 0x72410: the swap is inside the scheduler, so after it would be a frame late. Traced headless with slow motion forced at 0.4: presents get 0.33 (new), 0.67, 1.00 with each tick. FXAA is off while blending. Not seen: the picture itself, on a GPU; the driving exe only. Not on main until Harry has judged it.
+
 ### 2026-10-31 - Driving stutter: the library lock stood for 100 ms at a time
 
 Harry's Train Chase log (Windows, D3D11, 60 fps driving): frames of 54 to 181 ms, 0 shaders compiled, and the once-only line "waited 100 ms for the library". Measured headless over 95 s: 10 waits of

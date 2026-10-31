@@ -18,6 +18,7 @@ namespace eon {
 extern const bool kDriving;  // driving.xbe's exe (src/driving/hooks.cpp), default.xbe's false (src/game/hooks.cpp)
 bool skip_intro = false;  // no logo movies at start (HideFile)
 bool driving_60fps = true;   // the driving missions at 60 frames a second (src/driving/sixty.cpp)
+bool slow_motion_blend = true;  // driving: slow motion's pictures fade into each other (src/driving/sixty.cpp)
 bool hide_hud = false;       // no HUD, for screenshots (src/driving/hud.cpp, src/game/hud.cpp)
 uint32_t fov_percent = 100;  // the on-foot views' field of view, percent of the game's (src/game/fov.cpp)
 extern bool modern_buttons;           // src/common/buttons.cpp
@@ -34,6 +35,7 @@ void Init() {
     if (const char* e = std::getenv("EON_SKIP_INTRO"); e && *e == '1') eon::skip_intro = true;
     if (const char* e = std::getenv("EON_MODERN_BUTTONS")) eon::modern_buttons = *e == '1';
     if (const char* e = std::getenv("EON_DRIVING60")) eon::driving_60fps = *e == '1';
+    if (const char* e = std::getenv("EON_SLOW_BLEND")) eon::slow_motion_blend = *e == '1';
     if (const char* e = std::getenv("EON_HIDE_HUD"); e && *e == '1') eon::hide_hud = true;
     if (const char* e = std::getenv("EON_FOV")) eon::fov_percent = uint32_t(std::atoi(e));
     if (const char* e = std::getenv("EON_LANGUAGE")) eon::language = uint32_t(std::atoi(e));
@@ -203,6 +205,8 @@ const app::GameInfo app::kGame = {
                 {"fov_percent", nullptr, &eon::fov_percent, "Field of view (%)",
                  "On foot, 50 to 150; 100 is the game's. Cutscenes widen too."},
                 {"hide_hud", &eon::hide_hud, nullptr, "Hide the HUD", "For screenshots; at once, on foot and driving."},
+                {"slow_motion_blend", &eon::slow_motion_blend, nullptr, "Smooth slow motion",
+                 "Driving missions at 60: slow motion's pictures fade into each other instead of each showing three times."},
                 {"driving_60fps", &eon::driving_60fps, nullptr, "Driving missions at 60 frames a second",
                  "Same simulation, drawn after every tick instead of every second one; from the next driving mission."}},  // kept in the settings file
     .load = LoadKeys,                     // the driving exe's keys apart (DrivingKeys)
