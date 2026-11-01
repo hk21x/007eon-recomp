@@ -8,20 +8,13 @@
 #include "kernel/kernel.h"
 #include "xdk/hle.h"
 #include "common/release.h"
+#include "common/stream_next.h"
 
 namespace {
-constexpr uint32_t kStreamMagic = 0x4D525453;  // 'STRM'
 constexpr uint32_t kEnterStream = EON_VA(0x252840, 0x252800);  // (stream + 4): RtlEnterCriticalSection(stream + 8)
 constexpr uint32_t kLeaveStream = EON_VA(0x252850, 0x252810);  // (stream + 4): RtlLeaveCriticalSection(stream + 8)
 }  // namespace
 
-X86_EXTERN_FUNC(EON_ORIG(0024AC20, 0024ABE0));
 X86_FUNC(EON_FN(0024AC20, 0024ABE0)) {
-    // __cdecl (reader): the reader's first word is its stream
-    uint32_t reader = kernel::R32(ctx.esp + 4);
-    uint32_t stream = reader ? kernel::R32(reader) : 0;
-    bool locked = stream && kernel::R32(stream) == kStreamMagic;
-    if (locked) kernel::CallGuest(ctx, kEnterStream, {stream + 4});
-    EON_ORIG(0024AC20, 0024ABE0)(ctx, base);
-    if (locked) kernel::CallGuest(ctx, kLeaveStream, {stream + 4});
+    eon::TakeNextPacket(ctx, kEnterStream, kLeaveStream);
 }

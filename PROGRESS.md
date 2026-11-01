@@ -21,6 +21,12 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-01 - The crash dumps: free aim's, and the stream chain again
+
+A player's 3 dumps (.local/win, read with .local/tools/mdmp.py: exception, registers, X86Context at rcx; the guest stack is not in them). On foot (10-31 01:18), a read of 0xA36AD0: free_aim.cpp's kPlayerIndex (0x1130), so a build of main while free aim was on it (older launchers build the branch); not in 1.0.2 or 1.0.3, but free aim needs that fixed if taken up. Driving (10-30, twice, Battle in the
+Big Easy): 0x24AC20 reading 0x8412C31C and 0x84B6BE2B, past memory's end: a packet size of 0x189A98 in the walk, and a reader's own size bad. Module timestamps are not dates, so whether that build had the lock of 2026-10-29 is not known. The flush 0x24B1D0 frees packets (-2, size) outside the stream's lock, a candidate not proved.
+Branch stream-guard, not on main: src/common/stream_next.h runs the walk in the host with every address checked; a bad packet ends that reader's stream and is logged. A header corrupted on purpose at level load: no crash, the mission stands on its loading screen; a normal Train Chase unchanged. It does not cure the damage. Next: the player's version and log.
+
 ### 2026-10-31 - Release 1.0.3
 
 Harry on Windows: the button stutter, slow motion on both renderers (the fade on Direct3D 12, the steps on Direct3D 11) all fixed; "Push the patch." Notes in docs/releases/v1.0.3.md; tag v1.0.3. Open: why Direct3D 11's kept picture is black; reports of a crash at the menu and on selecting Battle in the Big Easy (no dumps yet);
