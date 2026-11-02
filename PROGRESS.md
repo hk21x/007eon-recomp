@@ -21,6 +21,11 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-02 - Under Wine's shader compiler (a Bazzite player)
+
+A ROG Ally X on Bazzite, Wine 9.0, USA disc, v1.0.3: reported as crashing; the logs show no crash but every game vertex shader failing, 47:51 E5000, 0 pipelines, on both renderers. Line 47 is ilu_rsq's 1.#INF, which vkd3d has no syntax for. Built vkd3d 1.10 from winehq, the player's error reproduced exactly. sdk: the largest float in its place (rsq of 0 and log of 0).
+With vkd3d 1.10: the tutorial's 27 shaders, Train Chase's 38, the 11 built-in entry points compile; DXC passes the 6 checked. .local/vkcheck.sh runs a dumped folder through it. Not known: that vkd3d's output draws right on the player's device, and that 1.10 is what their Wine has; a Windows run of the changed shaders. The fork's main has the same literal.
+
 ### 2026-10-31 - Release 1.0.3
 
 Harry on Windows: the button stutter, slow motion on both renderers (the fade on Direct3D 12, the steps on Direct3D 11) all fixed; "Push the patch." Notes in docs/releases/v1.0.3.md; tag v1.0.3. Open: why Direct3D 11's kept picture is black; reports of a crash at the menu and on selecting Battle in the Big Easy (no dumps yet);
