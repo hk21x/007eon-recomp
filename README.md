@@ -207,6 +207,12 @@ and mouse, sharp 2D and 60 FPS driving are in. Progress is in [PROGRESS.md](PROG
   where it stopped.
 - A short stutter the first time a new area or effect appears: its shaders are being compiled. They are kept in
   `shadercache.bin`, so it does not happen there again; the log's `frames:` lines say how many were compiled.
+- Linux, Steam Deck or Bazzite (through Proton or Wine; not supported, but reported working on a ROG Ally X): if the
+  game runs but shows nothing, or its log has `compile failed` lines, Wine's own shader compiler is rejecting the
+  shaders. Install Microsoft's into the game's prefix. In Desktop Mode, with the game closed, run `protontricks -l`,
+  find the launcher's App ID (a line such as `Non-Steam shortcut: EoNLauncher (1234567890)`), then run
+  `protontricks 1234567890 d3dcompiler_47` with that number and start the game again. If it then stops on a loading
+  screen, rebuild it in the launcher. The next release should not need this.
 - A first boot again: delete the `hdd` folder beside `EoN.exe` (`EoN\play\hdd` with the launcher,
   `out\build\release\hdd` when built from source). This deletes your saves.
 

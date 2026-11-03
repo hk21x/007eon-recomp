@@ -21,6 +21,10 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-03 - README: Linux and d3dcompiler_47
+
+The Bazzite player installed d3dcompiler_47 with protontricks: it stopped on a loading screen until a rebuild (they had tried other protontricks changes too), then plays (a photo of the tutorial). README Troubleshooting has the steps, as unsupported and reported working. The shader fix (93f9f92) is unreleased; it is not yet tested drawing under vkd3d itself.
+
 ### 2026-11-02 - Under Wine's shader compiler (a Bazzite player)
 
 A ROG Ally X on Bazzite, Wine 9.0, USA disc, v1.0.3: reported as crashing; the logs show no crash but every game vertex shader failing, 47:51 E5000, 0 pipelines, on both renderers. Line 47 is ilu_rsq's 1.#INF, which vkd3d has no syntax for. Built vkd3d 1.10 from winehq, the player's error reproduced exactly. sdk: the largest float in its place (rsq of 0 and log of 0).
