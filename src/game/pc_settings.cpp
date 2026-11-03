@@ -96,7 +96,7 @@ std::vector<Mode> Modes() {
 
 const char* const kModes[] = {"Fullscreen", "Borderless", "Window"};
 const char* const kAspects[] = {"Auto", "4:3", "16:9", "Fill"};
-const char* const kAaNames[] = {"Off", "FXAA", "MSAA 2x", "MSAA 4x", "MSAA 8x"};
+const char* const kMsaaNames[] = {"Off", "2x", "4x", "8x"};
 constexpr uint32_t kAnisos[] = {0, 2, 4, 8, 16};
 constexpr uint32_t kCaps[] = {30, 60, 120, 144, 240, 0};
 
@@ -123,8 +123,8 @@ const Page kPages[] = {
     {"Driving and HUD",
      {FLAG("Driving at 60 FPS", eon::driving_60fps),
       FLAG("Hide the HUD", eon::hide_hud),
-      FLAG("Keyboard play", app::Get().keyboard),
-      FLAG("Pause in background", app::Get().pause_unfocused)}},
+      FLAG("Pause in background", app::Get().pause_unfocused),
+      FLAG("Smooth slow motion", eon::slow_motion_blend)}},
     {"Display",
      {{"Display mode", [] { return std::string(kModes[uint32_t(app::Get().display_mode) % 3]); },
        [](int d) {
@@ -161,6 +161,26 @@ const Page kPages[] = {
            s.render_percent = uint32_t(std::clamp(int(s.render_percent) + d * 25, 25, 200));
            app::Save();
        }},
+      {"MSAA", [] { return std::string(kMsaaNames[std::min<uint32_t>(app::Get().msaa, 3)]); },
+       [](int d) {
+           auto& s = app::Get();
+           s.msaa = (std::min<uint32_t>(s.msaa, 3) + uint32_t(d + 4)) % 4;
+           app::Save();
+       }},
+      {"Edge smoothing",
+       [] {
+           auto& s = app::Get();
+           return std::string(s.smaa ? "SMAA" : s.fxaa ? "FXAA" : "Off");
+       },
+       [](int d) {
+           // off, FXAA, SMAA in turn: SMAA wins over FXAA, so one is on at a time
+           auto& s = app::Get();
+           int at = (s.smaa ? 2 : s.fxaa ? 1 : 0);
+           at = (at + d + 3) % 3;
+           s.fxaa = at == 1;
+           s.smaa = at == 2;
+           app::Save();
+       }},
       {"Anisotropic filter",
        [] {
            uint32_t a = app::Get().aniso;
@@ -170,14 +190,9 @@ const Page kPages[] = {
            auto& s = app::Get();
            s.aniso = kAnisos[Cycle(s.aniso, kAnisos, 5, d)];
            app::Save();
-       }},
-      {"Antialiasing", [] { return std::string(kAaNames[app::Get().antialiasing % 5]); },
-       [](int d) {
-           auto& s = app::Get();
-           s.antialiasing = (s.antialiasing % 5 + uint32_t(d + 5)) % 5;
-           app::Save();
-       }},
-      {"Frame rate cap",
+       }}}},
+    {"Graphics 2",
+     {{"Frame rate cap",
        [] {
            uint32_t c = app::Get().fps_cap;
            return c ? std::to_string(c) : std::string("Unlimited");
@@ -186,27 +201,25 @@ const Page kPages[] = {
            auto& s = app::Get();
            s.fps_cap = kCaps[Cycle(s.fps_cap, kCaps, 6, d)];
            app::Save();
-       }}}},
-    {"Graphics 2",
-     {FLAG("Show FPS", app::Get().show_fps),
+       }},
+      FLAG("Show FPS", app::Get().show_fps),
       FLAG("Sharp text and HUD", app::Get().sharp_2d),
       {"Renderer (restart)", [] { return std::string(app::Get().renderer % 2 ? "D3D11" : "D3D12"); },
        [](int) {
            auto& s = app::Get();
            s.renderer = (s.renderer + 1) % 2;
            app::Save();
-       }},
-      FLAG("Smooth slow motion", eon::slow_motion_blend)}},
+       }}}},
     {"Mouse",
-     {FLAG("Mouse look", app::Get().mouse_look),
+     {FLAG("Keyboard play", app::Get().keyboard),
+      FLAG("Mouse look", app::Get().mouse_look),
       FLAG("Invert mouse", app::Get().mouse_invert_y),
       {"Mouse sensitivity", [] { return std::to_string(app::Get().mouse_sensitivity) + "%"; },
        [](int d) {
            auto& s = app::Get();
            s.mouse_sensitivity = uint32_t(std::clamp(int(s.mouse_sensitivity) + d * 10, 10, 1000));
            app::Save();
-       }},
-      {nullptr, nullptr, nullptr}}},
+       }}}},
 };
 constexpr int kPageCount = int(sizeof(kPages) / sizeof(kPages[0]));
 int g_page = 0;

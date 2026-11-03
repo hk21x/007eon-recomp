@@ -21,6 +21,10 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-03 - The SDK reconciled with the fork's main
+
+The F1 overhaul session merged the fork's main (97b1654) into EoN's line: sdk eon-reconcile c67a3b3 (keeps the Wine shader fix, blended frames on Direct3D 12 only, Option::choices). antialiasing is now msaa, fxaa and smaa: PC Settings' Graphics page has MSAA and Edge smoothing (Off, FXAA, SMAA), and each page now holds 4 (Pause in background and Smooth slow motion on Driving and HUD, Keyboard play on Mouse). New SDK options (sharpening, the scaling filter, world textures and others) are in F1 only.
+
 ### 2026-11-03 - README: Linux and d3dcompiler_47
 
 The Bazzite player installed d3dcompiler_47 with protontricks: it stopped on a loading screen until a rebuild (they had tried other protontricks changes too), then plays (a photo of the tutorial). README Troubleshooting has the steps, as unsupported and reported working. The shader fix (93f9f92) is unreleased; it is not yet tested drawing under vkd3d itself.

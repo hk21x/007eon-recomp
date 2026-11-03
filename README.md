@@ -152,7 +152,7 @@ In the menus the mouse wheel scrolls, the left button selects and the right butt
 
 ### Graphics
 - **Render Scale** - Renders at a percentage of the screen.
-- **Anisotropic Filtering** and **Antialiasing** (MSAA or FXAA).
+- **Anisotropic Filtering**, **MSAA** and edge smoothing (**FXAA** or **SMAA**).
 - **Sharp Text and HUD** - The text, menus' and HUD's pictures are enlarged with sharp edges for high resolutions
   (`sharp_2d`, on by default).
 - **Modern Button Pictures** - The prompts show today's Xbox pad: A B X Y in the modern style, LB and RB in place of
