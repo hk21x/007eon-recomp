@@ -21,6 +21,11 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-04 - The reconciled SDK on Windows; main takes it
+
+The VM (no GPU) built interp, USA chosen, and the launcher, with warnings only; EoN.exe ran 2 minutes under WARP with no crash. Harry from the VM's share on his RX 7900 XT: with high_fps off, Train Chase steady at about 60 (one 222 ms frame at 81 s), 15 targets made in 95 s, no errors. With it on (branch interp): drastic distortion and about 32 a second, with the small driving targets (512x512 to 64x64) made again about
+400 times a second, the same memory at two sizes (colour targets are keyed by memory, depth targets also by size). So that comes with the in-between frames, not this SDK. main takes sdk-reconcile (sdk eon-reconcile c67a3b3); interp stays a branch.
+
 ### 2026-11-03 - The SDK reconciled with the fork's main
 
 The F1 overhaul session merged the fork's main (97b1654) into EoN's line: sdk eon-reconcile c67a3b3 (keeps the Wine shader fix, blended frames on Direct3D 12 only, Option::choices). antialiasing is now msaa, fxaa and smaa: PC Settings' Graphics page has MSAA and Edge smoothing (Off, FXAA, SMAA), and each page now holds 4 (Pause in background and Smooth slow motion on Driving and HUD, Keyboard play on Mouse). New SDK options (sharpening, the scaling filter, world textures and others) are in F1 only.
