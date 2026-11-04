@@ -21,6 +21,10 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-04 - In-between frames, attempt 2: small colour targets per size
+
+Attempt 1 (Harry): distortion and about 32 a second, the small driving targets made again about 400 times a second. sdk eon-colour-key: D3D12 keeps a colour target smaller than the frame per size, as it did small depth targets; Sync and RecordLate take the size last drawn at an address, cube faces their own size. D3D11 unchanged. Checked: wincheck, smoke. Not run: D3D12 (no GPU here); Harry's retest of high_fps.
+
 ### 2026-11-04 - The reconciled SDK on Windows; main takes it
 
 The VM (no GPU) built interp, USA chosen, and the launcher, with warnings only; EoN.exe ran 2 minutes under WARP with no crash. Harry from the VM's share on his RX 7900 XT: with high_fps off, Train Chase steady at about 60 (one 222 ms frame at 81 s), 15 targets made in 95 s, no errors. With it on (branch interp): drastic distortion and about 32 a second, with the small driving targets (512x512 to 64x64) made again about
