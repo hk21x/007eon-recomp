@@ -21,6 +21,11 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-04 - In-between frames: the floor's decals, measured headless
+
+Harry: solve the glass shards. A trace of two blended steps at Train Chase's start (XBE_INTERP_TEST=2): of about 520 records, 190 draws had no match in the step before. On the screen, 26 a step: the floor's scenery block, whose draws in the step before are the same program, stage 0 texture, count, vertex buffer and place, differing only in texture stage 2 (00395A70 bound, then 0). KeyOf mixed all four stages. Now stage 0 only (sdk eon-colour-key):
+the screen's draws 336 matched, 2 not. Still unmatched: the draws into the off-screen targets (011C0000, 010A0000: alternating memory each step, one header 00398190 shared), drawn at the step's place. Headless frames cannot show the flicker (consecutive frames alike before and after); Harry's test decides.
+
 ### 2026-11-04 - In-between frames: stopped after three attempts
 
 Attempt 3 (fixed function matrices blended) on Harry's PC: "flickering on the floor as you look down". His recording (235 fps, Train Chase's start on foot in driving.xbe): the glass shards on the floor (bright patterned decals by Bond's feet) are drawn in some frames and missing in others, the floor's brightness stepping between two levels in runs of about 4 frames; Bond, his shadow and the railing steady. Whether the headlight pool before the bridge is fixed is not reported.
