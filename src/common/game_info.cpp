@@ -18,6 +18,7 @@ namespace eon {
 extern const bool kDriving;  // driving.xbe's exe (src/driving/hooks.cpp), default.xbe's false (src/game/hooks.cpp)
 bool skip_intro = false;  // no logo movies at start (HideFile)
 bool driving_60fps = true;   // the driving missions at 60 frames a second (src/driving/sixty.cpp)
+bool high_fps = false;  // driving above 60: frames in between the game's steps (sdk gpu/interp.cpp), with a frame cap over 60
 bool slow_motion_blend = true;  // driving: slow motion's pictures fade into each other (src/driving/sixty.cpp)
 bool hide_hud = false;       // no HUD, for screenshots (src/driving/hud.cpp, src/game/hud.cpp)
 uint32_t fov_percent = 100;  // the on-foot views' field of view, percent of the game's (src/game/fov.cpp)
@@ -35,6 +36,7 @@ void Init() {
     if (const char* e = std::getenv("EON_SKIP_INTRO"); e && *e == '1') eon::skip_intro = true;
     if (const char* e = std::getenv("EON_MODERN_BUTTONS")) eon::modern_buttons = *e == '1';
     if (const char* e = std::getenv("EON_DRIVING60")) eon::driving_60fps = *e == '1';
+    if (const char* e = std::getenv("EON_HIGH_FPS")) eon::high_fps = *e == '1';
     if (const char* e = std::getenv("EON_SLOW_BLEND")) eon::slow_motion_blend = *e == '1';
     if (const char* e = std::getenv("EON_HIDE_HUD"); e && *e == '1') eon::hide_hud = true;
     if (const char* e = std::getenv("EON_FOV")) eon::fov_percent = uint32_t(std::atoi(e));
@@ -205,6 +207,8 @@ const app::GameInfo app::kGame = {
                 {"fov_percent", nullptr, &eon::fov_percent, "Field of view (%)",
                  "On foot, 50 to 150; 100 is the game's. Cutscenes widen too."},
                 {"hide_hud", &eon::hide_hud, nullptr, "Hide the HUD", "For screenshots; at once, on foot and driving."},
+                {"high_fps", &eon::high_fps, nullptr, "High frame rate (driving, experimental)",
+                 "Driving missions above 60 with a frame cap over 60: frames drawn in between the game's 60 steps a second. Up to a step behind; may flicker."},
                 {"slow_motion_blend", &eon::slow_motion_blend, nullptr, "Smooth slow motion",
                  "Direct3D 12, driving missions at 60: slow motion's pictures fade into each other instead of each showing three times."},
                 {"driving_60fps", &eon::driving_60fps, nullptr, "Driving missions at 60 frames a second",
@@ -229,6 +233,7 @@ const app::GameInfo app::kGame = {
     .mouse_direct = true,                 // straight into the game's look input (src/game/mouse.cpp)
     .default_keys = Keys,                 // a shooter's keys and mouse buttons on foot, a racing game's driving
     .texture_bound = TextureBound,         // modern_buttons, the title screen on ultrawide
+    .step_interpolation = [] { return eon::kDriving && eon::driving_60fps && eon::high_fps; },  // driving draws a frame a step
     .same_code = SameCode(),              // the other copies of this release's code
     // optional, after these: .wheel (what a steering wheel's force feedback follows)
 };

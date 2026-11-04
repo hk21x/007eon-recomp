@@ -21,6 +21,11 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-04 - Driving above 60: in-between frames (option, off)
+
+Harry chose in-between frames over the step-counting timers (the step rate alone ran Train Chase's mission fast). high_fps (F1, "High frame rate (driving, experimental)", off; EON_HIGH_FPS headless): GameInfo::step_interpolation for driving at 60 steps, with a frame cap over 60; the slow-motion fade is left out while it is on. Headless XBE_INTERP_TEST=2: 3600 frames for 1838 steps in Train Chase, no traps; the
+frames whole, two intro shots faintly doubled (the cutscene's own dissolve, or the blending: not told apart headless). Not seen: Windows, flicker (AUF still has some), on foot.
+
 ### 2026-11-03 - The SDK reconciled with the fork's main
 
 The F1 overhaul session merged the fork's main (97b1654) into EoN's line: sdk eon-reconcile c67a3b3 (keeps the Wine shader fix, blended frames on Direct3D 12 only, Option::choices). antialiasing is now msaa, fxaa and smaa: PC Settings' Graphics page has MSAA and Edge smoothing (Off, FXAA, SMAA), and each page now holds 4 (Pause in background and Smooth slow motion on Driving and HUD, Keyboard play on Mouse). New SDK options (sharpening, the scaling filter, world textures and others) are in F1 only.
