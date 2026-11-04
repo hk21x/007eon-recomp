@@ -21,6 +21,11 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-04 - In-between frames, attempt 3: fixed function matrices blended
+
+Attempt 2 on Harry's PC (D3D12, cap 144): playable, 34 targets in 50 s, 600 steps and 613 to 896 frames each 10 s, "a little distortion on the textures". His 240 fps recording: before the bridge, every third frame the car's headlight pool on the road is bigger and the shadow shifted, the rest smooth. interp.cpp blended only program constants; a draw without a program kept its step's fixed function matrices. Now view, projection, texture 0-3 and world 0-3 are blended for a matched draw too (sdk eon-colour-key).
+Headless forced 2 frames a step: no traps, the mission plays. Not seen: Windows. Open: why only 1 to 1.5 frames a step at a cap of 144. Attempt 3 of 3 on the distortion.
+
 ### 2026-11-04 - In-between frames, attempt 2: small colour targets per size
 
 Attempt 1 (Harry): distortion and about 32 a second, the small driving targets made again about 400 times a second. sdk eon-colour-key: D3D12 keeps a colour target smaller than the frame per size, as it did small depth targets; Sync and RecordLate take the size last drawn at an address, cube faces their own size. D3D11 unchanged. Checked: wincheck, smoke. Not run: D3D12 (no GPU here); Harry's retest of high_fps.
