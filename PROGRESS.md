@@ -21,6 +21,10 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-04 - The reconciled SDK on Windows; main takes it
+
+The VM (no GPU) built interp, USA chosen, and the launcher, with warnings only; EoN.exe ran 2 minutes under WARP with no crash. Harry from the VM's share on his RX 7900 XT: with high_fps off, Train Chase steady at about 60 (one 222 ms frame at 81 s), 15 targets made in 95 s, no errors. With it on (branch interp): drastic distortion and about 32 a second, with the small driving targets (512x512 to 64x64) made again about
+400 times a second, the same memory at two sizes (colour targets are keyed by memory, depth targets also by size). So that comes with the in-between frames, not this SDK. main takes sdk-reconcile (sdk eon-reconcile c67a3b3); interp stays a branch.
 ### 2026-11-04 - Driving above 60: in-between frames (option, off)
 
 Harry chose in-between frames over the step-counting timers (the step rate alone ran Train Chase's mission fast). high_fps (F1, "High frame rate (driving, experimental)", off; EON_HIGH_FPS headless): GameInfo::step_interpolation for driving at 60 steps, with a frame cap over 60; the slow-motion fade is left out while it is on. Headless XBE_INTERP_TEST=2: 3600 frames for 1838 steps in Train Chase, no traps; the
