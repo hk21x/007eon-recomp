@@ -21,6 +21,10 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-04 - The small target fix: a texture of another size still finds its target
+
+The sdk session's review: with colour targets kept per size, a texture lookup by the texture's own size missed a target of another size (EoN's Thermovision reads the 640x480 target 8316CA00 as 320x240) and sampled guest memory. sdk eon-target-key-sample 8ecb07e: on a miss, the frame sized target at the address, then the size last drawn there. EoN target-key takes it. Needs Thermovision on Windows (D3D12).
+
 ### 2026-11-04 - Above 60 parked; the small target fix on its own
 
 Harry: park above 60 (in-between frames on branch interp, on foot on foot-fps, the step rate on driving-hz), and take the render target fix through the SDK. sdk eon-target-key (c67a3b3 plus the two D3D12 commits, cherry-picked): a colour target smaller than the frame kept per size, read-backs from the size last drawn. Without it, in-between frames rebuilt EoN's driving targets 400 times a second; in normal play EoN never hit it. Smoke cannot reach D3D12; it needs Windows play in the games on it.
