@@ -21,6 +21,11 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-04 - On foot above 60: the game is frame based after all
+
+Harry on Windows (foot_high_fps on, cap 144): the game speeds up as the frame rate rises. The measured frame time 0x2FE98C is read in only 2 places in default.xbe (the game's rate 0x35B824 in 1), so almost all of the game moves a fixed amount a frame; the entry below measured the timer, not what uses it, and was wrong. So on foot is like driving: above 60 needs in-between frames or each per-frame update scaled.
+foot_high_fps stays off by default on branch foot-fps; not for main.
+
 ### 2026-11-04 - On foot above 60: paced by the frame rate cap
 
 Harry asked how 007 From Russia With Love's recomp gets above 60: its game times frames by a clock, so it removed the frame limiter and fed real time, then fixed what short frames broke (boat sway, Havok contact tau, tracers). EoN's driving steps in ticks, but on foot it is the same kind: the frame timer 0x5E780 takes the time since the last frame from QueryPerformanceCounter (0x62977) into
