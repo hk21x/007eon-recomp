@@ -18,6 +18,7 @@ namespace eon {
 extern const bool kDriving;  // driving.xbe's exe (src/driving/hooks.cpp), default.xbe's false (src/game/hooks.cpp)
 bool skip_intro = false;  // no logo movies at start (HideFile)
 bool driving_60fps = true;   // the driving missions at 60 frames a second (src/driving/sixty.cpp)
+bool foot_high_fps = false;  // on foot above 60: paced by the frame rate cap (src/common/foot_pace.cpp)
 bool slow_motion_blend = true;  // driving: slow motion's pictures fade into each other (src/driving/sixty.cpp)
 bool hide_hud = false;       // no HUD, for screenshots (src/driving/hud.cpp, src/game/hud.cpp)
 uint32_t fov_percent = 100;  // the on-foot views' field of view, percent of the game's (src/game/fov.cpp)
@@ -25,6 +26,7 @@ extern bool modern_buttons;           // src/common/buttons.cpp
 bool ButtonPictures(uint32_t header, uint32_t palette);  // GameInfo::texture_bound
 void TitleScreen(uint32_t header);                       // src/common/title_screen.cpp (default.xbe's)
 void MenuMouse(int port, input::Pad& p);                 // GameInfo::pad: the mouse in the menus
+void FootPace();                                         // src/common/foot_pace.cpp
 std::vector<achievements::Def> AchievementSet();         // src/common/achievement_set.cpp
 }
 
@@ -35,6 +37,7 @@ void Init() {
     if (const char* e = std::getenv("EON_SKIP_INTRO"); e && *e == '1') eon::skip_intro = true;
     if (const char* e = std::getenv("EON_MODERN_BUTTONS")) eon::modern_buttons = *e == '1';
     if (const char* e = std::getenv("EON_DRIVING60")) eon::driving_60fps = *e == '1';
+    if (const char* e = std::getenv("EON_FOOT_HIGH_FPS")) eon::foot_high_fps = *e == '1';
     if (const char* e = std::getenv("EON_SLOW_BLEND")) eon::slow_motion_blend = *e == '1';
     if (const char* e = std::getenv("EON_HIDE_HUD"); e && *e == '1') eon::hide_hud = true;
     if (const char* e = std::getenv("EON_FOV")) eon::fov_percent = uint32_t(std::atoi(e));
@@ -72,6 +75,12 @@ bool HideFile(const std::string& path) {
     for (const char* logo : {"thxlogo", "mgm_", "eag"})
         if (file.compare(0, std::char_traits<char>::length(logo), logo) == 0) return true;
     return false;
+}
+
+// each poll: the mouse in the menus, and on foot the pacing the frame rate cap asks for
+void Pad(int port, input::Pad& p) {
+    eon::MenuMouse(port, p);
+    if (port == 0) eon::FootPace();
 }
 
 // keyboard and mouse, as a shooter plays (Windows virtual key codes: this file builds for the headless harness too)
@@ -205,6 +214,8 @@ const app::GameInfo app::kGame = {
                 {"fov_percent", nullptr, &eon::fov_percent, "Field of view (%)",
                  "On foot, 50 to 150; 100 is the game's. Cutscenes widen too."},
                 {"hide_hud", &eon::hide_hud, nullptr, "Hide the HUD", "For screenshots; at once, on foot and driving."},
+                {"foot_high_fps", &eon::foot_high_fps, nullptr, "High frame rate on foot (experimental)",
+                 "On foot up to the frame rate cap instead of 60: the game times its frames by the clock. Set the cap above 60."},
                 {"slow_motion_blend", &eon::slow_motion_blend, nullptr, "Smooth slow motion",
                  "Direct3D 12, driving missions at 60: slow motion's pictures fade into each other instead of each showing three times."},
                 {"driving_60fps", &eon::driving_60fps, nullptr, "Driving missions at 60 frames a second",
@@ -216,7 +227,7 @@ const app::GameInfo app::kGame = {
     .window = nullptr,                    // the game window is up
     .message = nullptr,                   // window messages first; true takes one
     .ui = nullptr,                        // ImGui drawing each frame
-    .pad = eon::MenuMouse,                // changes a polled pad: the mouse in the menus
+    .pad = Pad,                           // changes a polled pad: the mouse in the menus; on foot, the pacing
     .rumble = nullptr,                    // changes a rumble before it is set
     .achievements = eon::AchievementSet(),  // conditions on the profile, checked each frame (ACHIEVEMENTS.md)
     .squeeze_screen_programs = true,      // ultrawide: the HUD and menus are drawn by a pass-through program

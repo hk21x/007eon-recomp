@@ -21,6 +21,11 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-04 - On foot above 60: paced by the frame rate cap
+
+Harry asked how 007 From Russia With Love's recomp gets above 60: its game times frames by a clock, so it removed the frame limiter and fed real time, then fixed what short frames broke (boat sway, Havok contact tau, tracers). EoN's driving steps in ticks, but on foot it is the same kind: the frame timer 0x5E780 takes the time since the last frame from QueryPerformanceCounter (0x62977) into
+seconds at 0x2FE98C and keeps a 16 frame rate at 0x35B824. It asks for present interval 0 (one blank), and the SDK paces a blank at 1/60, which held it at 60 at any cap. Measured headless: at 60 frames of 0.0163 s and the game's rate 60; paced at 120, 0.014 to 0.018 s and 68 to 75 (the CPU drawing). Setting foot_high_fps (F1, experimental, off): on foot the pace follows the cap (src/common/foot_pace.cpp). Not seen: Windows; what short frames may break (FRWL's list).
+
 ### 2026-11-04 - The reconciled SDK on Windows; main takes it
 
 The VM (no GPU) built interp, USA chosen, and the launcher, with warnings only; EoN.exe ran 2 minutes under WARP with no crash. Harry from the VM's share on his RX 7900 XT: with high_fps off, Train Chase steady at about 60 (one 222 ms frame at 81 s), 15 targets made in 95 s, no errors. With it on (branch interp): drastic distortion and about 32 a second, with the small driving targets (512x512 to 64x64) made again about

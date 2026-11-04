@@ -95,6 +95,8 @@ crashes.
 **In the game's own menus:** Options, then **PC Settings**, has most of the same settings, in the main menu and in the
 pause menu's Options tab: the first row turns the page, left and right (or a click) change a value. Key bindings, the wheel and the monitor are in the F1 window.
 
+**High frame rate on foot** (experimental, F1): on foot up to the frame rate cap instead of 60, as the game times its frames by the clock. Set the cap above 60. Driving stays at 60.
+
 **Smooth slow motion** (Direct3D 12, driving missions at 60): slow motion moves in steps, as on the console; this fades each step into the next. It can show some ghosting on fast movement. Direct3D 11 always shows the steps.
 
 **Language:** the settings window's Language choice takes effect at the next start and carries into the driving
