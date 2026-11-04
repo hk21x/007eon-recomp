@@ -21,6 +21,12 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-04 - In-between frames: stopped after three attempts
+
+Attempt 3 (fixed function matrices blended) on Harry's PC: "flickering on the floor as you look down". His recording (235 fps, Train Chase's start on foot in driving.xbe): the glass shards on the floor (bright patterned decals by Bond's feet) are drawn in some frames and missing in others, the floor's brightness stepping between two levels in runs of about 4 frames; Bond, his shadow and the railing steady. Whether the headlight pool before the bridge is fixed is not reported.
+What the three found: (1) small colour targets made again at each size change (fixed: D3D12 keys them by size, sdk eon-colour-key, keep regardless); (2) a draw without a program kept its step's matrices (fixed, same branch); (3) decals lost on some in-between frames: not looked into. Likely kinds: a draw with no match in the step before (left out or at the step's place), its vertices in a buffer the title rewrote by the replay (more than kCopyBytes, or not kept), or a depth bias draw against a blended surface. Next, if taken up: log, for the decal draws, match found or not and vertex bytes kept, at a cap of 144, frame by frame.
+State: high_fps stays off by default, on branch interp only; Harry measured 600 steps and 613 to 896 frames each 10 s with attempt 2. Above 60 needs this solved or the step-rate route (timers, branch driving-hz).
+
 ### 2026-11-04 - In-between frames, attempt 3: fixed function matrices blended
 
 Attempt 2 on Harry's PC (D3D12, cap 144): playable, 34 targets in 50 s, 600 steps and 613 to 896 frames each 10 s, "a little distortion on the textures". His 240 fps recording: before the bridge, every third frame the car's headlight pool on the road is bigger and the shadow shifted, the rest smooth. interp.cpp blended only program constants; a draw without a program kept its step's fixed function matrices. Now view, projection, texture 0-3 and world 0-3 are blended for a matched draw too (sdk eon-colour-key).
