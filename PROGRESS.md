@@ -21,6 +21,10 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-04 - Above 60 parked; the small target fix on its own
+
+Harry: park above 60 (in-between frames on branch interp, on foot on foot-fps, the step rate on driving-hz), and take the render target fix through the SDK. sdk eon-target-key (c67a3b3 plus the two D3D12 commits, cherry-picked): a colour target smaller than the frame kept per size, read-backs from the size last drawn. Without it, in-between frames rebuilt EoN's driving targets 400 times a second; in normal play EoN never hit it. Smoke cannot reach D3D12; it needs Windows play in the games on it.
+
 ### 2026-11-04 - The reconciled SDK on Windows; main takes it
 
 The VM (no GPU) built interp, USA chosen, and the launcher, with warnings only; EoN.exe ran 2 minutes under WARP with no crash. Harry from the VM's share on his RX 7900 XT: with high_fps off, Train Chase steady at about 60 (one 222 ms frame at 81 s), 15 targets made in 95 s, no errors. With it on (branch interp): drastic distortion and about 32 a second, with the small driving targets (512x512 to 64x64) made again about
