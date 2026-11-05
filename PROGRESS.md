@@ -21,6 +21,12 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-05 - The small target fix passes Thermovision on Windows
+
+Harry (Windows, D3D12, target-key b65a694 on sdk 8ecb07e, run locally): Thermovision works perfectly in the last
+mission (Up then A on the d-pad); driving had already passed. Both cases of sdk eon-target-key-sample are covered;
+it is for the sdk session's all-games check, after which EoN main takes the fork's main.
+
 ### 2026-11-04 - The small target fix: a texture of another size still finds its target
 
 The sdk session's review: with colour targets kept per size, a texture lookup by the texture's own size missed a target of another size (EoN's Thermovision reads the 640x480 target 8316CA00 as 320x240) and sampled guest memory. sdk eon-target-key-sample 8ecb07e: on a miss, the frame sized target at the address, then the size last drawn there. EoN target-key takes it. Needs Thermovision on Windows (D3D12).
