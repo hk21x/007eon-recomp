@@ -21,6 +21,11 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-05 - README: the wipe moves
+
+Harry: the wipe's slider did not move. It was a still image with a line; PGR2's is an animated WebP. Now 72 frames
+at 1200x502 (about 600 KB): the divider eases from all off to all on and back, with a pause at each end.
+
 ### 2026-11-05 - README: graphics settings compared
 
 Harry's 3440x1440 screenshots from the start of Train Chase (.local/win/screenshots, not committed) made into three
