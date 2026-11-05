@@ -21,6 +21,14 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-05 - The first EoN package (USA, from the VM)
+
+The VM on fe0ae8f: release-package.bat wrote EoN-USA-package.zip, 66,130,063 bytes (sha256 d7b197c2...a648), 46
+entries: EoN.exe, EoNDriving.exe, the VC runtime and d3dcompiler_47, compiler\ (clang, lld-link, xbe_recomp, the two
+import libraries, configs, headers, XDK layouts); no EoN.dll, no xbe, nothing generated. .gitignore takes *.zip.json
+(the package's .json showed as untracked). Next: Harry's packages from a European and a USA checkout, and an install
+through the launcher.
+
 ### 2026-11-05 - The VM's DLL build of prebuilt; the package script's quote
 
 The VM (USA disc, 91ec44b): build.bat built EoN.exe, EoNDriving.exe, EoN.dll (10.0 MB), EoNDriving.dll (12.4 MB) and

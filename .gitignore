@@ -2,6 +2,7 @@
 /out/
 /build/
 *.zip
+*.zip.json
 *.pdb
 *.exe
 *.obj
