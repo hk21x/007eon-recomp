@@ -21,6 +21,14 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-05 - 1.1.0 published
+
+Harry published v1.1.0: EoNLauncher.exe, EoN-PAL-package.zip (75,957,628 bytes, sha256 857dfa33...c009) and
+EoN-USA-package.zip (75,957,588, ab310073...abdf) with their .json. Downloaded here: each zip's sha256 and size match
+its .json, and each holds its own release's configs (eon/game/driving vs usa_*), so the two are not one package twice.
+Next: the 1.0.3 update offered on an existing install; EoN main to the fork's main once the all-games candidate
+(target-key fix and the package quote) is merged.
+
 ### 2026-11-05 - Release 1.1.0: the prebuilt packages
 
 Harry on his PC (Ryzen 7 5800X3D, RX 7900 XT), from clean checkouts of prebuilt: both packages built, installs
