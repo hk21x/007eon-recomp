@@ -21,6 +21,15 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-05 - Release 1.1.0: the prebuilt packages
+
+Harry on his PC (Ryzen 7 5800X3D, RX 7900 XT), from clean checkouts of prebuilt: both packages built, installs
+through the launcher "all working". The European disc (media check patched): the package beside the launcher, unpacked
+in 1.2 s, 130 files compiled 16 at a time in 37.2 s, 38.4 s in all; the game skipped the intro logos, played on foot
+and in a driving mission (driving.xbe relaunched at 60 frames a second), and closed with exit 0. main fast-forwarded to
+prebuilt (sdk eon-package-quote f9112ac, the fork's all-games candidate holds the same fix), tag v1.1.0: a draft, for
+Harry to attach EoN-PAL-package.zip, EoN-USA-package.zip and their .json, then publish.
+
 ### 2026-11-05 - The first EoN package (USA, from the VM)
 
 The VM on fe0ae8f: release-package.bat wrote EoN-USA-package.zip, 66,130,063 bytes (sha256 d7b197c2...a648), 46
