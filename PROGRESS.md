@@ -21,6 +21,14 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-05 - README: graphics settings compared
+
+Harry's 3440x1440 screenshots from the start of Train Chase (.local/win/screenshots, not committed) made into three
+WebP images in docs/img: a half-and-half wipe of all off against all on, close-ups of the roof struts and the railing
+(off, MSAA 4x, SMAA or FXAA, render scale 200%, enlarged three times) and of a concrete wall (sharpening off, 50%,
+100%, all on, enlarged twice), about 120 KB together. README has a "Graphics settings compared" section under
+Features in PGR2's style, and Sharpening in the Graphics list. No code changed.
+
 ### 2026-11-04 - The reconciled SDK on Windows; main takes it
 
 The VM (no GPU) built interp, USA chosen, and the launcher, with warnings only; EoN.exe ran 2 minutes under WARP with no crash. Harry from the VM's share on his RX 7900 XT: with high_fps off, Train Chase steady at about 60 (one 222 ms frame at 81 s), 15 targets made in 95 s, no errors. With it on (branch interp): drastic distortion and about 32 a second, with the small driving targets (512x512 to 64x64) made again about

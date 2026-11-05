@@ -153,6 +153,7 @@ In the menus the mouse wheel scrolls, the left button selects and the right butt
 ### Graphics
 - **Render Scale** - Renders at a percentage of the screen.
 - **Anisotropic Filtering**, **MSAA** and edge smoothing (**FXAA** or **SMAA**).
+- **Sharpening** - Sharpens the finished picture, 0 to 100% (`sharpen`, F1 > Graphics).
 - **Sharp Text and HUD** - The text, menus' and HUD's pictures are enlarged with sharp edges for high resolutions
   (`sharp_2d`, on by default).
 - **Modern Button Pictures** - The prompts show today's Xbox pad: A B X Y in the modern style, LB and RB in place of
@@ -160,6 +161,32 @@ In the menus the mouse wheel scrolls, the left button selects and the right butt
   on by default). They are drawn at four times the console's resolution, so they stay sharp at 1440p and 4K.
 - **Shader Cache** - Compiled shaders are kept in `shadercache.bin`, so each is compiled once rather than in every
   session, and later sessions do not stutter while they compile.
+
+### Graphics settings compared
+
+<p align="center">
+  <img src="docs/img/eon-settings-wipe.webp" alt="Train Chase at 3440x1440: every graphics setting off on the left, on on the right" width="800">
+  <br>
+  <i>All off vs. all on, at 3440x1440, at the start of Train Chase.</i>
+</p>
+
+<p align="center">
+  <img src="docs/img/eon-settings-edges.webp" alt="Close-ups of the roof struts and the railing with each edge-smoothing setting" width="800">
+  <br>
+  <i>Edges: roof struts and the railing, enlarged three times.</i>
+</p>
+
+- **MSAA** smooths the edges of the 3D scene and keeps textures sharp. The more samples, the slower.
+- **FXAA** and **SMAA** smooth the finished frame, HUD included; FXAA softens it a little, SMAA less so.
+- **Render scale** draws the picture larger than the screen: the smoothest fine detail, and the slowest.
+
+<p align="center">
+  <img src="docs/img/eon-settings-sharpness.webp" alt="Close-ups of a concrete wall with sharpening off, at 50%, at 100% and with every setting on" width="800">
+  <br>
+  <i>Sharpening: a concrete wall, enlarged twice.</i>
+</p>
+
+- **Sharpening** brings out texture detail that the smoothing settings soften.
 
 ### Sound
 - **Full Driving Mix** - The driving missions' music, speech and engine sounds, which the game mixes into six
