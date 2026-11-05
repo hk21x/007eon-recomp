@@ -57,7 +57,7 @@ if not exist config mkdir config
 rem game
 :game
 echo [3/3] Game code
-echo       first build recompiles %GAME_XBE%, expect 30 to 90 minutes ...
+echo       first build recompiles both xbe files, which takes a while ...
 cmake --build out\build\release || goto :fail
 
 echo.

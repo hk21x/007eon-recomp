@@ -6,6 +6,36 @@ project(game LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# the release, by assets/default.xbe: the European discs share one code (config/*.toml), the USA disc is another
+# compile (config/usa_*.toml, every address ported; EON_USA picks the hooks' USA addresses, src/common/release.h)
+set(EON_PREFIX "")
+set(EON_USA 0)
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/assets/default.xbe)
+    file(SHA1 ${CMAKE_CURRENT_SOURCE_DIR}/assets/default.xbe EON_XBE_SHA1)
+    if(EON_XBE_SHA1 STREQUAL "1f4db3b7d3f5102ec7a2351e521f545ef4972be6" OR
+       EON_XBE_SHA1 STREQUAL "e0e44575d4df16c85d9d240d2d2a0b8d1c6e2bd1")  # the USA disc, its media check patched or not
+        set(EON_PREFIX "usa_")
+        set(EON_USA 1)
+    endif()
+endif()
+message(STATUS "EoN release: ${EON_PREFIX}")
+
+# on Windows the game's code is a DLL per program, built on the player's PC (sdk's cmake/XbeRecomp.cmake); the harness links
+# it in. The package carries this release's configs, and eon_release.txt names the package for release-package.bat
+if(WIN32)
+    set(XBE_GAME_DLL ON)
+    set(XBE_GAME_CONFIGS)
+    foreach(c eon game driving driving_game)
+        list(APPEND XBE_GAME_CONFIGS ${CMAKE_CURRENT_SOURCE_DIR}/config/${EON_PREFIX}${c}.toml)
+    endforeach()
+    list(APPEND XBE_GAME_CONFIGS ${CMAKE_CURRENT_SOURCE_DIR}/config/d3d8_qfe4.toml)
+    if(EON_USA)
+        file(WRITE ${CMAKE_BINARY_DIR}/eon_release.txt "USA")
+    else()
+        file(WRITE ${CMAKE_BINARY_DIR}/eon_release.txt "PAL")
+    endif()
+endif()
+
 # the SDK: sdk/ here, two folders up inside the SDK's templates, a checkout beside this repository, else downloaded
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/sdk/cmake/XbeRecomp.cmake)
     set(SDK ${CMAKE_CURRENT_SOURCE_DIR}/sdk)
@@ -26,19 +56,6 @@ include(${SDK}/cmake/XbeRecomp.cmake)
 file(GLOB XBE_HOST_SOURCES CONFIGURE_DEPENDS src/*/*.cpp)
 list(FILTER XBE_HOST_SOURCES EXCLUDE REGEX "/src/(game|driving)/")
 
-# the release, by assets/default.xbe: the European discs share one code (config/*.toml), the USA disc is another
-# compile (config/usa_*.toml, every address ported; EON_USA picks the hooks' USA addresses, src/common/release.h)
-set(EON_PREFIX "")
-set(EON_USA 0)
-if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/assets/default.xbe)
-    file(SHA1 ${CMAKE_CURRENT_SOURCE_DIR}/assets/default.xbe EON_XBE_SHA1)
-    if(EON_XBE_SHA1 STREQUAL "1f4db3b7d3f5102ec7a2351e521f545ef4972be6" OR
-       EON_XBE_SHA1 STREQUAL "e0e44575d4df16c85d9d240d2d2a0b8d1c6e2bd1")  # the USA disc, its media check patched or not
-        set(EON_PREFIX "usa_")
-        set(EON_USA 1)
-    endif()
-endif()
-message(STATUS "EoN release: ${EON_PREFIX}")
 
 # partitions as xbe_symbols wrote them into config/game.toml
 set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS config/${EON_PREFIX}game.toml)

@@ -32,8 +32,8 @@ SHA-1 of each xbe it found.
 
 ## Getting Started
 
-There are two ways to get the game running. Both build it on your own PC from your own disc: the game's code is
-never downloaded, only the tools and this project's source.
+There are two ways to get the game running. Both build the game's code on your own PC from your own disc: it is never
+downloaded, only the program around it.
 
 ### The launcher (recommended)
 
@@ -43,26 +43,36 @@ and no admin rights needed.
 **You need:**
 - Windows 10 or 11, 64 bit, and a GPU with Direct3D 12 or Direct3D 11.
 - Your own copy of the game (Europe or USA): an `.iso` image of your disc, or a folder with the disc's files.
-- About 3 GB free, plus room for your copy of the game, and an internet connection for about 1.4 GB of build tools.
+- About 1 GB free, plus room for your copy of the game, and an internet connection for the game's package (under
+  100 MB).
 
 **Steps:**
 1. Download `EoNLauncher.exe` from the [latest release](https://github.com/hk21x/007eon-recomp/releases/latest).
-2. Put it in a folder of its own (for example `C:\Games\EoN`) and run it. Everything it makes goes in an `EoN`
-   folder beside it. Windows may warn about an unrecognised app: choose **More info**, then **Run anyway**.
-3. **Your game:** choose your disc image or the folder with the disc's files. The launcher checks that it is the
+2. Put it in a folder of its own with a short path (for example `C:\Games\EoN`) and run it. Everything it makes goes
+   in an `EoN` folder beside it. Windows may warn about an unrecognised app: choose **More info**, then **Run anyway**.
+3. **Your game:** choose your disc image or the folder with the disc's files. The launcher checks that it is a
    supported release.
-4. **Build:** accept the license terms for Microsoft's C++ libraries and Windows SDK (the build uses them), then press
-   **Build**. It downloads portable build tools (Clang, CMake, Ninja, Git and Microsoft's libraries), this project's
-   source, and builds the game. The first build takes 30 to 90 minutes. You can stop it at any time; it carries on
-   where it left off.
+4. **Get the game ready:** the launcher downloads your disc's package (the program and a compiler, no game code; one
+   for the European discs, one for the USA disc), then your PC builds the game's code from your disc, in a minute or
+   so on a recent PC. You can stop at any time; it carries on where it left off.
 5. **Play:** press **Play**. In the game, **F1** opens the PC settings.
 
-When this project is updated the launcher shows **Update**: press it, then Play.
+When a new release is out, the launcher offers it at the top of its window: **Update the launcher** downloads it,
+checks it and restarts, then **Update** puts the new version in place, keeping your saves and settings. The new
+version is built beside the game and only replaces it once it is ready, so a failed or stopped update leaves the game
+as it was.
+
+**Coming from 1.0.3 or earlier:** those versions built everything from source with about 1.4 GB of tools. The new
+launcher shows **A faster way to play**: press **Update**. Your game keeps playing until the new one is ready, and
+your saves and settings are kept. Afterwards, **Manage > Remove the old build tools** frees the space they took.
+
+The launcher's pages: **Game** (your disc, the steps, Play), **Manage** (the install, its folders, removing build
+files, building the game again if it will not start) and **Log**.
 
 Files, all under the `EoN` folder beside the launcher:
-- `play\` the game: `EoN.exe`, `EoNDriving.exe`, `settings.toml`, `hdd\` (saves), `logs\` (the game's logs)
-- `launcher.log` the launcher's log (send it with any problem building)
-- `tools\` and `source\` the build tools and the source
+- `play\` the game: `EoN.exe` and `EoNDriving.exe`, `EoN.dll` and `EoNDriving.dll` (the game's code, built on your
+  PC), `settings.toml`, `hdd\` (saves), `logs\` (the game's logs), `compiler\` (what builds the code)
+- `launcher.log` the launcher's log (send it with any problem)
 
 To remove everything, delete the launcher and its `EoN` folder (keep `play\hdd` if you want your saves).
 
@@ -80,10 +90,12 @@ tools for Windows**), about 3 GB free, and your disc's files: `default.xbe`, `dr
    Cloned without `--recurse-submodules`? Run `git submodule update --init`.
 2. Put your game files in the `assets` folder: `assets\default.xbe` with `driving.xbe` and the game's folders beside
    it.
-3. Run `build.bat`. The first build recompiles both xbe files and takes 30 to 90 minutes; later builds are quicker.
+3. Run `build.bat`. The first build recompiles both xbe files and takes a while; later builds are quicker. On Windows
+   the game's code is built into `EoN.dll` and `EoNDriving.dll` beside the exes.
 4. Run `out\build\release\EoN.exe`. It finds the `assets` folder beside itself or in any folder above it.
 
-`launcher.bat` builds `EoNLauncher.exe` itself. Files the game writes beside the exe: `settings.toml`, `hdd\` (saves;
+`launcher.bat` builds `EoNLauncher.exe` itself. `release-package.bat`, after `build.bat`, makes the package for a
+release: once with a European disc in `assets` and once with the USA disc, each in a checkout of its own. Files the game writes beside the exe: `settings.toml`, `hdd\` (saves;
 delete it to start again from a first boot), `logs\`, `shadercache.bin` (compiled shaders) and `CrashDumps\` if it
 crashes.
 

@@ -7,6 +7,9 @@
 #   build/linux/xbe_symbols --sign config/driving.toml --out sdk/xdk/5659/signatures.toml
 includes = ["usa_driving_game.toml", "d3d8_qfe4.toml"]
 
+[xbe]
+library = "EoNDriving.dll"  # the game code DLL; this config is the one the build on the player's PC reads
+
 # D3D8 data: each default.xbe value (config/eon.toml) found here by the same instructions (all of their uses agree)
 [data]
 D3D_DirtyFlags           = 0x2AEE38

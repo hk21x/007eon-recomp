@@ -21,6 +21,17 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-05 - The prebuilt model (branch prebuilt)
+
+Harry: ship an update with the latest fixes and the prebuilt launcher. As Agent Under Fire did: on Windows each
+program's code is a DLL built on the player's PC (`XBE_GAME_DLL`, set before the SDK is included, so the disc
+detection moved above it), `library` in the four hand configs (EoN.dll, EoNDriving.dll), `XBE_GAME_CONFIGS` the
+release's five configs, game.json `packages` by default.xbe's SHA-1 (the four European ones share
+EoN-PAL-package.zip, the two USA ones EoN-USA-package.zip), release-package.bat naming the package from
+eon_release.txt (written at configure), a tag making a draft release. No X86_EXTERN_FUNC then X86_FUNC of one function
+in any source (AUF's DLL error). README's launcher steps and v1.1.0's notes for the package flow. Smoke OK here (the
+harness links the code in); no Windows DLL build yet: next the VM's build, then Harry's packages from each disc.
+
 ### 2026-11-05 - README: the wipe moves
 
 Harry: the wipe's slider did not move. It was a still image with a line; PGR2's is an animated WebP. Now 72 frames

@@ -4,6 +4,9 @@
 #   build/linux/xbe_symbols --sign config/eon.toml --out sdk/xdk/5659/signatures.toml
 includes = ["game.toml", "d3d8_qfe4.toml"]
 
+[xbe]
+library = "EoN.dll"  # the game code DLL; this config is the one the build on the player's PC reads
+
 # D3D8 data the 5659 signatures cannot read here: the library is QFE 4 (sdk/xdk/5659 was made from PGR2's QFE 1).
 # Each value from the default.xbe instruction given; the QFE 1 instruction it matches is PGR2's.
 [data]
