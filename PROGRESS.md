@@ -21,6 +21,15 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-05 - The VM's DLL build of prebuilt; the package script's quote
+
+The VM (USA disc, 91ec44b): build.bat built EoN.exe, EoNDriving.exe, EoN.dll (10.0 MB), EoNDriving.dll (12.4 MB) and
+compiler\ (141 MB), eon_release.txt USA, no DLL import or export errors; a 2 minute WARP run, exit 0, no crash dump.
+release-package.bat stopped at once: the SDK script's runtime check printed %VSDIR% unquoted inside a block, and the
+VM's Build Tools under Program Files (x86) closed it with their ")". sdk eon-package-quote f9112ac (c67a3b3 plus the
+quote) is taken here; the fork's main has the same line. The WARP run still showed the EA logo at 2 minutes with
+skip_intro on, at about 15 frames a second: to look at on a GPU.
+
 ### 2026-11-05 - The prebuilt model (branch prebuilt)
 
 Harry: ship an update with the latest fixes and the prebuilt launcher. As Agent Under Fire did: on Windows each
