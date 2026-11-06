@@ -1,11 +1,10 @@
 // fov_percent: the 3D views' field of view, scaled.
 //
-// Every view's projection comes from 0x61080 (cdecl: x scale out, y scale out, the vertical field of view in radians,
-// the widen factors 0x5AA550 and 0x5AA554, the first widened for ultrawide here too: src/game/ultrawide.cpp): each
-// scale is 1 over tan(fov / 2) (the x scale over the aspect and the widen factor too). Its callers make the view's
-// culling planes from the same scales (0xF5C70, 0xF6170), so the angle is scaled where it comes in and what is drawn
-// and what is culled agree. The game's zooms (the sniper scope, the cameras' own changes) stay in proportion; the
-// cutscenes drawn in the engine widen with it.
+// Every view on foot and its culling start from the camera info 0x8D960 makes (position, then pitch, yaw, roll, and at
+// +0x30 the field of view, a factor of the game's angle: 1 unless a zoom changes it): 0xF6170 builds a frustum from that value and from the scales 0x61080 makes of it, so the
+// angle is scaled there, once, and what is drawn and what is culled agree. Scaling 0x61080's argument instead (as
+// until 1.1.0) changed only some culling, not the picture. The game's zooms (the sniper scope, the cameras' own changes)
+// stay in proportion. 0x61080 is still hooked for ultrawide's widen factor (src/game/ultrawide.cpp).
 #include <algorithm>
 #include <cstring>
 
@@ -26,17 +25,21 @@ X86_FUNC(EON_FN(00061080, 00060DB0)) {
     std::memcpy(&kx, &kernel::G<uint32_t>(ctx.esp + 16), 4);
     kx = eon::WidenedFactor(kx);
     std::memcpy(&kernel::G<uint32_t>(ctx.esp + 16), &kx, 4);
-    uint32_t pct = std::clamp<uint32_t>(eon::fov_percent, 50, 150);
-    if (pct != 100) {
-        float fov;
-        std::memcpy(&fov, &kernel::G<uint32_t>(ctx.esp + 12), 4);
-        float wider = std::min(fov * float(pct) / 100, 2.9f);  // short of 180 degrees
-        std::memcpy(&kernel::G<uint32_t>(ctx.esp + 12), &wider, 4);
-        static uint32_t said = 100;
-        if (said != pct) {
-            said = pct;
-            LOGR("eon: field of view %u%% (%.1f degrees for the game's %.1f)", pct, wider * 57.29578f, fov * 57.29578f);
-        }
-    }
     EON_ORIG(00061080, 00060DB0)(ctx, base);
+}
+
+X86_EXTERN_FUNC(EON_ORIG(0008D960, 0008D6D0));
+X86_FUNC(EON_FN(0008D960, 0008D6D0)) {
+    uint32_t out = kernel::R32(ctx.esp + 8);
+    EON_ORIG(0008D960, 0008D6D0)(ctx, base);
+    uint32_t pct = std::clamp<uint32_t>(eon::fov_percent, 50, 150);
+    float fov = kernel::G<float>(out + 0x30);
+    if (pct == 100) return;
+    float wider = fov * float(pct) / 100;
+    kernel::G<float>(out + 0x30) = wider;
+    static uint32_t said = 100;
+    if (said != pct) {
+        said = pct;
+        LOGR("eon: field of view %u%% (the camera's factor %.2f for the game's %.2f)", pct, wider, fov);
+    }
 }

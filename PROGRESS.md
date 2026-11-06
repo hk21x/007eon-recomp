@@ -21,6 +21,15 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-06 - Field of view: scaled in the camera info (branch fov-fix)
+
+Players: fov_percent changes nothing. Confirmed headless: the training yard at 100% and 150% the same picture, frame for
+frame. The hook scaled 0x61080's angle argument, which in the level only some culling reads (0xF6170's tests, 55
+degrees, every frame); the drawn view starts from the camera info, as free aim's zoom found on 10-30 (that hook went
+with free aim to its branch). Now fov.cpp scales the camera info's field of view (0x8D960, out +0x30, a factor, 1 in
+the yard) and 0x61080 keeps only ultrawide's widen factor. Headless at 150%: the yard clearly wider (more sky, floor and
+buildings at the same moment). Smoke OK. Note: branch free-aim hooks 0x8D960 too; unparking it means one hook for both.
+
 ### 2026-11-05 - 1.1.0 published
 
 Harry published v1.1.0: EoNLauncher.exe, EoN-PAL-package.zip (75,957,628 bytes, sha256 857dfa33...c009) and
