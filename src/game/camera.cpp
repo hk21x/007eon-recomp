@@ -7,7 +7,8 @@
 // let go; fed to the stick, the mouse spun the view. Here a mouse count turns the orbit and the height by a fixed
 // angle before the update, and the stick's speeds are left to the controller and keys. The update also swings the
 // camera behind Bond as he moves (a timer at +0xC0 starts it, +0xC4 holds it, +0xB8 is the angle left); with
-// camera_follow off that is held back while the mouse plays. The recentre button's swing (+0xBC) still runs.
+// camera_follow off that is held back while the mouse plays, and the camera moves with Bond (src/game/free_aim.cpp), so
+// his sidestep does not turn the view. The recentre button's swing (+0xBC) still runs.
 //
 // The update ignores the stick while Bond is locked on, aiming a gadget and the like (the checks below are its own):
 // then the right stick moves the lock's dot, so the mouse goes to the stick (src/game/mouse.cpp) instead.
@@ -24,6 +25,7 @@ namespace eon {
 extern bool camera_follow;                  // the setting (src/common/game_info.cpp)
 std::atomic<float> mouse_turn{0}, mouse_tilt{0};  // degrees waiting for the camera (src/game/mouse.cpp)
 std::atomic<int64_t> camera_takes_mouse_ms{0};    // when the camera last took the mouse
+void FreeAimCamera(uint32_t mode, bool keep);  // src/game/free_aim.cpp: the boom moved with Bond
 }
 
 namespace {
@@ -66,10 +68,12 @@ bool IgnoresStick(X86Context& ctx, uint32_t mode, uint32_t bond) {
 X86_EXTERN_FUNC(EON_ORIG(001D1C70, 001D14A0));
 X86_FUNC(EON_FN(001D1C70, 001D14A0)) {
     uint32_t mode = ctx.ecx;
+    bool keep = false;  // the mouse plays and the camera does not follow Bond's moves
     uint32_t bond = kernel::R32(mode) == kFollowCamera
                         ? Ask(ctx, kernel::R32(kPlayers), kBondOf, {kernel::R32(mode + 0x44)}) : 0;
     if (bond && kernel::R32(bond + kPlayerIndex) == 0 && input::UsingKeyboard() && !IgnoresStick(ctx, mode, bond)) {
         eon::camera_takes_mouse_ms = NowMs();
+        keep = !eon::camera_follow;
         float turn = eon::mouse_turn.exchange(0), tilt = eon::mouse_tilt.exchange(0);
         if (turn != 0) {  // the orbit about Bond, as the stick's turn (0x1D2E50) rotates it
             float c = std::cos(turn * kRadians), s = std::sin(turn * kRadians);
@@ -90,5 +94,6 @@ X86_FUNC(EON_FN(001D1C70, 001D14A0)) {
             kernel::G<float>(mode + kSwing) = 0;
         }
     }
+    if (kernel::R32(mode) == kFollowCamera) eon::FreeAimCamera(mode, keep);
     EON_ORIG(001D1C70, 001D14A0)(ctx, base);
 }

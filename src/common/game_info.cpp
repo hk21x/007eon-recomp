@@ -20,6 +20,8 @@ bool skip_intro = false;  // no logo movies at start (HideFile)
 bool driving_60fps = true;   // the driving missions at 60 frames a second (src/driving/sixty.cpp)
 bool slow_motion_blend = true;  // driving: slow motion's pictures fade into each other (src/driving/sixty.cpp)
 bool hide_hud = false;       // no HUD, for screenshots (src/driving/hud.cpp, src/game/hud.cpp)
+bool free_aim = true;        // on foot with the mouse, shots to the middle of the view (src/game/free_aim.cpp)
+void (*frame_ui)(double fps) = nullptr;  // an exe's own drawing each frame, set once it plays (no static registration)
 uint32_t fov_percent = 100;  // the on-foot views' field of view, percent of the game's (src/game/fov.cpp)
 bool camera_follow = false;  // mouse: the camera swings behind Bond as he moves, as the game's does (src/game/camera.cpp)
 uint32_t aim_sensitivity = 100;  // mouse: the lock's dot and the scope, percent (src/game/mouse.cpp)
@@ -65,6 +67,10 @@ std::vector<const char*> SameCode() {
 #endif
 }
 
+void FrameUi(double fps) {
+    if (eon::frame_ui) eon::frame_ui(fps);
+}
+
 bool HideFile(const std::string& path) {
     if (!eon::skip_intro) return false;
     std::string n;
@@ -89,7 +95,7 @@ std::array<uint16_t, 2> ShooterKeys(int c) {
         case kLSLeft: return {'A', 0};
         case kLSRight: return {'D', 0};
         case kRT: return {kMouseLeft, 0};    // fire
-        case kLT: return {kMouseRight, 0};   // lock on
+        case kLT: return {'R', 0};           // lock on; the right button aims (src/game/free_aim.cpp)
         case kA: return {kSpace, kEnter};
         case kB: return {kLeftCtrl, 0};
         case kX: return {'Q', 0};            // punch left
@@ -205,6 +211,8 @@ const app::GameInfo app::kGame = {
                  "Today's Xbox pad in the prompts (the keys and mouse while playing on the keyboard either way)."},
                 {"language", nullptr, &eon::language, "Language",
                  "At the next start. Your disc's languages: a language it does not have is ignored.", eon::kLanguageChoices},
+                {"free_aim", &eon::free_aim, nullptr, "Free aim (keyboard and mouse)",
+                 "On foot, shots go to a crosshair in the middle of the view; the right mouse button aims. Hold the lock-on key to lock on."},
                 {"fov_percent", nullptr, &eon::fov_percent, "Field of view (%)",
                  "On foot, 50 to 150; 100 is the game's. Cutscenes widen too."},
                 {"camera_follow", &eon::camera_follow, nullptr, "Camera follows movement (mouse)",
@@ -222,7 +230,7 @@ const app::GameInfo app::kGame = {
     .loaded = nullptr,                    // image in memory, before its entry point runs
     .window = nullptr,                    // the game window is up
     .message = nullptr,                   // window messages first; true takes one
-    .ui = nullptr,                        // ImGui drawing each frame
+    .ui = FrameUi,                        // ImGui drawing each frame: the crosshair
     .pad = eon::MenuMouse,                // changes a polled pad: the mouse in the menus
     .rumble = nullptr,                    // changes a rumble before it is set
     .achievements = eon::AchievementSet(),  // conditions on the profile, checked each frame (ACHIEVEMENTS.md)

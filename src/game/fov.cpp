@@ -16,6 +16,7 @@
 namespace eon {
 extern uint32_t fov_percent;  // the setting (src/common/game_info.cpp; EON_FOV headless)
 float WidenedFactor(float f);  // ultrawide: the widen factor every frustum gets (src/game/ultrawide.cpp)
+void FreeAimInfo(uint32_t player, uint32_t out);  // free aim's zoom and shoulder (src/game/free_aim.cpp)
 }
 
 X86_EXTERN_FUNC(EON_ORIG(00061080, 00060DB0));
@@ -30,16 +31,17 @@ X86_FUNC(EON_FN(00061080, 00060DB0)) {
 
 X86_EXTERN_FUNC(EON_ORIG(0008D960, 0008D6D0));
 X86_FUNC(EON_FN(0008D960, 0008D6D0)) {
-    uint32_t out = kernel::R32(ctx.esp + 8);
+    uint32_t player = kernel::R32(ctx.esp + 4), out = kernel::R32(ctx.esp + 8);
     EON_ORIG(0008D960, 0008D6D0)(ctx, base);
     uint32_t pct = std::clamp<uint32_t>(eon::fov_percent, 50, 150);
-    float fov = kernel::G<float>(out + 0x30);
-    if (pct == 100) return;
-    float wider = fov * float(pct) / 100;
-    kernel::G<float>(out + 0x30) = wider;
-    static uint32_t said = 100;
-    if (said != pct) {
-        said = pct;
-        LOGR("eon: field of view %u%% (the camera's factor %.2f for the game's %.2f)", pct, wider, fov);
+    if (pct != 100) {
+        float fov = kernel::G<float>(out + 0x30), wider = fov * float(pct) / 100;
+        kernel::G<float>(out + 0x30) = wider;
+        static uint32_t said = 100;
+        if (said != pct) {
+            said = pct;
+            LOGR("eon: field of view %u%% (the camera's factor %.2f for the game's %.2f)", pct, wider, fov);
+        }
     }
+    eon::FreeAimInfo(player, out);
 }

@@ -21,6 +21,18 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-06 - Free aim back, on the direct camera (branch free-aim-2)
+
+Harry: move on to free aim. The parked work (d318c3f: shots to the crosshair, Bond facing the camera while a mouse
+button is held, the shoulder view, the right button's zoom, torso pitch, quick clicks) restored from 2868200's revert:
+free_aim.cpp, the free_aim setting (on), R to lock on, the crosshair drawn each frame, the fire input held for the
+stance. Its two hooks that main now has elsewhere are folded in rather than doubled: the chase camera's boom moved with
+Bond (now called from src/game/camera.cpp, and also whenever the mouse plays with camera_follow off, so a sidestep
+does not turn the view: issue 6's point 1 in full) and the camera info's zoom and shoulder (called from src/game/fov.cpp
+after the field of view). Headless with EON_FREE_AIM=1 in the last mission (mouse, strafing, right button, a shot): no
+trap, no crash. Smoke OK. Left from the parked work: leg animation while strafing, the shoulder camera's wall test,
+quick clicks unconfirmed. Next: Harry on Windows.
+
 ### 2026-11-06 - Mouse look on main
 
 Harry on 063dc2b (the VM's build): "Mouse movement is much better", aim sensitivity works. main fast-forwarded to
