@@ -1,7 +1,8 @@
 // Mouse look on foot: the mouse turns the camera itself, as a PC third person game's does.
 //
 // The camera in play (class 0x2E26BC) orbits Bond in its update 0x1D1C70 (thiscall, the seconds on the stack): his
-// position +0x70, the camera's +0x80, its height angle +0xD0 (degrees, clamped there), the view's heading +0x94. The right stick sets the speed
+// position +0x70, the camera's +0x80, its height angle +0xD0 (degrees, clamped there), the view's heading +0x94
+// (degrees; turning right lowers it). The right stick sets the speed
 // the orbit turns at (+0xCC, the height +0xC8), and each eases toward the stick's, so a turn runs on after the stick is
 // let go; fed to the stick, the mouse spun the view. Here a mouse count turns the orbit and the height by a fixed
 // angle before the update, and the stick's speeds are left to the controller and keys. The update also swings the

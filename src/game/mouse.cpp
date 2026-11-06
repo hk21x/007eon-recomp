@@ -57,7 +57,7 @@ X86_FUNC(EON_FN(0001BC90, 0001BA50)) {
     float cx, cy, x, y;
     if (port != 0 || !Take(cx, cy, x, y)) return;
     if (NowMs() - eon::camera_takes_mouse_ms < 250) {
-        eon::mouse_turn = eon::mouse_turn + cx * kDegreesPerCount;
+        eon::mouse_turn = eon::mouse_turn - cx * kDegreesPerCount;  // right lowers the heading, as the stick's turn does
         eon::mouse_tilt = eon::mouse_tilt + cy * kDegreesPerCount;
         return;
     }

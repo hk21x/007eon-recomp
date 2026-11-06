@@ -21,6 +21,13 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-06 - Mouse look: left and right the game's way round (branch mouse-look)
+
+Harry on 7b79d9b: quick and slow turns now agree ("works better"), but left and right are reversed. Headless, the stick
+held right lowers the heading (then runs on for some 4 s); the mouse's turn raised it, the orbit and the heading alike
+(1d0a210 too, its trailing view hid it). The mouse's turn is now negated: mouse right lowers the heading by the counts'
+angle at once (24.8 degrees for a 0.5 s burst), as the stick does without its run-on. Smoke OK.
+
 ### 2026-11-06 - Mouse look: the view turns with the orbit (branch mouse-look)
 
 Harry on Windows (the VM's build of 1d0a210): "functionally great", but a slow turn and a quick one over the same
