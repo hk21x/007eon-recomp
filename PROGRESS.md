@@ -21,6 +21,13 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-06 - Mouse look on main
+
+Harry on 063dc2b (the VM's build): "Mouse movement is much better", aim sensitivity works. main fast-forwarded to
+mouse-look (European and USA smoke OK). Issue 6's points 1 to 4 covered; the lock's dot under the controller's Y
+inversion (point 5) and the scope's own invert are left. Next: free aim on top of the direct camera (branch free-aim:
+its camera info and mouse hooks to be merged with src/game/fov.cpp and src/game/camera.cpp, not taken whole).
+
 ### 2026-11-06 - Mouse look: left and right the game's way round (branch mouse-look)
 
 Harry on 7b79d9b: quick and slow turns now agree ("works better"), but left and right are reversed. Headless, the stick
