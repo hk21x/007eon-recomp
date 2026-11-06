@@ -21,6 +21,16 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-06 - Free aim: strafing while aiming (branch free-aim-2)
+
+Following the entry below: the strafe state's own check 0x1B2C40 keeps it each update only with a lock target (vtable
++0x170) and aiming (vtable +0x14C, 0x14B010), and there picks one of its eight steps from the stick; without them it
+stood. Now while the right button aims: 0x1BC740 builds the strafe as its branch at 0x1BC841 does (not on ladders and
+the like: actions 0x15 to 0x18, +0xE28 5), and during 0x1B2C40 alone +0x170 answers Bond himself (only tested for
+non-zero there) and +0x14C yes. Headless in free play (free aim forced, KEYS+LSR): state 0x3BA, he moves (some 300
+units a second) and keeps facing the view; two frames show him facing in with the gun up, beside a pillar. Not seen
+headless: the sidestep's animation and direction against the view, S stepping back. Smoke OK.
+
 ### 2026-11-06 - Free aim: the crosshair while aiming; strafing while aiming, first look (branch free-aim-2)
 
 Harry on ea0ef22: "much better". Wanted: the crosshair only with the right button (done), and A, D and S to strafe

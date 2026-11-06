@@ -52,6 +52,9 @@ constexpr uint32_t kAnglesToMatrix = EON_VA(0xF0A90, 0xF0610);   // cdecl (angle
 constexpr uint32_t kFollowCamera = EON_VA(0x2E2694, 0X2E1BBC);      // the camera mode's class in play
 constexpr uint32_t kGunOwner = EON_VA(0x1A7A40, 0x1A7270);       // thiscall on a gun
 constexpr uint32_t kBodyTable = EON_VA(0x2DD118, 0x2DC640);      // 0x14A2C0's numbers for the upper body
+constexpr uint32_t kAlloc = EON_VA(0x99970, 0x996E0);           // cdecl (bytes): a movement state's memory
+constexpr uint32_t kStrafe = EON_VA(0x1BE9A0, 0x1BE1D0);         // thiscall (Bond): the strafing state, built there
+constexpr uint32_t kPush = EON_VA(0x99F10, 0x99C80);             // thiscall on the machine's stack (state, flags)
 constexpr uint32_t kScopeView = 0xBAA3F02;                       // what the scope's camera mode answers (vtable +8)
 constexpr float kRadians = 3.14159265f / 180;
 constexpr float kShoulder = 28;       // world units right of Bond
@@ -64,6 +67,8 @@ std::atomic<float> g_zoom{1};
 std::atomic<bool> g_crosshair{false};
 std::atomic<bool> g_turned{false};    // play, and a mouse button held
 std::atomic<bool> g_aim_only{false};  // play, and the right button held without the left
+std::atomic<bool> g_aiming{false};    // play, and the right button held
+std::atomic<bool> g_strafe_ask{false};  // a strafe's check runs while he aims (below)
 std::atomic<int64_t> g_updated{0};
 
 int Forced() {
@@ -158,6 +163,7 @@ X86_FUNC(EON_FN(00156E50, 001566C0)) {
     float zoom = g_zoom, zoom_want = on && (buttons & 2) ? kRightButtonZoom : 1;
     g_zoom = zoom + std::clamp(zoom_want - zoom, -0.03f, 0.03f);
     g_turned = on && (buttons & 3);
+    g_aiming = on && (buttons & 2);
     // the left button on top of the right: a gun fired by the press needs one, so the held input lets go first (the
     // game must see it up: 40 ms), and the shots are real for a while after, or a quick click's press comes when the
     // button is up again and is blocked
@@ -307,4 +313,51 @@ X86_FUNC(EON_FN(001493A0, 00148C10)) {
     uint32_t bond = ctx.ecx;
     if (!Plays(ctx, bond)) return EON_ORIG(001493A0, 00148C10)(ctx, base);
     kernel::Return(ctx, 1, 0);
+}
+
+// Strafing while he aims. His movement state +0x14AC is 0x3B9 running (he turns to where he goes) or 0x3BA strafing
+// (he faces his target and sidesteps, eight ways: the strafe's own check 0x1B2C40 picks the step from the stick each
+// update, while he has a lock target, vtable +0x170, and aims, vtable +0x14C). 0x1BC740 chooses as he starts to move
+// (thiscall: the machine, +0x14 Bond, +0x1C its stack). While he aims here it builds the strafe as its own branch
+// (0x1BC841) does, and the strafe's check is told he has a target and aims, so A, D and S sidestep and step back.
+// Not on a ladder or the like: actions 0x15 to 0x18 and the climb (+0xE28 5) keep theirs
+X86_EXTERN_FUNC(EON_ORIG(001BC740, 001BBF70));
+X86_FUNC(EON_FN(001BC740, 001BBF70)) {
+    uint32_t self = ctx.ecx, bond = kernel::R32(self + 0x14), action = bond ? kernel::R32(bond + 0x11B0) : 0;
+    uint32_t kind = action ? kernel::R32(action + 0x1AC) : 0;
+    if (!g_aiming || bond != g_bond || !action || kernel::G<float>(action + 0xF0) <= 0 || (kind >= 0x15 && kind <= 0x18) ||
+        kernel::R32(bond + 0xE28) == 5)
+        return EON_ORIG(001BC740, 001BBF70)(ctx, base);
+    uint32_t state = kernel::CallGuest(ctx, kAlloc, {0x64});
+    if (!state) return kernel::Return(ctx, 0, 0);
+    ctx.ecx = state;
+    state = kernel::CallGuest(ctx, kStrafe, {bond});
+    ctx.ecx = kernel::R32(self + 0x1C);
+    kernel::CallGuest(ctx, kPush, {state, 0x104});
+    ctx.ecx = self;
+    kernel::W32(bond + 0x14AC, 0x3BA);
+    kernel::Return(ctx, 1, 0);
+}
+
+// the strafe's check, thiscall (the state, +0x14 Bond)
+X86_EXTERN_FUNC(EON_ORIG(001B2C40, 001B2470));
+X86_FUNC(EON_FN(001B2C40, 001B2470)) {
+    bool ask = g_aiming && kernel::R32(ctx.ecx + 0x14) == g_bond;
+    if (ask) g_strafe_ask = true;
+    EON_ORIG(001B2C40, 001B2470)(ctx, base);
+    if (ask) g_strafe_ask = false;
+}
+
+// Bond's lock target, thiscall: in that check, something (himself; it is only tested)
+X86_EXTERN_FUNC(EON_ORIG(001510F0, 00150960));
+X86_FUNC(EON_FN(001510F0, 00150960)) {
+    if (g_strafe_ask && ctx.ecx == g_bond) return kernel::Return(ctx, ctx.ecx, 0);
+    EON_ORIG(001510F0, 00150960)(ctx, base);
+}
+
+// Bond aims, thiscall: in that check, yes
+X86_EXTERN_FUNC(EON_ORIG(0014B010, 0014A880));
+X86_FUNC(EON_FN(0014B010, 0014A880)) {
+    if (g_strafe_ask && ctx.ecx == g_bond) return kernel::Return(ctx, 1, 0);
+    EON_ORIG(0014B010, 0014A880)(ctx, base);
 }
