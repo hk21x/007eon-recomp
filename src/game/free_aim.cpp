@@ -374,6 +374,20 @@ X86_FUNC(EON_FN(001B2C40, 001B2470)) {
     }
     EON_ORIG(001B2C40, 001B2470)(ctx, base);
     if (ask) g_strafe_ask = false;
+    // A sideways push straight after a forward or back one carried on from that step and moved him forward (Harry);
+    // from standing it is right. So as the push turns from forward or back to sideways the strafe ends here (its check
+    // says no), and the next update starts a new one, as from standing
+    static int last = -1;  // the push against his facing: 0 forward or back, 1 sideways
+    if (ask && (ctx.eax & 0xFF)) {
+        uint32_t action = kernel::R32(bond + 0x11B0);
+        float d = kernel::G<float>(action + 0x17C) - kernel::G<float>(bond + kYaw) * kRadians;
+        d = std::fabs(std::remainder(d, 2 * 3.14159265f));
+        int side = d > 0.7854f && d < 2.3562f;  // 45 to 135 degrees
+        if (side && last == 0) ctx.eax &= ~0xFFu;
+        last = side;
+    } else if (!ask) {
+        last = -1;
+    }
 }
 
 // Bond's lock target, thiscall: in that check, something (himself; it is only tested)

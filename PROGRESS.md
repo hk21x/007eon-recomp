@@ -21,6 +21,16 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-06 - Strafing: a fresh strafe as the push turns sideways (branch strafe-b)
+
+Harry on 006a9b3: much better, but now and then strafing left moves him forward: after moving forward or back, not
+from standing. The strafe picks its step by the push against his facing (0x1B2C40: under 22.5 degrees forward, over
+157.5 back, else a diagonal whose side depends on the step before, 110 or 70 degrees: 0x1B2B60), and a key push is
+exactly 90, at that boundary; it carried on from the forward or back step. Now as the push turns from forward or back
+(within 45 degrees of either) to sideways, the strafe's check says no for that update, so the next one starts a new
+strafe, as from standing. Headless: no crash, no error (the movement measures there are spoiled by the walls of the
+spot). Smoke OK. Next: Harry.
+
 ### 2026-11-06 - Strafing: the gun stays in his hand (branch strafe-b)
 
 Harry on 1f49772: "Nearly got it! Smashing", but the gun clips out of Bond's hand as he moves (his video: the gun arm
