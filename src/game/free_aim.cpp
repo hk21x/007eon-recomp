@@ -11,7 +11,7 @@
 // Bond stands in the middle of the view: the camera info every view and aim reads (0x8D960: position, then pitch, yaw,
 // roll in degrees) is moved to the right, over his shoulder. While a mouse button is held he faces the camera's way:
 // his yaw is the angles' +0x64, from which the game rebuilds his matrix (+0x70) each update, so he turns and his shots
-// stay in the gun's 90 degrees. The right button also zooms a little, and alone holds the fire input with the shot blocked, for the stance firing gives. The crosshair is drawn here.
+// stay in the gun's 90 degrees. The right button also zooms a little, and alone holds the fire input with the shot blocked, for the stance firing gives. The crosshair is drawn here while the right button is held.
 //
 // EON_FREE_AIM (headless, no mouse): 0 off, 1 on, 2 on with a button held.
 #include <algorithm>
@@ -152,7 +152,7 @@ X86_FUNC(EON_FN(00156E50, 001566C0)) {
     uint32_t buttons = Forced() == 2 ? 3 : input::MouseButtons();
     // play: the follow camera (the lock's and the cutscenes' are other classes) with the HUD up
     bool on = plays && !scope && kind == kFollowCamera && (Forced() >= 0 || NowMs() - eon::hud_drawn_ms < 500);
-    g_crosshair = on;
+    g_crosshair = on && (buttons & 2);  // while aiming: the right button
     float shoulder = g_shoulder, want = on ? kShoulder : 0;
     g_shoulder = shoulder + std::clamp(want - shoulder, -kShoulder * kBlendPerUpdate, kShoulder * kBlendPerUpdate);
     float zoom = g_zoom, zoom_want = on && (buttons & 2) ? kRightButtonZoom : 1;

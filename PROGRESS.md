@@ -21,6 +21,19 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-06 - Free aim: the crosshair while aiming; strafing while aiming, first look (branch free-aim-2)
+
+Harry on ea0ef22: "much better". Wanted: the crosshair only with the right button (done), and A, D and S to strafe
+while aiming, as with a lock. Found, headless in the training level's free play (.local/strafe.sh: the tutorial's
+steps through the run folder's cmd file; Bond's object dumped every 15 updates, EON_DBG_DUMP, not kept): his movement
+state +0x14AC is 0x3B9 running (he turns to where he goes) and 0x3BA strafing (he faces the target, yaw -108 to -117,
+moving sideways and back). 0x1BC740 chooses it as he starts to move: in the firing stance (action kinds 1, 0x12, 0x13)
+it strafes only with a lock target (vtable +0x170, 0x1510F0: +0x127C when +0x1274), else it runs unless his action
+allows (vtable +0xA4); its strafe is 0x99970 (0x64 bytes), 0x1BE9A0 (thiscall, Bond), 0x99F10 (on +0x1C, 0x104).
+Building that strafe while aiming (tried, not kept): the state is 0x3BA but with no target he does not move and his
+facing jitters 8 degrees; the strafe moves relative to the target. Next: give the strafe something to face (a point
+ahead along the view), or move him sideways in the run state facing the view. Smoke OK.
+
 ### 2026-11-06 - Free aim back, on the direct camera (branch free-aim-2)
 
 Harry: move on to free aim. The parked work (d318c3f: shots to the crosshair, Bond facing the camera while a mouse
