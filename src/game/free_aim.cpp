@@ -164,6 +164,27 @@ X86_FUNC(EON_FN(00156E50, 001566C0)) {
     g_zoom = zoom + std::clamp(zoom_want - zoom, -0.03f, 0.03f);
     g_turned = on && (buttons & 3);
     g_aiming = on && (buttons & 2);
+    // the gun up while he aims: the firing stance's action kind 0x12, which a lock's strafe has and which keeps his
+    // arms on the aim over the step (else the strafe's legs swing his gun arm). Set as 0x159458 does (action vtable
+    // +0x34 (kind, 1), with +0xD70 bit 0x20 around it), and back to 0 when the button lets go, if it was set here
+    static bool stanced = false;
+    if (uint32_t action = kernel::R32(bond + 0x11B0)) {
+        uint32_t stance = kernel::R32(action + 0x1AC);
+        auto set = [&](uint32_t k) {
+            kernel::W32(bond + 0xD70, kernel::R32(bond + 0xD70) | 0x20);
+            ctx.ecx = action;
+            kernel::CallGuest(ctx, kernel::R32(kernel::R32(action) + 0x34), {k, 1});
+            ctx.ecx = bond;
+            kernel::W32(bond + 0xD70, kernel::R32(bond + 0xD70) & ~0x20u);
+        };
+        if (g_aiming && stance == 0) {
+            set(0x12);
+            stanced = true;
+        } else if (!g_aiming && stanced) {
+            if (stance == 0x12) set(0);
+            stanced = false;
+        }
+    }
     // the left button on top of the right: a gun fired by the press needs one, so the held input lets go first (the
     // game must see it up: 40 ms), and the shots are real for a while after, or a quick click's press comes when the
     // button is up again and is blocked
@@ -367,4 +388,14 @@ X86_EXTERN_FUNC(EON_ORIG(0014B010, 0014A880));
 X86_FUNC(EON_FN(0014B010, 0014A880)) {
     if (g_strafe_ask && ctx.ecx == g_bond) return kernel::Return(ctx, 1, 0);
     EON_ORIG(0014B010, 0014A880)(ctx, base);
+}
+
+// His stance's chooser each update, thiscall (Bond): it drops 0x12, the locked stance, once there is no lock (+0x1275,
+// 0x1519A0). While he aims here in the 0x12 set above, with no lock, it is left out, so the stance holds
+X86_EXTERN_FUNC(EON_ORIG(001519E0, 00151250));
+X86_FUNC(EON_FN(001519E0, 00151250)) {
+    uint32_t bond = ctx.ecx, action = kernel::R32(bond + 0x11B0);
+    if (g_aiming && bond == g_bond && action && kernel::R32(action + 0x1AC) == 0x12 && !kernel::G<uint8_t>(bond + 0x1275))
+        return kernel::Return(ctx, 1, 0);
+    EON_ORIG(001519E0, 00151250)(ctx, base);
 }

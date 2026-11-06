@@ -21,6 +21,17 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-06 - Strafing: the gun stays in his hand (branch strafe-b)
+
+Harry on 1f49772: "Nearly got it! Smashing", but the gun clips out of Bond's hand as he moves (his video: the gun arm
+drops and swings in some frames). The steps are the same animations as a lock's (0x1B2950: by direction, the weapon's
+grip, vtable +0x154, and kinds 0x13/0x14); what the lock has and this had not is the locked stance, action kind 0x12,
+which keeps his arms on the aim. Now while he aims it is set as 0x159458 does (action vtable +0x34, 0x1711E0, (0x12,
+1), with +0xD70 bit 0x20 around it) and back to 0 when the button lets go; his stance chooser 0x1519E0 dropped it each
+update for want of a lock (0x1519A0: +0x1275), so while he aims in that stance with no lock it is left out. Headless
+(KEYS+CLICKR with a direction): kind 0x12 held through the strafe, his steps as before; one change to kind 3 came
+from elsewhere (0x23D4E0, likely a hit). Two frames show the rifle across him while stepping. Smoke OK. Next: Harry.
+
 ### 2026-11-06 - Strafing while aiming works headless: traced against a real lock (branch strafe-b)
 
 Harry: keep working on strafing, by finding the difference. A trace of the strafe's check and its animation switches
