@@ -1,7 +1,7 @@
 // Mouse look on foot: the mouse turns the camera itself, as a PC third person game's does.
 //
 // The camera in play (class 0x2E26BC) orbits Bond in its update 0x1D1C70 (thiscall, the seconds on the stack): his
-// position +0x70, the camera's +0x80, its height angle +0xD0 (degrees, clamped there). The right stick sets the speed
+// position +0x70, the camera's +0x80, its height angle +0xD0 (degrees, clamped there), the view's heading +0x94. The right stick sets the speed
 // the orbit turns at (+0xCC, the height +0xC8), and each eases toward the stick's, so a turn runs on after the stick is
 // let go; fed to the stick, the mouse spun the view. Here a mouse count turns the orbit and the height by a fixed
 // angle before the update, and the stick's speeds are left to the controller and keys. The update also swings the
@@ -34,8 +34,8 @@ constexpr uint32_t kState = EON_VA(0x147BF0, 0x147460);        // thiscall on Bo
 constexpr uint32_t kAiming = EON_VA(0x148EF0, 0x148760);       // thiscall on Bond
 constexpr uint32_t kClock = EON_VA(0x3210B4, 0x3205AC);        // the game's seconds
 constexpr uint32_t kPlayerIndex = 0x1130;                      // Bond: 0 for player 1
-constexpr uint32_t kTarget = 0x70, kPosition = 0x80, kSwing = 0xB8, kSwingButton = 0xBC, kSwingTimer = 0xC0,
-                   kSwinging = 0xC4, kTilt = 0xD0;
+constexpr uint32_t kTarget = 0x70, kPosition = 0x80, kViewYaw = 0x94, kSwing = 0xB8, kSwingButton = 0xBC,
+                   kSwingTimer = 0xC0, kSwinging = 0xC4, kTilt = 0xD0;
 constexpr float kRadians = 3.14159265f / 180;
 
 int64_t NowMs() {
@@ -76,6 +76,11 @@ X86_FUNC(EON_FN(001D1C70, 001D14A0)) {
             float y = kernel::G<float>(mode + kPosition + 4) - kernel::G<float>(mode + kTarget + 4);
             kernel::G<float>(mode + kPosition) = kernel::G<float>(mode + kTarget) + x * c - y * s;
             kernel::G<float>(mode + kPosition + 4) = kernel::G<float>(mode + kTarget + 4) + x * s + y * c;
+            // and the view's heading with it, as the stick's turn does (0x1D2E9F): left alone it eased after the orbit,
+            // so a quick move trailed behind a slow one
+            float yaw = kernel::G<float>(mode + kViewYaw) + turn;
+            yaw -= 360 * std::floor((yaw + 180) / 360);
+            kernel::G<float>(mode + kViewYaw) = yaw;
         }
         kernel::G<float>(mode + kTilt) += tilt;
         if (!eon::camera_follow && !kernel::G<uint8_t>(mode + kSwingButton)) {

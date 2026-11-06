@@ -21,6 +21,15 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-06 - Mouse look: the view turns with the orbit (branch mouse-look)
+
+Harry on Windows (the VM's build of 1d0a210): "functionally great", but a slow turn and a quick one over the same
+distance end differently. The update eases the view's heading (+0x94) after the orbit; the stick's own turn rotates
+both together (0x1D2E9F), the mouse's turned only the orbit, so a quick move trailed. Now the heading turns by the same
+angle. Headless, a burst of 24.0 degrees: the heading +23.4 as the mouse stops, +23.3 0.6 s later (before: some 7
+degrees more after it stopped). The stick ignored while walking: only at state changes (logged), so the mouse does
+not fall back to the stick there. Smoke OK.
+
 ### 2026-11-06 - Mouse look on foot: the camera turned directly (branch mouse-look; issue 6)
 
 Issue 6: the mouse far too fast (1 cm spins the view), one sensitivity for the camera, the lock's dot and the scope,
