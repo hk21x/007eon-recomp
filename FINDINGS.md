@@ -110,6 +110,13 @@ game's own code and data, with its addresses).
   moving aim angles at +0x1C0/+0x1C4 (relative to +0x1190 while +0x10F3). Answered yes while free aim aims
   (headless, free play, CLICKR with a direction): state 0x3BA and his facing kept, but one short step a press (5 to
   10 units), not a walk; on Windows (Harry) he could not move at all with it.
+- **[game]** Strafing with no lock, as built here: the strafe's step comes from his action's +0x17C (the way he goes)
+  against his facing (0x163A30: his +0x64 in radians). 0x171500 sets +0x17C from +0x10B8 (0x15A170: the left stick's
+  angle on the camera's smoothed heading +0x10B4) except while he aims (vtable +0x14C), when it returns first. Built
+  while free aim aims, with the check's target and aiming answered and +0x17C set from +0x10B8: the step animation
+  starts and he sidesteps (headless: 120 units a second, facing kept), as a real lock's strafe does. Traced in branch
+  strafe-b against a real lock: the real one had action kind 0x12 and +0x17C following +0x10B8; ours kind 0 and
+  +0x17C left where it started.
 
 ## Language
 

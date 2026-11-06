@@ -21,6 +21,17 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-06 - Strafing while aiming works headless: traced against a real lock (branch strafe-b)
+
+Harry: keep working on strafing, by finding the difference. A trace of the strafe's check and its animation switches
+(0x1B2C40, 0x1B1D30) in free play, a real lock's strafe against attempt 2's: the real one switches to a step animation
+after its first check; ours never did. The step is picked from the way he goes (action +0x17C) against his facing;
+in the real one +0x17C follows +0x10B8 (the stick on the camera's heading), in ours it stayed where it started,
+because 0x171500, which sets it, returns first while he aims. Now the check sets +0x17C from +0x10B8 while free aim
+aims, with attempt 2's strafe and its answers. Headless (EON_FREE_AIM=1, KEYS+CLICKR with a direction): right 467
+units along the camera's right with his facing at 90 to 83, left 400 units at about 120 a second facing 116, no
+crash. Smoke OK. Next: Harry on Windows.
+
 ### 2026-11-06 - Strafing while aiming stopped after three approaches (strafe-a kept as a branch)
 
 Harry on strafe-a (6139033): "None of the movement buttons move" (log: no errors, the strafe code has no log lines).
