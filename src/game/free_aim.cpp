@@ -21,6 +21,7 @@
 #include <cstdlib>
 
 #include "core/input.h"
+#include "core/log.h"
 #include "kernel/kernel.h"
 #include "xdk/hle.h"
 #include "common/release.h"
@@ -325,9 +326,18 @@ X86_EXTERN_FUNC(EON_ORIG(001BC740, 001BBF70));
 X86_FUNC(EON_FN(001BC740, 001BBF70)) {
     uint32_t self = ctx.ecx, bond = kernel::R32(self + 0x14), action = bond ? kernel::R32(bond + 0x11B0) : 0;
     uint32_t kind = action ? kernel::R32(action + 0x1AC) : 0;
-    if (!g_aiming || bond != g_bond || !action || kernel::G<float>(action + 0xF0) <= 0 || (kind >= 0x15 && kind <= 0x18) ||
-        kernel::R32(bond + 0xE28) == 5)
-        return EON_ORIG(001BC740, 001BBF70)(ctx, base);
+    bool strafe = g_aiming && bond == g_bond && action && kernel::G<float>(action + 0xF0) > 0 &&
+                  !(kind >= 0x15 && kind <= 0x18) && kernel::R32(bond + 0xE28) != 5;
+    if (bond == g_bond) {  // what decided, when that changes (for a log from Windows)
+        static uint32_t said = ~0u;
+        uint32_t now = uint32_t(g_aiming) | uint32_t(strafe) << 1 | kind << 2;
+        if (now != said) {
+            said = now;
+            LOGR("eon: free aim: Bond starts to move: aiming %d, action %u, speed %.2f, climb %u: %s", int(g_aiming), kind,
+                 action ? kernel::G<float>(action + 0xF0) : 0.f, kernel::R32(bond + 0xE28), strafe ? "strafes" : "the game's choice");
+        }
+    }
+    if (!strafe) return EON_ORIG(001BC740, 001BBF70)(ctx, base);
     uint32_t state = kernel::CallGuest(ctx, kAlloc, {0x64});
     if (!state) return kernel::Return(ctx, 0, 0);
     ctx.ecx = state;
@@ -346,6 +356,11 @@ X86_FUNC(EON_FN(001B2C40, 001B2470)) {
     if (ask) g_strafe_ask = true;
     EON_ORIG(001B2C40, 001B2470)(ctx, base);
     if (ask) g_strafe_ask = false;
+    static int said = -1;
+    if (kernel::R32(ctx.ecx + 0x14) == g_bond && int(ask) * 2 + int(ctx.eax & 0xFF) != said) {
+        said = int(ask) * 2 + int(ctx.eax & 0xFF);
+        LOGR("eon: free aim: the strafe goes on: aiming %d, %s", int(ask), (ctx.eax & 0xFF) ? "steps" : "stops");
+    }
 }
 
 // Bond's lock target, thiscall: in that check, something (himself; it is only tested)
