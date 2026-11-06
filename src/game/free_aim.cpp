@@ -64,6 +64,7 @@ std::atomic<float> g_zoom{1};
 std::atomic<bool> g_crosshair{false};
 std::atomic<bool> g_turned{false};    // play, and a mouse button held
 std::atomic<bool> g_aim_only{false};  // play, and the right button held without the left
+std::atomic<bool> g_aiming{false};    // play, and the right button held
 std::atomic<int64_t> g_updated{0};
 
 int Forced() {
@@ -158,6 +159,7 @@ X86_FUNC(EON_FN(00156E50, 001566C0)) {
     float zoom = g_zoom, zoom_want = on && (buttons & 2) ? kRightButtonZoom : 1;
     g_zoom = zoom + std::clamp(zoom_want - zoom, -0.03f, 0.03f);
     g_turned = on && (buttons & 3);
+    g_aiming = on && (buttons & 2);
     // the left button on top of the right: a gun fired by the press needs one, so the held input lets go first (the
     // game must see it up: 40 ms), and the shots are real for a while after, or a quick click's press comes when the
     // button is up again and is blocked
@@ -307,4 +309,16 @@ X86_FUNC(EON_FN(001493A0, 00148C10)) {
     uint32_t bond = ctx.ecx;
     if (!Plays(ctx, bond)) return EON_ORIG(001493A0, 00148C10)(ctx, base);
     kernel::Return(ctx, 1, 0);
+}
+
+// Strafing while he aims. His action's vtable +0xA4 (0x16BAE0: Bond's 0x14B600, his camera in the scope's view) is the
+// game's own strafe without a lock: with it his movement is chosen as the strafe (0x1BC740, state 0x3BA, not the run
+// 0x3B9 that turns him to where he goes), the strafe steps eight ways with no target (0x1B2C40), and his facing is
+// left as it is (0x171500, not turned to his way) while the right stick would move the aim (0x16F630). While the right
+// button aims here it answers yes, so A, D and S sidestep and step back facing the view. Only this entry: the scope's own
+// code asks 0x14B600 itself
+X86_EXTERN_FUNC(EON_ORIG(0016BAE0, 0016B350));
+X86_FUNC(EON_FN(0016BAE0, 0016B350)) {
+    if (g_aiming && kernel::R32(ctx.ecx + 4) == g_bond) return kernel::Return(ctx, 1, 0);
+    EON_ORIG(0016BAE0, 0016B350)(ctx, base);
 }

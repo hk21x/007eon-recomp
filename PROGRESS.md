@@ -21,6 +21,16 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-06 - Strafing while aiming, attempt 3: the scope's strafe (branch strafe-a)
+
+Harry: keep working on strafing. The game strafes with no lock while his camera is in the scope's view: his action's
+vtable +0xA4 (0x16BAE0, Bond's 0x14B600) makes the movement choice strafe, the strafe step without a target, and his
+facing stay (FINDINGS.md, Aiming). strafe-a answers it yes while the right button aims, for Bond alone. Headless in
+free play (EON_FREE_AIM=1, KEYS+CLICKR+LSR and LSD): state 0x3BA, facing kept, no crash, but one step of 5 to 10
+units a press rather than a walk. Three approaches now (the strafe state built; its checks answered; the scope's
+strafe): stopped here as the working rules ask, for Harry's test of this one on Windows (the harness cannot show the
+step) and his choice. Smoke OK.
+
 ### 2026-11-06 - Free aim: strafing while aiming stopped after two approaches; the code back out (branch free-aim-2)
 
 Harry on 3fa074d: "No side steps at all", though its log has the strafe chosen and its check stepping for 2 s on A and
