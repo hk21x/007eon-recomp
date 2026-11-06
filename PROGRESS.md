@@ -21,6 +21,16 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-06 - Free aim: strafing while aiming stopped after two approaches; the code back out (branch free-aim-2)
+
+Harry on 3fa074d: "No side steps at all", though its log has the strafe chosen and its check stepping for 2 s on A and
+1.8 s on D (the a3ebb1f crash before was my log line reading ecx after the call). Two approaches, neither moves him:
+the strafe state built while aiming (he stood), then its target and aiming checks answered too (it steps, he does not
+move). The lock-on strafe most likely moves him about his target, here himself. Taken out again: free_aim.cpp is
+2770a93's (the crosshair while aiming stays). The findings are in FINDINGS.md (Aiming). What is left would be a stand
+in target the strafe can circle (a point far along the view): an object the game reads as a character, so a larger
+and riskier change; or leave A, D and S as the game's run with Bond facing the view. For Harry to choose. Smoke OK.
+
 ### 2026-11-06 - Free aim: strafing while aiming (branch free-aim-2)
 
 Following the entry below: the strafe state's own check 0x1B2C40 keeps it each update only with a lock target (vtable

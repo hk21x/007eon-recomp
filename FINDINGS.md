@@ -88,6 +88,22 @@ game's own code and data, with its addresses).
 - **[game]** Bond's camera: the camera manager [0x3210C0] +4, 0x240 bytes a camera, by the player index at +0x1130
   (0x8D960 copies its +0xC0 position, +0xD0 pitch/yaw/roll in degrees, +0x100 field of view).
 
+- **[game]** The camera in play (mode class 0x2E26BC) orbits Bond in 0x1D1C70 (thiscall, the seconds on the stack):
+  his position +0x70, the camera's +0x80, the height angle +0xD0, the view's heading +0x94 (turning right lowers it).
+  The right stick (squared across, through 0xEE690/0xEE6A0 and the camera sensitivity options 0x1F970/0x1F9E0) sets
+  turn speeds +0xCC (heading) and +0xC8 (height) that ease toward it, so a turn runs on after the stick lets go. The
+  stick is ignored in states 0x3CF and 0x3D0, in 0x3BD for 2 s from +0x1B0, while aiming (0x148EF0), and with Bond's
+  +0xD04 or +0x10F3. The swing behind Bond: a timer +0xC0, +0xC4 holds it, +0xB8 the angle left, +0xBC the recentre
+  button's. The camera info 0x8D960's +0x30 is the field of view as a factor of the game's (1 unless a zoom).
+- **[game]** Bond's movement state +0x14AC: 0x3B9 running (0x1BE950: he turns to where he goes), 0x3BA strafing
+  (0x1BE9A0, vtable 0x2E17D0: he faces his lock target and steps eight ways), 0x3BC, 0x3C0 others. 0x1BC740 chooses
+  as he starts to move (thiscall: the machine, +0x14 Bond, +0x1C its stack; 0x99970 the memory, 0x99F10 the push with
+  0x104): in the firing stance (action kinds [+0x11B0] +0x1AC 1, 0x12, 0x13) strafing needs a lock target (vtable
+  +0x170, 0x1510F0: +0x127C while +0x1274), else running unless the action's vtable +0xA4 allows strafing. The
+  strafe's check 0x1B2C40 keeps it each update only with a target and aiming (vtable +0x14C, 0x14B010) and picks the
+  step from the stick against the action's +0x17C. Built while free aim aims, with those two answered yes inside the
+  check alone (Bond himself as the target), the state is 0x3BA and the check says it steps, but on screen he does not
+  move (Harry, 2026-11-06): the strafe most likely moves him about the target's position, here his own.
 
 ## Language
 
