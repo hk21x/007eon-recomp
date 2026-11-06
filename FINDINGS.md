@@ -104,6 +104,12 @@ game's own code and data, with its addresses).
   step from the stick against the action's +0x17C. Built while free aim aims, with those two answered yes inside the
   check alone (Bond himself as the target), the state is 0x3BA and the check says it steps, but on screen he does not
   move (Harry, 2026-11-06): the strafe most likely moves him about the target's position, here his own.
+- **[game]** Bond's action (+0x11B0, class 0x2DE018 in free play) vtable +0xA4 (0x16BAE0: Bond's 0x14B600, his camera
+  in the scope's view, 0x8DDD0/0x8DBB0) is the strafe without a lock: 0x1BC740's other branch, 0x1B2C40's other
+  condition, and in 0x171500 (his facing, by action kind) it leaves his facing and runs 0x16F630, the right stick
+  moving aim angles at +0x1C0/+0x1C4 (relative to +0x1190 while +0x10F3). Answered yes while free aim aims
+  (headless, free play, CLICKR with a direction): state 0x3BA and his facing kept, but one short step a press (5 to
+  10 units), not a walk; on Windows (Harry) he could not move at all with it.
 
 ## Language
 

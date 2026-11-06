@@ -21,6 +21,18 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-06 - Strafing while aiming stopped after three approaches (strafe-a kept as a branch)
+
+Harry on strafe-a (6139033): "None of the movement buttons move" (log: no errors, the strafe code has no log lines).
+Answering the scope's view (action +0xA4) put him under the scope's rules, where he stands to aim. Three genuinely
+different approaches have failed: the strafe state built while aiming (he stood), with its target and aiming checks
+answered (steps logged, no movement on screen), and the scope's strafe (no movement at all on Windows). Stopped, as the
+working rules ask. free-aim-2 (8226bb9: the crosshair while aiming, no strafe code) is the build to play; strafe-a is
+kept only for its record. What I think is happening: the lock-on strafe moves Bond about his target's position, so
+it needs a real point to circle; the scope's strafe holds him for aiming. The one way left is a stand-in target (a
+point far along the view) that the strafe and his facing read as a lock: larger, and it touches the lock-on code that
+enemies' targeting shares. Needs Harry's decision. Findings in FINDINGS.md (Aiming).
+
 ### 2026-11-06 - Free aim: strafing while aiming stopped after two approaches; the code back out (branch free-aim-2)
 
 Harry on 3fa074d: "No side steps at all", though its log has the strafe chosen and its check stepping for 2 s on A and
