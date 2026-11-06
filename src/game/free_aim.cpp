@@ -21,6 +21,7 @@
 #include <cstdlib>
 
 #include "core/input.h"
+#include "core/log.h"
 #include "kernel/kernel.h"
 #include "xdk/hle.h"
 #include "common/release.h"
@@ -374,17 +375,28 @@ X86_FUNC(EON_FN(001B2C40, 001B2470)) {
     }
     EON_ORIG(001B2C40, 001B2470)(ctx, base);
     if (ask) g_strafe_ask = false;
-    // A sideways push straight after a forward or back one carried on from that step and moved him forward (Harry);
-    // from standing it is right. So as the push turns from forward or back to sideways the strafe ends here (its check
-    // says no), and the next update starts a new one, as from standing
-    static int last = -1;  // the push against his facing: 0 forward or back, 1 sideways
+    // A push that changes between forward, sideways and back carried on from the step before (sideways after forward
+    // or back moved him forward; back after forward caught: Harry); from standing it is right. So as the push changes
+    // group the strafe ends here (its check says no), and the next update starts a new one, as from standing; no more
+    // than one restart in 0.2 s, for a stick held near a group's edge
+    static const char* const kGroups[] = {"forward", "sideways", "back"};
+    static int last = -1;  // the push against his facing: 0 forward, 1 sideways, 2 back
+    static int64_t restarted = 0;
     if (ask && (ctx.eax & 0xFF)) {
         uint32_t action = kernel::R32(bond + 0x11B0);
         float d = kernel::G<float>(action + 0x17C) - kernel::G<float>(bond + kYaw) * kRadians;
         d = std::fabs(std::remainder(d, 2 * 3.14159265f));
-        int side = d > 0.7854f && d < 2.3562f;  // 45 to 135 degrees
-        if (side && last == 0) ctx.eax &= ~0xFFu;
-        last = side;
+        int group = d < 0.7854f ? 0 : d < 2.3562f ? 1 : 2;  // 45 and 135 degrees
+        int64_t now = NowMs();
+        if (last >= 0 && group != last && now - restarted >= 200) {
+            ctx.eax &= ~0xFFu;
+            restarted = now;
+            static int said = 0;
+            if (said++ < 50) LOGR("eon: free aim: strafe restarted, the push from %s to %s", kGroups[last], kGroups[group]);
+            last = -1;  // the new strafe starts afresh
+        } else {
+            last = group;
+        }
     } else if (!ask) {
         last = -1;
     }

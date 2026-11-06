@@ -21,6 +21,13 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-06 - Strafing: a fresh strafe on any change of push (branch strafe-b)
+
+Harry on 70f1e7e: sideways after W or S right now; forward then back (W then S) still catches. The restart now covers
+any change of the push's group against his facing (forward under 45 degrees, sideways to 135, back), at most one
+in 0.2 s, with a log line each (the first 50). Headless (W, S, A in turn, three times, right button held): one restart
+at each change (forward to back, back to sideways, sideways to forward), no crash. Smoke OK. Next: Harry.
+
 ### 2026-11-06 - Strafing: a fresh strafe as the push turns sideways (branch strafe-b)
 
 Harry on 006a9b3: much better, but now and then strafing left moves him forward: after moving forward or back, not
