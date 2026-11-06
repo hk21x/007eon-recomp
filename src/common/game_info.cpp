@@ -21,6 +21,8 @@ bool driving_60fps = true;   // the driving missions at 60 frames a second (src/
 bool slow_motion_blend = true;  // driving: slow motion's pictures fade into each other (src/driving/sixty.cpp)
 bool hide_hud = false;       // no HUD, for screenshots (src/driving/hud.cpp, src/game/hud.cpp)
 uint32_t fov_percent = 100;  // the on-foot views' field of view, percent of the game's (src/game/fov.cpp)
+bool camera_follow = false;  // mouse: the camera swings behind Bond as he moves, as the game's does (src/game/camera.cpp)
+uint32_t aim_sensitivity = 100;  // mouse: the lock's dot and the scope, percent (src/game/mouse.cpp)
 extern bool modern_buttons;           // src/common/buttons.cpp
 bool ButtonPictures(uint32_t header, uint32_t palette);  // GameInfo::texture_bound
 void TitleScreen(uint32_t header);                       // src/common/title_screen.cpp (default.xbe's)
@@ -29,7 +31,7 @@ std::vector<achievements::Def> AchievementSet();         // src/common/achieveme
 }
 
 namespace {
-// EON_SKIP_INTRO=1, EON_HIDE_HUD=1, EON_MODERN_BUTTONS and EON_DRIVING60 (0 or 1) and EON_FOV (percent) set those options without a
+// EON_SKIP_INTRO=1, EON_HIDE_HUD=1, EON_MODERN_BUTTONS, EON_DRIVING60 and EON_CAMERA_FOLLOW (0 or 1) and EON_FOV (percent) set those options without a
 // settings file (the headless harness has none)
 void Init() {
     if (const char* e = std::getenv("EON_SKIP_INTRO"); e && *e == '1') eon::skip_intro = true;
@@ -38,6 +40,7 @@ void Init() {
     if (const char* e = std::getenv("EON_SLOW_BLEND")) eon::slow_motion_blend = *e == '1';
     if (const char* e = std::getenv("EON_HIDE_HUD"); e && *e == '1') eon::hide_hud = true;
     if (const char* e = std::getenv("EON_FOV")) eon::fov_percent = uint32_t(std::atoi(e));
+    if (const char* e = std::getenv("EON_CAMERA_FOLLOW")) eon::camera_follow = *e == '1';
     if (const char* e = std::getenv("EON_LANGUAGE")) eon::language = uint32_t(std::atoi(e));
     if (eon::skip_intro) LOGR("eon: the intro logos are skipped (skip_intro)");
     // every achievement's condition parses (a typo would leave it never met)
@@ -204,6 +207,10 @@ const app::GameInfo app::kGame = {
                  "At the next start. Your disc's languages: a language it does not have is ignored.", eon::kLanguageChoices},
                 {"fov_percent", nullptr, &eon::fov_percent, "Field of view (%)",
                  "On foot, 50 to 150; 100 is the game's. Cutscenes widen too."},
+                {"camera_follow", &eon::camera_follow, nullptr, "Camera follows movement (mouse)",
+                 "With the mouse, the camera swings behind Bond as he moves, as with the controller. Off: only the mouse turns it."},
+                {"aim_sensitivity", nullptr, &eon::aim_sensitivity, "Aim sensitivity (%)",
+                 "The mouse moving the lock-on dot and the sniper scope, apart from the camera's Mouse sensitivity; 100 as before."},
                 {"hide_hud", &eon::hide_hud, nullptr, "Hide the HUD", "For screenshots; at once, on foot and driving."},
                 {"slow_motion_blend", &eon::slow_motion_blend, nullptr, "Smooth slow motion",
                  "Direct3D 12, driving missions at 60: slow motion's pictures fade into each other instead of each showing three times."},

@@ -21,6 +21,23 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-06 - Mouse look on foot: the camera turned directly (branch mouse-look; issue 6)
+
+Issue 6: the mouse far too fast (1 cm spins the view), one sensitivity for the camera, the lock's dot and the scope,
+moving turns the camera, the invert option confusing. Measured headless (Harry's last mission save): the camera in
+play (0x2E26BC) orbits Bond in 0x1D1C70; the stick sets a turn speed (+0xCC, height +0xC8) that eases toward it, so a
+stick or a mouse fed into it turns on after it stops (the yaw past 180 degrees in a second, then slowing over seconds).
+Now src/game/camera.cpp turns the orbit (+0x80 about Bond's +0x70) and the height (+0xD0) by the mouse's counts before
+the update, 0.04 degrees a count at 100% (an 800 dpi mouse: 32 degrees an inch), and holds back the swing behind Bond
+(+0xB8/+0xC0/+0xC4) while the mouse plays unless camera_follow. When the update ignores the stick (its own checks:
+states 0x3CF, 0x3D0, 0x3BD for 2 s, aiming, Bond +0xD04/+0x10F3: locked on and the like) or another camera mode runs
+(the scope), the mouse goes to the stick as before, scaled by the new aim_sensitivity. Headless: mouse right 2 s at
+1200 counts a second turned 95 degrees (96 expected) and stopped (a few degrees' settle as the camera eases to its
+place); left 46 (48); mouse up looks up; strafing and walking on the keyboard kept the yaw. PC Settings has a Mouse 2
+page (Aim sensitivity, Camera follows movement), F1 both. Smoke OK. Not covered headless: lock-on and the scope with the
+mouse, the feel on a real mouse. The mission's start fly-around and other modes (0x2E1788) spin the follow camera
+headless with no mouse; seen before this change too.
+
 ### 2026-11-06 - Field of view: scaled in the camera info (branch fov-fix)
 
 Players: fov_percent changes nothing. Confirmed headless: the training yard at 100% and 150% the same picture, frame for

@@ -30,8 +30,8 @@
 #endif
 
 namespace eon {
-extern bool skip_intro, modern_buttons, driving_60fps, hide_hud, slow_motion_blend;
-extern uint32_t fov_percent;
+extern bool skip_intro, modern_buttons, driving_60fps, hide_hud, slow_motion_blend, camera_follow;
+extern uint32_t fov_percent, aim_sensitivity;
 }
 
 namespace {
@@ -220,6 +220,13 @@ const Page kPages[] = {
            s.mouse_sensitivity = uint32_t(std::clamp(int(s.mouse_sensitivity) + d * 10, 10, 1000));
            app::Save();
        }}}},
+    {"Mouse 2",
+     {{"Aim sensitivity", [] { return std::to_string(eon::aim_sensitivity) + "%"; },
+       [](int d) {
+           eon::aim_sensitivity = uint32_t(std::clamp(int(eon::aim_sensitivity) + d * 10, 10, 1000));
+           app::Save();
+       }},
+      FLAG("Camera follows movement", eon::camera_follow)}},
 };
 constexpr int kPageCount = int(sizeof(kPages) / sizeof(kPages[0]));
 int g_page = 0;
