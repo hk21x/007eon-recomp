@@ -352,12 +352,13 @@ X86_FUNC(EON_FN(001BC740, 001BBF70)) {
 // the strafe's check, thiscall (the state, +0x14 Bond)
 X86_EXTERN_FUNC(EON_ORIG(001B2C40, 001B2470));
 X86_FUNC(EON_FN(001B2C40, 001B2470)) {
-    bool ask = g_aiming && kernel::R32(ctx.ecx + 0x14) == g_bond;
+    const uint32_t self = ctx.ecx;  // ecx does not survive the call
+    bool ask = g_aiming && kernel::R32(self + 0x14) == g_bond;
     if (ask) g_strafe_ask = true;
     EON_ORIG(001B2C40, 001B2470)(ctx, base);
     if (ask) g_strafe_ask = false;
     static int said = -1;
-    if (kernel::R32(ctx.ecx + 0x14) == g_bond && int(ask) * 2 + int(ctx.eax & 0xFF) != said) {
+    if (kernel::R32(self + 0x14) == g_bond && int(ask) * 2 + int(ctx.eax & 0xFF) != said) {
         said = int(ask) * 2 + int(ctx.eax & 0xFF);
         LOGR("eon: free aim: the strafe goes on: aiming %d, %s", int(ask), (ctx.eax & 0xFF) ? "steps" : "stops");
     }
