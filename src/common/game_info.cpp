@@ -241,6 +241,7 @@ const app::GameInfo app::kGame = {
     .pad = eon::MenuMouse,                // changes a polled pad: the mouse in the menus
     .rumble = nullptr,                    // changes a rumble before it is set
     .achievements = eon::AchievementSet(),  // conditions on the profile, checked each frame (ACHIEVEMENTS.md)
+    .same_code = SameCode(),              // the other copies of this release's code
     .squeeze_screen_programs = true,      // ultrawide: the HUD and menus are drawn by a pass-through program
     .sharpen_2d = true,                   // text and HUD pictures enlarged sharp
     .pal_console = !EON_USA,              // a PAL disc's movies are _pal only: a PAL 60 Hz console for it; the
@@ -250,7 +251,6 @@ const app::GameInfo app::kGame = {
     .mouse_look = true,                   // the mouse aims
     .mouse_direct = true,                 // straight into the game's look input (src/game/mouse.cpp)
     .default_keys = Keys,                 // a shooter's keys and mouse buttons on foot, a racing game's driving
-    .same_code = SameCode(),              // the other copies of this release's code
     .texture_bound = TextureBound,         // modern_buttons, the title screen on ultrawide
     // optional, after these: .wheel (what a steering wheel's force feedback follows)
 };
