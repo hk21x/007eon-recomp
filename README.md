@@ -130,7 +130,7 @@ German on the other, English alone on the US disc. A language your disc does not
 | Next weapon | Mouse wheel (free aim), or Down / 2 |
 | Weapons and gadgets (d-pad) | 1 to 4, or the arrow keys |
 | Pause / Back | Esc or P / Tab |
-| Stick clicks | V or Left Shift / middle mouse button |
+| Stick clicks | V or Left Shift / T |
 
 In the menus the mouse wheel scrolls, the left button selects and the right button goes back.
 
