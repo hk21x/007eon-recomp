@@ -21,6 +21,13 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-07 - Free aim: R reloads with Bond's animation (branch strafe-b)
+
+Harry on acd6f24: R reloads, but with no animation; it should play as when the clip runs out. The scripted reload
+(0x180590 with 1) fills the clip itself. Now R empties a ready gun's short clip and the game does the rest, as when it
+runs out: Bond's reload and its event's refill. What he carries counts the clip too, so nothing is lost: headless
+P99, 6 and 34, R, 10 and 30 within 0.3 s. The animation itself is for Harry's eyes. Smoke OK.
+
 ### 2026-11-07 - Free aim: R reloads; lock on on the middle button (branches reload-key, strafe-b)
 
 Harry: carry on with the reload key; lock on to the middle mouse button. The game's reload: 0x1804B0 fills the clip to

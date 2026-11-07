@@ -66,7 +66,6 @@ constexpr uint32_t kStrafe = EON_VA(0x1BE9A0, 0x1BE1D0);         // thiscall (Bo
 constexpr uint32_t kPush = EON_VA(0x99F10, 0x99C80);             // thiscall on the machine's stack (state, flags)
 constexpr uint32_t kFaceBody = EON_VA(0x16D490, 0x16CD00);        // thiscall on his action (radians): his facing
 constexpr uint32_t kFaceAim = EON_VA(0x16D4E0, 0x16CD50);         // thiscall on his action (radians, also +0x17C)
-constexpr uint32_t kReload = EON_VA(0x180590, 0x17FE00);          // thiscall on a gun (play it): a reload
 constexpr uint32_t kMachineState = EON_VA(0x995A0, 0x99310);     // thiscall on a gun's +0x2F0: its state, 4 ready
 constexpr uint32_t kShotAimReturn = EON_VA(0x180D24, 0x180594);  // a gun's shot asking its owner's aim (0x180CB0)
 constexpr uint32_t kShotReturn = EON_VA(0x180DE7, 0x180657);     // a gun's shot asking its owner's muzzle (0x180CB0)
@@ -169,8 +168,9 @@ void DrawCrosshair(double) {
 
 // R reloads with free aim (the game has no reload action: a gun reloads as its clip runs out). Bond's held gun
 // ([+0x274] +0x10), when it is ready (its state machine +0x2F0 in state 4) and its clip (+0x3E8) short of its size
-// (+0x3E4), takes a reload as the game's scripted one does (0x180590 with 1: the clip filled from what Bond carries,
-// the gun busy for its reload time, its reload played). EON_RELOAD_TEST (headless): a file named reload in the run folder
+// (+0x3E4), has its clip emptied, and the game reloads it as when it runs out: Bond's reload played, its event filling
+// the clip (0x168110, 0x180590). What Bond carries counts the clip too (6 and 34, then 10 and 30), so no round is lost;
+// the scripted reload (0x180590 with 1) filled it with no animation (Harry). EON_RELOAD_TEST (headless): a file named reload in the run folder
 bool ReloadPressed() {
     static const bool test = std::getenv("EON_RELOAD_TEST") != nullptr;
     if (test) {  // headless: a file named reload in the run folder, taken
@@ -191,10 +191,7 @@ void Reload(X86Context& ctx, uint32_t bond) {
     uint32_t keep = ctx.ecx;
     ctx.ecx = machine;
     uint32_t state = kernel::CallGuest(ctx, kMachineState, {});
-    if (state == 4) {
-        ctx.ecx = gun;
-        kernel::CallGuest(ctx, kReload, {1});
-    }
+    if (state == 4) kernel::W32(gun + 0x3E8, 0);
     ctx.ecx = keep;
 }
 
