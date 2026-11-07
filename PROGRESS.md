@@ -21,6 +21,20 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-07 - Strafing: the floating gun found and fixed (branches gun-trace, strafe-b)
+
+Harry: investigate the gun. A diagnostic (gun-trace 101bfa6: the held gun, [[Bond +0x274] +0x10], its +0xB0 in Bond's
+frame twice a second, with his stance, facing and the camera's heading) on his PC with the P99: the gun held its place
+in Bond's frame, but in the locked stance his facing stopped following the view (yaw 92 while the camera was at 137);
+it floated wherever they differed and came back when he looked straight ahead. In that stance with no lock 0x171500
+sets no facing, so each update the game turned him back to the facing he had as the stance began, after which free
+aim turned him to the view: body, arms and gun parted. Now before his update, while he aims in it, the game's own
+facing is set to the camera's heading (his action's 0x16D490 and 0x16D4E0, the latter without its third argument,
+which would also set the strafe's +0x17C), as 0x171500 does toward a lock. Also free aim's aim (0x153CD0) now goes only
+to a gun's shot (0x180CB0, returning to 0x180D24), as its muzzle already does. Headless (aim, mouse turns, strafes):
+his yaw within a degree of the camera's through each turn (before: held), the gun 10 to 14 forward, 12 aside and 61
+to 63 up throughout. The diagnostic removed. Smoke OK. Next: Harry.
+
 ### 2026-11-07 - Strafing: the floating gun, stopped after three attempts (branch strafe-b)
 
 Harry on 0fabb1b (log 07:35, screenshots): the gun still floats beside Bond, off to one side and not on the view's

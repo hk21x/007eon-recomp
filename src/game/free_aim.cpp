@@ -19,6 +19,7 @@
 #include <chrono>
 #include <cmath>
 #include <cstdlib>
+#include <cstring>
 #include <cstdio>
 
 #include "core/input.h"
@@ -57,6 +58,9 @@ constexpr uint32_t kBodyTable = EON_VA(0x2DD118, 0x2DC640);      // 0x14A2C0's n
 constexpr uint32_t kAlloc = EON_VA(0x99970, 0x996E0);           // cdecl (bytes): a movement state's memory
 constexpr uint32_t kStrafe = EON_VA(0x1BE9A0, 0x1BE1D0);         // thiscall (Bond): the strafing state, built there
 constexpr uint32_t kPush = EON_VA(0x99F10, 0x99C80);             // thiscall on the machine's stack (state, flags)
+constexpr uint32_t kFaceBody = EON_VA(0x16D490, 0x16CD00);        // thiscall on his action (radians): his facing
+constexpr uint32_t kFaceAim = EON_VA(0x16D4E0, 0x16CD50);         // thiscall on his action (radians, also +0x17C)
+constexpr uint32_t kShotAimReturn = EON_VA(0x180D24, 0x180594);  // a gun's shot asking its owner's aim (0x180CB0)
 constexpr uint32_t kShotReturn = EON_VA(0x180DE7, 0x180657);     // a gun's shot asking its owner's muzzle (0x180CB0)
 constexpr uint32_t kScopeView = 0xBAA3F02;                       // what the scope's camera mode answers (vtable +8)
 constexpr float kRadians = 3.14159265f / 180;
@@ -148,6 +152,24 @@ void DrawCrosshair(double) {
 X86_EXTERN_FUNC(EON_ORIG(00156E50, 001566C0));
 X86_FUNC(EON_FN(00156E50, 001566C0)) {
     uint32_t bond = ctx.ecx;
+    // In the locked stance with no lock his facing update (0x171500) sets no facing, so the game turned him back to the
+    // one he had as the stance began while free aim turned him to the view, and his body, arms and gun parted (Harry's
+    // log: his yaw held at 92 while the camera was at 137). While he aims in it the game's own facing is set to the
+    // camera's heading first, as 0x171500 does toward a lock (0x16D490, 0x16D4E0 without its third argument, which
+    // would also set the strafe's +0x17C)
+    if (bond == g_bond && g_aiming) {
+        uint32_t action = kernel::R32(bond + 0x11B0), cam = Camera(bond);
+        if (action && cam && kernel::R32(action + 0x1AC) == 0x12 && !kernel::G<uint8_t>(bond + 0x1275)) {
+            float heading = kernel::G<float>(cam + 0xD4) * kRadians;
+            uint32_t bits;
+            std::memcpy(&bits, &heading, 4);
+            ctx.ecx = action;
+            kernel::CallGuest(ctx, kFaceBody, {bits});
+            ctx.ecx = action;
+            kernel::CallGuest(ctx, kFaceAim, {bits, 0});
+            ctx.ecx = bond;
+        }
+    }
     EON_ORIG(00156E50, 001566C0)(ctx, base);
     if (kernel::R32(bond + kPlayerIndex) != 0) return;
     eon::frame_ui = DrawCrosshair;
@@ -158,24 +180,6 @@ X86_FUNC(EON_FN(00156E50, 001566C0)) {
     bool plays = Plays(ctx, bond);
     bool scope = plays && ScopeView(ctx, mode);
     uint32_t buttons = Forced() == 2 ? 3 : input::MouseButtons();
-    {  // DIAGNOSTIC (branch gun-trace): the held gun against Bond, twice a second
-        static int64_t last = 0;
-        uint32_t inv = kernel::R32(bond + 0x274), gun = inv ? kernel::R32(inv + 0x10) : 0;
-        if (gun && NowMs() - last >= 500) {
-            last = NowMs();
-            float d[3], loc[3];
-            for (int i = 0; i < 3; i++) d[i] = kernel::G<float>(gun + 0xB0 + 4 * i) - kernel::G<float>(bond + kPosition + 4 * i);
-            for (int r = 0; r < 3; r++) {
-                loc[r] = 0;
-                for (int i = 0; i < 3; i++) loc[r] += kernel::G<float>(bond + kMatrix + 0x10 * r + 4 * i) * d[i];
-            }
-            uint32_t act = kernel::R32(bond + 0x11B0);
-            LOGR("eon: gun %.2f gun %X local %.1f %.1f %.1f grow %.2f %.2f %.2f st %X kind %u lock %u aim %d grip %X yaw %.1f cam %.1f",
-                         kernel::G<float>(EON_VA(0x3210B4, 0x3205AC)), gun, loc[0], loc[1], loc[2], kernel::G<float>(gun + 0x70), kernel::G<float>(gun + 0x74), kernel::G<float>(gun + 0x78),
-                         kernel::R32(bond + 0x14AC), act ? kernel::R32(act + 0x1AC) : 99, kernel::G<uint8_t>(bond + 0x1275), int(buttons & 2), kernel::R32(gun + 0x370),
-                 kernel::G<float>(bond + kYaw), cam ? kernel::G<float>(cam + 0xD4) : 0.f);
-        }
-    }
     // play: the follow camera (the lock's and the cutscenes' are other classes) with the HUD up
     bool on = plays && !scope && kind == kFollowCamera && (Forced() >= 0 || NowMs() - eon::hud_drawn_ms < 500);
     g_crosshair = on && (buttons & 2);  // while aiming: the right button
@@ -329,7 +333,9 @@ void FreeAimInfo(uint32_t player, uint32_t out) {
 X86_EXTERN_FUNC(EON_ORIG(00153CD0, 00153540));
 X86_FUNC(EON_FN(00153CD0, 00153540)) {
     uint32_t bond = ctx.ecx, angles = kernel::R32(ctx.esp + 4), matrix = kernel::R32(ctx.esp + 8);
-    if (!Plays(ctx, bond)) return EON_ORIG(00153CD0, 00153540)(ctx, base);
+    // only for a gun's shot (0x180CB0, returning to 0x180D24): the locked stance also turns his gun to this aim, and
+    // with the camera's it floated off his hands whenever the view led his body (Harry)
+    if (kernel::R32(ctx.esp) != kShotAimReturn || !Plays(ctx, bond)) return EON_ORIG(00153CD0, 00153540)(ctx, base);
     // as the scope's view: the camera's angles, and their matrix
     uint32_t cam = Camera(bond);
     for (uint32_t i = 0; i < 16; i += 4) kernel::W32(angles + i, kernel::R32(cam + 0xD0 + i));
