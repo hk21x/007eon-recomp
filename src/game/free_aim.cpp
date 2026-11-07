@@ -33,6 +33,7 @@
 
 namespace eon {
 extern bool free_aim;                 // the setting (src/common/game_info.cpp)
+extern uint32_t aim_raise;            // the setting, degrees (src/common/game_info.cpp)
 extern void (*frame_ui)(double fps);  // drawn each frame (src/common/game_info.cpp)
 extern std::atomic<bool> aim_trigger;  // the fire input held for the stance (src/common/menu_mouse.cpp)
 extern std::atomic<int64_t> aim_release;  // the fire input let go until then, ms (src/common/menu_mouse.cpp)
@@ -97,6 +98,13 @@ uint32_t Camera(uint32_t bond) {
     uint32_t list = cams ? kernel::R32(cams + 4) : 0;
     return list ? list + kernel::R32(bond + kPlayerIndex) * kCameraBytes : 0;
 }
+
+// The view's pitch, degrees (positive looks down): the camera's, raised by aim_raise while free aim plays (with the
+// shoulder's blend), so the crosshair in the middle of the view sits higher on what Bond faces (Harry: it sat low,
+// and a head shot meant aiming up). The view itself is raised in the camera info (FreeAimInfo), and the shot, its
+// line, his arms and the stance's aim point all take the same pitch
+float RaiseNow() { return float(eon::aim_raise) * (g_shoulder / kShoulder); }
+float ViewPitch(uint32_t cam) { return kernel::G<float>(cam + 0xD0) - RaiseNow(); }
 
 // the view's heading, degrees: the camera's, and the mouse's turn still waiting for it (src/game/camera.cpp turns the
 // camera after Bond's update, so without it he faced the view a frame late, which a quick turn showed)
@@ -208,7 +216,7 @@ X86_FUNC(EON_FN(00156E50, 001566C0)) {
         // and in that stance his arms and gun take the lock's point (+0x1190), which with no lock stayed where it was
         // and left the gun there as he turned: kept 2000 units along the view while he aims, as the shots go
         if (g_aiming && cam && !kernel::G<uint8_t>(bond + 0x1275)) {
-            float pitch = kernel::G<float>(cam + 0xD0) * kRadians, yaw = kernel::G<float>(cam + 0xD4) * kRadians;
+            float pitch = ViewPitch(cam) * kRadians, yaw = kernel::G<float>(cam + 0xD4) * kRadians;
             float f[3] = {std::cos(pitch) * std::cos(yaw), std::cos(pitch) * std::sin(yaw), -std::sin(pitch)};
             for (int i = 0; i < 3; i++) kernel::G<float>(bond + 0x1190 + 4 * i) = kernel::G<float>(cam + 0xC0 + 4 * i) + f[i] * 2000;
             kernel::G<float>(bond + 0x119C) = 1;
@@ -286,7 +294,7 @@ X86_FUNC(EON_FN(0014A740, 00149FB0)) {
     uint32_t bond = ctx.ecx;
     if (bond != g_bond || !g_turned) return EON_ORIG(0014A740, 00149FB0)(ctx, base);
     uint32_t cam = Camera(bond);
-    float pitch = kernel::G<float>(cam + 0xD0);
+    float pitch = ViewPitch(cam);
     if (pitch > 180) pitch -= 360;
     pitch *= kRadians;
     // the table's pairs: pitch scale and offset, then shoulders', each two-handed or not and flipped or not
@@ -339,6 +347,7 @@ void FreeAimInfo(uint32_t player, uint32_t out) {
     uint32_t bond = g_bond;
     if (!bond || player != kernel::R32(bond + kPlayerIndex)) return;
     kernel::G<float>(out + 0x30) *= g_zoom;
+    kernel::G<float>(out + 0x10) -= RaiseNow();
     float shoulder = g_shoulder;
     float yaw = kernel::G<float>(out + 0x14) * kRadians;
     kernel::G<float>(out) += std::sin(yaw) * shoulder;
@@ -356,6 +365,7 @@ X86_FUNC(EON_FN(00153CD0, 00153540)) {
     // as the scope's view: the camera's angles, and their matrix
     uint32_t cam = Camera(bond);
     for (uint32_t i = 0; i < 16; i += 4) kernel::W32(angles + i, kernel::R32(cam + 0xD0 + i));
+    kernel::G<float>(angles) = ViewPitch(cam);
     if (matrix) kernel::CallGuest(ctx, kAnglesToMatrix, {angles, matrix});
     kernel::Return(ctx, 0, 2);
 }
@@ -368,7 +378,7 @@ X86_FUNC(EON_FN(00153BE0, 00153450)) {
     // which on the view's line left it floating in front of him (Harry)
     if (kernel::R32(ctx.esp) != kShotReturn || !Plays(ctx, bond)) return EON_ORIG(00153BE0, 00153450)(ctx, base);
     uint32_t cam = Camera(bond);
-    float pitch = kernel::G<float>(cam + 0xD0) * kRadians, yaw = kernel::G<float>(cam + 0xD4) * kRadians;
+    float pitch = ViewPitch(cam) * kRadians, yaw = kernel::G<float>(cam + 0xD4) * kRadians;
     float f[3] = {std::cos(pitch) * std::cos(yaw), std::cos(pitch) * std::sin(yaw), -std::sin(pitch)};
     float shoulder = g_shoulder;
     float c[3] = {kernel::G<float>(cam + 0xC0) + std::sin(yaw) * shoulder,

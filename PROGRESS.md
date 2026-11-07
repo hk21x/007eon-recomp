@@ -21,6 +21,17 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-07 - Free aim: the view raised so the crosshair sits higher (branch strafe-b)
+
+Harry on 2d0c95f: the height while strafing fixed. Asked: the crosshair sits low (a head shot means aiming up); bring
+it up. The view is drawn from the camera's place and what it looks at, not from the follow camera's +0x90 (an offset
+there changed nothing, checked headless); so the camera info's pitch (0x8D960 out +0x10) is raised by aim_raise
+degrees (new setting, default 6, F1 and PC Settings' Mouse 2: Aim height), with the shoulder's blend, so only while
+free aim plays. Shots and the rest read the camera's own angles (+0xD0), so the shot's aim (0x153CD0), its line
+(0x153BE0), his arms' pitch (0x14A740) and the stance's aim point take the same raised pitch (ViewPitch), and the
+crosshair in the middle stays where shots go. Headless at 10 (EON_AIM_RAISE): the view looks higher, Bond lower in
+the frame. Smoke OK. Next: Harry.
+
 ### 2026-11-07 - Mouse look: the view's height held while Bond moves (branch strafe-b)
 
 Harry on 912d821: "Fantastic. The gun no longer disappears." Now: strafing while aiming, the aim drops lower on the

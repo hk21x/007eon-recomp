@@ -25,6 +25,7 @@ void (*frame_ui)(double fps) = nullptr;  // an exe's own drawing each frame, set
 uint32_t fov_percent = 100;  // the on-foot views' field of view, percent of the game's (src/game/fov.cpp)
 bool camera_follow = false;  // mouse: the camera swings behind Bond as he moves, as the game's does (src/game/camera.cpp)
 uint32_t aim_sensitivity = 100;  // mouse: the lock's dot and the scope, percent (src/game/mouse.cpp)
+uint32_t aim_raise = 6;      // free aim: the view raised, degrees, so the crosshair sits higher (src/game/free_aim.cpp)
 extern bool modern_buttons;           // src/common/buttons.cpp
 bool ButtonPictures(uint32_t header, uint32_t palette);  // GameInfo::texture_bound
 void TitleScreen(uint32_t header);                       // src/common/title_screen.cpp (default.xbe's)
@@ -43,6 +44,7 @@ void Init() {
     if (const char* e = std::getenv("EON_HIDE_HUD"); e && *e == '1') eon::hide_hud = true;
     if (const char* e = std::getenv("EON_FOV")) eon::fov_percent = uint32_t(std::atoi(e));
     if (const char* e = std::getenv("EON_CAMERA_FOLLOW")) eon::camera_follow = *e == '1';
+    if (const char* e = std::getenv("EON_AIM_RAISE")) eon::aim_raise = uint32_t(std::atoi(e));
     if (const char* e = std::getenv("EON_LANGUAGE")) eon::language = uint32_t(std::atoi(e));
     if (eon::skip_intro) LOGR("eon: the intro logos are skipped (skip_intro)");
     // every achievement's condition parses (a typo would leave it never met)
@@ -213,6 +215,8 @@ const app::GameInfo app::kGame = {
                  "At the next start. Your disc's languages: a language it does not have is ignored.", eon::kLanguageChoices},
                 {"free_aim", &eon::free_aim, nullptr, "Free aim (keyboard and mouse)",
                  "On foot, shots go to a crosshair in the middle of the view; the right mouse button aims. Hold the lock-on key to lock on."},
+                {"aim_raise", nullptr, &eon::aim_raise, "Aim height (degrees)",
+                 "Free aim: the view raised so the crosshair sits higher on what Bond faces; 0 is the game's view."},
                 {"fov_percent", nullptr, &eon::fov_percent, "Field of view (%)",
                  "On foot, 50 to 150; 100 is the game's. Cutscenes widen too."},
                 {"camera_follow", &eon::camera_follow, nullptr, "Camera follows movement (mouse)",
