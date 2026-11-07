@@ -120,7 +120,8 @@ German on the other, English alone on the US disc. A language your disc does not
 | Move | W A S D |
 | Look and aim | Mouse |
 | Fire / aim | Left / right mouse button (free aim: shots go to the crosshair; F1 turns it off) |
-| Lock on | R (hold) |
+| Lock on | Middle mouse button (hold) |
+| Reload | R (free aim) |
 | Jump, confirm (A) | Space or Enter |
 | B | Left Ctrl |
 | Punch left / right (X / Y) | Q / E |

@@ -21,6 +21,18 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-07 - Free aim: R reloads; lock on on the middle button (branches reload-key, strafe-b)
+
+Harry: carry on with the reload key; lock on to the middle mouse button. The game's reload: 0x1804B0 fills the clip to
+its size from what Bond carries; 0x180590 (thiscall on the gun, a flag) starts one: with 0 only from the gun's state 4
+(Bond's reload animation's event, 0x168110), with 1 at once, its reload played and the gun busy for its reload time
+(the game's scripted reload, 0x178400). Traced first (the clip writers hooked while firing the P99 empty: the pick-ups'
+equip and the reload's end 0x17F130, and the refill none of them). Now with free aim R, pressed, gives Bond's held gun
+that reload when it is ready (its machine +0x2F0 in state 4, 0x995A0) and its clip short; on Windows R is read directly
+(GetAsyncKeyState, while the mouse plays); headless a file named reload in the run folder (EON_RELOAD_TEST). Lock on
+moves to the middle button, the camera behind Bond (the right stick's click) to T. Headless: P99 4 shots 6 and 34,
+the reload 10 and 30, no crash. README's keys. Smoke OK.
+
 ### 2026-11-07 - A reload key: the clip found, the reload's start not yet
 
 EoN has no reload action; guns reload when the clip runs out. Found headless (the P99's object dumped while firing

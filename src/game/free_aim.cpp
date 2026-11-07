@@ -17,6 +17,7 @@
 #include <algorithm>
 #include <atomic>
 #include <chrono>
+#include <filesystem>
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
@@ -29,6 +30,9 @@
 #include "common/release.h"
 #ifdef _WIN32
 #include "imgui.h"
+#define NOMINMAX
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
 #endif
 
 namespace eon {
@@ -62,6 +66,8 @@ constexpr uint32_t kStrafe = EON_VA(0x1BE9A0, 0x1BE1D0);         // thiscall (Bo
 constexpr uint32_t kPush = EON_VA(0x99F10, 0x99C80);             // thiscall on the machine's stack (state, flags)
 constexpr uint32_t kFaceBody = EON_VA(0x16D490, 0x16CD00);        // thiscall on his action (radians): his facing
 constexpr uint32_t kFaceAim = EON_VA(0x16D4E0, 0x16CD50);         // thiscall on his action (radians, also +0x17C)
+constexpr uint32_t kReload = EON_VA(0x180590, 0x17FE00);          // thiscall on a gun (play it): a reload
+constexpr uint32_t kMachineState = EON_VA(0x995A0, 0x99310);     // thiscall on a gun's +0x2F0: its state, 4 ready
 constexpr uint32_t kShotAimReturn = EON_VA(0x180D24, 0x180594);  // a gun's shot asking its owner's aim (0x180CB0)
 constexpr uint32_t kShotReturn = EON_VA(0x180DE7, 0x180657);     // a gun's shot asking its owner's muzzle (0x180CB0)
 constexpr uint32_t kScopeView = 0xBAA3F02;                       // what the scope's camera mode answers (vtable +8)
@@ -161,6 +167,37 @@ void DrawCrosshair(double) {
 
 }  // namespace
 
+// R reloads with free aim (the game has no reload action: a gun reloads as its clip runs out). Bond's held gun
+// ([+0x274] +0x10), when it is ready (its state machine +0x2F0 in state 4) and its clip (+0x3E8) short of its size
+// (+0x3E4), takes a reload as the game's scripted one does (0x180590 with 1: the clip filled from what Bond carries,
+// the gun busy for its reload time, its reload played). EON_RELOAD_TEST (headless): a file named reload in the run folder
+bool ReloadPressed() {
+    static const bool test = std::getenv("EON_RELOAD_TEST") != nullptr;
+    if (test) {  // headless: a file named reload in the run folder, taken
+        std::error_code ec;
+        return std::filesystem::remove("reload", ec);
+    }
+#ifdef _WIN32
+    return input::MouseLooking() && (GetAsyncKeyState('R') & 0x8000);
+#else
+    return false;
+#endif
+}
+
+void Reload(X86Context& ctx, uint32_t bond) {
+    uint32_t inv = kernel::R32(bond + 0x274), gun = inv ? kernel::R32(inv + 0x10) : 0;
+    uint32_t machine = gun ? kernel::R32(gun + 0x2F0) : 0;
+    if (!machine || int(kernel::R32(gun + 0x3E8)) >= int(kernel::R32(gun + 0x3E4))) return;
+    uint32_t keep = ctx.ecx;
+    ctx.ecx = machine;
+    uint32_t state = kernel::CallGuest(ctx, kMachineState, {});
+    if (state == 4) {
+        ctx.ecx = gun;
+        kernel::CallGuest(ctx, kReload, {1});
+    }
+    ctx.ecx = keep;
+}
+
 // Bond's update, thiscall: whether this is play, and a held button turns him
 X86_EXTERN_FUNC(EON_ORIG(00156E50, 001566C0));
 X86_FUNC(EON_FN(00156E50, 001566C0)) {
@@ -189,6 +226,10 @@ X86_FUNC(EON_FN(00156E50, 001566C0)) {
     uint32_t cam = Camera(bond), mode = CameraMode(cam);
     uint32_t kind = mode ? kernel::R32(mode) : 0;
     bool plays = Plays(ctx, bond);
+    static bool reload_was = false;
+    bool reload = ReloadPressed();
+    if (reload && !reload_was && plays) Reload(ctx, bond);
+    reload_was = reload;
     bool scope = plays && ScopeView(ctx, mode);
     uint32_t buttons = Forced() == 2 ? 3 : input::MouseButtons();
     // play: the follow camera (the lock's and the cutscenes' are other classes) with the HUD up

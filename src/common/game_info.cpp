@@ -97,7 +97,7 @@ std::array<uint16_t, 2> ShooterKeys(int c) {
         case kLSLeft: return {'A', 0};
         case kLSRight: return {'D', 0};
         case kRT: return {kMouseLeft, 0};    // fire
-        case kLT: return {'R', 0};           // lock on; the right button aims (src/game/free_aim.cpp)
+        case kLT: return {kMouseMiddle, 0};  // lock on; the right button aims, R reloads (src/game/free_aim.cpp)
         case kA: return {kSpace, kEnter};
         case kB: return {kLeftCtrl, 0};
         case kX: return {'Q', 0};            // punch left
@@ -111,7 +111,7 @@ std::array<uint16_t, 2> ShooterKeys(int c) {
         case kStart: return {kEscape, 'P'};
         case kBack: return {kTab, 0};
         case kLThumb: return {'V', kLeftShift};
-        case kRThumb: return {kMouseMiddle, 0};
+        case kRThumb: return {'T', 0};       // the camera behind Bond
         default: return {0, 0};
     }
 }
