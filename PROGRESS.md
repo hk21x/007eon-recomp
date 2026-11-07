@@ -21,6 +21,17 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-07 - Mouse look: the view's height held while Bond moves (branch strafe-b)
+
+Harry on 912d821: "Fantastic. The gun no longer disappears." Now: strafing while aiming, the aim drops lower on the
+screen, almost forcing leg shots. The camera's update eases its height (+0xD0) back to rest while Bond moves and the
+stick's height is still (0x1D2DC0: the stick's y zero and his left stick moving), which with the mouse is always.
+Headless (the view raised to 24.8, then strafing with the keyboard flag kept: KEYS last in the harness's press, as a
+stick token alone counts as a controller): 24.8 to 0.6 within a second. Now while the mouse plays (camera_follow off)
+the camera holds the height the mouse sets (clamped to the game's 70): each update starts from it plus a correction,
+which grows by what the update took off (at most 15). Headless: held at 24.8 through the strafes (a 1.2 degree dip
+for one update as each starts; the correction about 1.3, back to 0 at once when he stops). Smoke OK. Next: Harry.
+
 ### 2026-11-07 - Strafing: the gun turns with him (branch strafe-b)
 
 Harry on 85b4a78: WASD after a turn right; "a flick of the mouse whilst aiming shows the weapon delayed in catching up

@@ -8,10 +8,11 @@
 // angle before the update, and the stick's speeds are left to the controller and keys. The update also swings the
 // camera behind Bond as he moves (a timer at +0xC0 starts it, +0xC4 holds it, +0xB8 is the angle left); with
 // camera_follow off that is held back while the mouse plays, and the camera moves with Bond (src/game/free_aim.cpp), so
-// his sidestep does not turn the view. The recentre button's swing (+0xBC) still runs.
+// his sidestep does not turn the view; nor does the update's easing of the height back to rest while he moves. The recentre button's swing (+0xBC) still runs.
 //
 // The update ignores the stick while Bond is locked on, aiming a gadget and the like (the checks below are its own):
 // then the right stick moves the lock's dot, so the mouse goes to the stick (src/game/mouse.cpp) instead.
+#include <algorithm>
 #include <atomic>
 #include <chrono>
 #include <cmath>
@@ -40,6 +41,11 @@ constexpr uint32_t kPlayerIndex = 0x1130;                      // Bond: 0 for pl
 constexpr uint32_t kTarget = 0x70, kPosition = 0x80, kViewYaw = 0x94, kSwing = 0xB8, kSwingButton = 0xBC,
                    kSwingTimer = 0xC0, kSwinging = 0xC4, kTilt = 0xD0;
 constexpr float kRadians = 3.14159265f / 180;
+constexpr float kTiltLimit = 70, kTiltBias = 15;  // the game's height limit (0x31C5B0), the correction's
+
+// the height the mouse holds while it plays (below), and the correction for the game's easing back to rest
+float g_tilt_want = 0, g_tilt_bias = 0;
+bool g_tilt_held = false;
 
 int64_t NowMs() {
     using namespace std::chrono;
@@ -87,7 +93,20 @@ X86_FUNC(EON_FN(001D1C70, 001D14A0)) {
             yaw -= 360 * std::floor((yaw + 180) / 360);
             kernel::G<float>(mode + kViewYaw) = yaw;
         }
-        kernel::G<float>(mode + kTilt) += tilt;
+        // the height: the game eases it back to rest while Bond moves and the stick's height is still (0x1D2DC0),
+        // so with the mouse a strafe sank the view (Harry: "almost forces you to shoot their legs"). Held where the
+        // mouse puts it: started each update from there plus a correction, which grows by what the update took off
+        if (keep) {
+            if (!g_tilt_held) {
+                g_tilt_want = kernel::G<float>(mode + kTilt);
+                g_tilt_bias = 0;
+                g_tilt_held = true;
+            }
+            g_tilt_want = std::clamp(g_tilt_want + tilt, -kTiltLimit, kTiltLimit);
+            kernel::G<float>(mode + kTilt) = g_tilt_want + g_tilt_bias;
+        } else {
+            kernel::G<float>(mode + kTilt) += tilt;
+        }
         if (!eon::camera_follow && !kernel::G<uint8_t>(mode + kSwingButton)) {
             kernel::G<float>(mode + kSwingTimer) = 0;
             kernel::G<uint8_t>(mode + kSwinging) = 0;
@@ -96,4 +115,10 @@ X86_FUNC(EON_FN(001D1C70, 001D14A0)) {
     }
     if (kernel::R32(mode) == kFollowCamera) eon::FreeAimCamera(mode, keep);
     EON_ORIG(001D1C70, 001D14A0)(ctx, base);
+    if (keep) {
+        float err = g_tilt_want - kernel::G<float>(mode + kTilt);
+        g_tilt_bias = std::clamp(g_tilt_bias + err, -kTiltBias, kTiltBias);
+    } else if (bond) {
+        g_tilt_held = false;
+    }
 }
