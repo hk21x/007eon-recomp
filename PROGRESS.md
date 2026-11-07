@@ -21,6 +21,18 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-07 - Strafing: the floating gun, stopped after three attempts (branch strafe-b)
+
+Harry on 0fabb1b (log 07:35, screenshots): the gun still floats beside Bond, off to one side and not on the view's
+line, his hands up by his face. Three attempts at the gun have not fixed it: the locked stance held while aiming
+(006a9b3: his arms on the aim, better, the gun still apart), the lock's point +0x1190 kept along the view (6a9d607:
+the gun turned to the aim but floated on its line), and the muzzle on the view's line only for the shot (0fabb1b:
+not the cause). His first strafe video, before any stance change, already had the gun leaving his hand, so it comes
+with the strafe itself, the lock's, which most likely places the gun from a lock target we do not have. Stopped as
+the rules ask. The strafe's movement itself works (Harry: much better; W, S, A and D restart cleanly). Next, if
+Harry wants it: find what places the gun, by watching the gun's own matrix in a real lock's strafe and in ours
+(headless, numbers against the hand, no picture needed), instead of guessing.
+
 ### 2026-11-07 - Strafing: the gun drawn in his hands again (branch strafe-b)
 
 Harry on 6a9d607: the gun now points along the aim but floats in front of Bond on the view's line, his hands by his
