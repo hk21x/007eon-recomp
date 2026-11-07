@@ -21,6 +21,15 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-07 - Free aim's keys: C crouches, the wheel changes gun (branch strafe-b)
+
+Harry on 2214dff: "Much better". Asked for free aim keys: R to reload, C to crouch, the wheel to change guns. The
+game's actions (global\xbbtnmap.csv): CROUCHTOGGLE is White, CYCLEWEAPONSFORWARD the d-pad's down, and there is no
+reload (it reloads when the clip runs out). On foot White is now C (crouch) and Black F (wall cover, was C; White was
+F); in play with free aim each wheel notch presses the d-pad's down, either way, the game having no previous weapon
+(src/common/menu_mouse.cpp). The saved settings keep only keys changed from these defaults. Headless: a notch each way
+went SIG 552, P99, MP5K. README's keys. R to reload: needs the gun's own reload found (next). Smoke OK.
+
 ### 2026-11-07 - Free aim: the view raised so the crosshair sits higher (branch strafe-b)
 
 Harry on 2d0c95f: the height while strafing fixed. Asked: the crosshair sits low (a head shot means aiming up); bring

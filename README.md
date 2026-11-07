@@ -124,8 +124,9 @@ German on the other, English alone on the US disc. A language your disc does not
 | Jump, confirm (A) | Space or Enter |
 | B | Left Ctrl |
 | Punch left / right (X / Y) | Q / E |
-| Wall cover (Black) | C |
-| White button | F |
+| Crouch (White) | C |
+| Wall cover (Black) | F |
+| Next weapon | Mouse wheel (free aim), or Down / 2 |
 | Weapons and gadgets (d-pad) | 1 to 4, or the arrow keys |
 | Pause / Back | Esc or P / Tab |
 | Stick clicks | V or Left Shift / middle mouse button |

@@ -4,6 +4,7 @@
 // mouse's buttons stop playing what they are bound to in play (fire, lock on) and
 // play A and B instead; each notch of the wheel is a press of the d-pad, one after another.
 #include <algorithm>
+#include <cstdlib>
 #include <atomic>
 #include <chrono>
 #include <cstdint>
@@ -14,6 +15,7 @@
 namespace eon {
 
 std::atomic<int64_t> g_menu_input{-1000};  // when a menu last took the input, ms (src/game/menu_input.cpp)
+extern bool free_aim;                 // the setting (src/common/game_info.cpp)
 std::atomic<bool> aim_trigger{false};  // free aim holds the fire input (src/game/free_aim.cpp)
 std::atomic<int64_t> aim_release{0};   // let go until then, ms (polls outrun frames: a press needs the game to see it up)
 
@@ -35,8 +37,26 @@ void MenuMouse(int port, input::Pad& p) {
     static bool was = false;
     if (menu != was) LOGI("eon: %s", menu ? "a menu takes the input: the mouse plays A, B and the d-pad" : "out of the menus");
     was = menu;
+    // in play with free aim, the wheel: the next weapon a notch (CYCLEWEAPONSFORWARD, the d-pad's down; the game has
+    // no previous weapon, so both ways go forward)
+    static int weapons = 0;
+    static int64_t weapon_pulse = 0;
+    if (!menu && eon::free_aim && notches) {
+        if (!weapons) weapon_pulse = now;
+        weapons = std::min(weapons + std::abs(notches), 4);
+    }
+    if (menu) weapons = 0;
     if (!menu) {
         pending = 0;
+        if (weapons) {
+            int64_t t = now - weapon_pulse;
+            if (t < kPress) {
+                p.buttons |= uint16_t(1u << input::kDown);
+            } else if (t >= kPress + kGap) {
+                weapons--;
+                weapon_pulse = now;
+            }
+        }
         // free aim's right button: the right trigger (src/game/free_aim.cpp), let go for a punch (X, Y), which it turned
         // into moving the gun, and for the left button's press
         if (now < eon::aim_release) {

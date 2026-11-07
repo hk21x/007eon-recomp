@@ -102,8 +102,8 @@ std::array<uint16_t, 2> ShooterKeys(int c) {
         case kB: return {kLeftCtrl, 0};
         case kX: return {'Q', 0};            // punch left
         case kY: return {'E', 0};            // punch right
-        case kBlack: return {'C', 0};        // wall cover
-        case kWhite: return {'F', 0};
+        case kBlack: return {'F', 0};        // wall cover
+        case kWhite: return {'C', 0};        // crouch
         case kUp: return {kArrowUp, '1'};         // the d-pad: weapons, gadgets and the menus
         case kDown: return {kArrowDown, '2'};
         case kLeft: return {kArrowLeft, '3'};
