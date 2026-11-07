@@ -21,6 +21,13 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-07 - Strafing: the gun drawn in his hands again (branch strafe-b)
+
+Harry on 6a9d607: the gun now points along the aim but floats in front of Bond on the view's line, his hands by his
+head. Free aim gives his muzzle (vtable +0x1A4, 0x153BE0) as a point on the view's line for the shot; the locked stance
+also draws the gun there. It is now given so only to a gun's shot (0x180CB0, its call returning to 0x180DE7); every
+other asker (some twenty) has the game's own. Headless: no crash; the frames could not show it. Smoke OK. Next: Harry.
+
 ### 2026-11-07 - Strafing: the gun follows the aim in the locked stance (branch strafe-b)
 
 Harry on 9e3642b: still some oddities; his screenshot: Bond turned with the view, the gun left floating where he aimed

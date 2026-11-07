@@ -56,6 +56,7 @@ constexpr uint32_t kBodyTable = EON_VA(0x2DD118, 0x2DC640);      // 0x14A2C0's n
 constexpr uint32_t kAlloc = EON_VA(0x99970, 0x996E0);           // cdecl (bytes): a movement state's memory
 constexpr uint32_t kStrafe = EON_VA(0x1BE9A0, 0x1BE1D0);         // thiscall (Bond): the strafing state, built there
 constexpr uint32_t kPush = EON_VA(0x99F10, 0x99C80);             // thiscall on the machine's stack (state, flags)
+constexpr uint32_t kShotReturn = EON_VA(0x180DE7, 0x180657);     // a gun's shot asking its owner's muzzle (0x180CB0)
 constexpr uint32_t kScopeView = 0xBAA3F02;                       // what the scope's camera mode answers (vtable +8)
 constexpr float kRadians = 3.14159265f / 180;
 constexpr float kShoulder = 28;       // world units right of Bond
@@ -321,7 +322,9 @@ X86_FUNC(EON_FN(00153CD0, 00153540)) {
 X86_EXTERN_FUNC(EON_ORIG(00153BE0, 00153450));
 X86_FUNC(EON_FN(00153BE0, 00153450)) {
     uint32_t bond = ctx.ecx, out = kernel::R32(ctx.esp + 4);
-    if (!Plays(ctx, bond)) return EON_ORIG(00153BE0, 00153450)(ctx, base);
+    // only for a gun's shot (0x180CB0, returning to 0x180DE7): the locked stance also draws his gun at this point,
+    // which on the view's line left it floating in front of him (Harry)
+    if (kernel::R32(ctx.esp) != kShotReturn || !Plays(ctx, bond)) return EON_ORIG(00153BE0, 00153450)(ctx, base);
     uint32_t cam = Camera(bond);
     float pitch = kernel::G<float>(cam + 0xD0) * kRadians, yaw = kernel::G<float>(cam + 0xD4) * kRadians;
     float f[3] = {std::cos(pitch) * std::cos(yaw), std::cos(pitch) * std::sin(yaw), -std::sin(pitch)};
