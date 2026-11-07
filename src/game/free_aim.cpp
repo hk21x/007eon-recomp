@@ -556,7 +556,8 @@ X86_FUNC(EON_FN(001519E0, 00151250)) {
 // one before R, as the game's own shows until a reload that the player asked for is done (it read 0: Harry). The text
 // is the clip (+0x3E8), or while the gun's state (+0x2F0) is 1, loading (its vtable +0x154, 0x1C05C0), the rounds
 // going in (+0x3F0, the clip's size when 0); both are given the old clip for the call, else that path flashed the full
-// clip for a frame mid-reload (Harry's video: "7 - 3", one frame of "10 - 0", "7 - 3")
+// clip for a frame mid-reload (Harry's video: "7 - 3", one frame of "10 - 0", "7 - 3"); and through R's window the
+// clip, whatever it holds, then put back as it was
 X86_EXTERN_FUNC(EON_ORIG(0017F280, 0017EAF0));
 X86_FUNC(EON_FN(0017F280, 0017EAF0)) {
     uint32_t gun = ctx.ecx, inv = g_bond ? kernel::R32(g_bond + 0x274) : 0;
@@ -574,7 +575,9 @@ X86_FUNC(EON_FN(0017F280, 0017EAF0)) {
     bool watch = held && watch_until && NowMs() < watch_until;
     if (!watch && shown < 0) watch_until = 0;
     uint32_t clip = kernel::R32(gun + 0x3E8), loading_was = kernel::R32(gun + 0x3F0);
-    if (shown <= 0 || !held || clip != 0) {
+    // R's window (g_reload_until): the game refills the emptied clip for a frame before the pull meets it, and the
+    // update above empties it again (Harry's log: 6, then 10 for one frame 34 ms after R, then 6)
+    if (shown <= 0 || !held || (clip != 0 && NowMs() >= g_reload_until)) {
         EON_ORIG(0017F280, 0017EAF0)(ctx, base);
         if (watch && ctx.eax) {
             uint32_t text = kernel::R32(ctx.eax + 0xCC);
@@ -588,12 +591,12 @@ X86_FUNC(EON_FN(0017F280, 0017EAF0)) {
     kernel::W32(gun + 0x3E8, uint32_t(shown));
     kernel::W32(gun + 0x3F0, uint32_t(shown));
     EON_ORIG(0017F280, 0017EAF0)(ctx, base);
-    kernel::W32(gun + 0x3E8, 0);
+    kernel::W32(gun + 0x3E8, clip);
     kernel::W32(gun + 0x3F0, loading);
     if (watch && ctx.eax) {
         uint32_t text = kernel::R32(ctx.eax + 0xCC);
         if (text != last_text && said++ < 40)
-            LOGR("eon: free aim: reload text %u (R's clip shown: clip 0, loading %u, R's %d)", text, loading, shown);
+            LOGR("eon: free aim: reload text %u (R's clip shown: clip %u, loading %u, R's %d)", text, clip, loading, shown);
         last_text = text;
     }
 }

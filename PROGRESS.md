@@ -21,6 +21,13 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-07 - Free aim: the reload's flash was the game's quiet refill in R's window (branch strafe-b)
+- Harry's a1ffc2e log: R at 67.255 (count 6), the held P99's clip 10 at 67.289 for one frame, 6 again at 67.305, the
+  real refill at 68.005; his 240 fps video shows that frame as "10 - 3" with the full bullet row. In R's 200 ms window
+  the game refills the emptied clip silently before the trigger pull meets it, and the Bond update empties it again
+  next frame; the HUD text ran in between. The override now covers the whole window whatever the clip holds, and
+  puts the clip back as it was. Headless still shows R's count. The log stays until Harry confirms.
+
 ### 2026-11-07 - Free aim: logging the reload's ammo text (branch strafe-b)
 - Harry on 9b92bd2: still "a very short visual flick" while reloading. His earlier video, every frame at 240 fps,
   had only the one flash fixed in 9b92bd2. Added a log: for R's first 6 reloads, each change of the count the HUD
