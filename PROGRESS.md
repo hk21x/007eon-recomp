@@ -21,6 +21,15 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-07 - Free aim: R pulls the trigger on an empty clip (branch strafe-b)
+
+Harry on 55dd1d9: still no animation; it plays when the clip is empty and you fire again. Emptied alone the clip came
+back at once with no animation (another refill, 0x180730's 0x1804B0). Now R empties a ready gun's short clip and pulls
+the trigger on it: the fire input let go 40 ms then held to 200 ms (src/common/menu_mouse.cpp, for a press the game
+sees), the clip kept empty before Bond's updates meanwhile, and that pull let past free aim's aim-only block. Headless
+(P99, 6 and 34): 0.6 s after R 0 and 40 (no instant refill), 3 s after 10 and 30: the refill waits, as an animation's
+event does. The animation itself is for Harry. Smoke OK.
+
 ### 2026-11-07 - Free aim: R reloads with Bond's animation (branch strafe-b)
 
 Harry on acd6f24: R reloads, but with no animation; it should play as when the clip runs out. The scripted reload

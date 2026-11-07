@@ -40,7 +40,8 @@ extern bool free_aim;                 // the setting (src/common/game_info.cpp)
 extern uint32_t aim_raise;            // the setting, degrees (src/common/game_info.cpp)
 extern void (*frame_ui)(double fps);  // drawn each frame (src/common/game_info.cpp)
 extern std::atomic<bool> aim_trigger;  // the fire input held for the stance (src/common/menu_mouse.cpp)
-extern std::atomic<int64_t> aim_release;  // the fire input let go until then, ms (src/common/menu_mouse.cpp)
+extern std::atomic<int64_t> aim_release;
+extern std::atomic<int64_t> reload_fire_from, reload_fire_until;  // R's trigger pull (src/common/menu_mouse.cpp)  // the fire input let go until then, ms (src/common/menu_mouse.cpp)
 extern std::atomic<float> mouse_turn;    // the mouse's turn waiting for the camera (src/game/camera.cpp)
 extern std::atomic<int64_t> hud_drawn_ms;  // when the HUD last drew (src/game/hud.cpp): none in movies or the like
 }
@@ -82,6 +83,8 @@ std::atomic<bool> g_crosshair{false};
 std::atomic<bool> g_turned{false};    // play, and a mouse button held
 std::atomic<bool> g_aim_only{false};  // play, and the right button held without the left
 std::atomic<bool> g_aiming{false};    // play, and the right button held
+std::atomic<int64_t> g_reload_until{0};  // R's empty clip and trigger pull, until then (ms)
+constexpr int64_t kReloadEmpty = 200;
 std::atomic<bool> g_strafe_ask{false};  // the strafe's check runs while he aims (below)
 std::atomic<int64_t> g_updated{0};
 
@@ -168,9 +171,11 @@ void DrawCrosshair(double) {
 
 // R reloads with free aim (the game has no reload action: a gun reloads as its clip runs out). Bond's held gun
 // ([+0x274] +0x10), when it is ready (its state machine +0x2F0 in state 4) and its clip (+0x3E8) short of its size
-// (+0x3E4), has its clip emptied, and the game reloads it as when it runs out: Bond's reload played, its event filling
-// the clip (0x168110, 0x180590). What Bond carries counts the clip too (6 and 34, then 10 and 30), so no round is lost;
-// the scripted reload (0x180590 with 1) filled it with no animation (Harry). EON_RELOAD_TEST (headless): a file named reload in the run folder
+// (+0x3E4), has its clip emptied and the trigger pulled on it (the fire input let go, then held, through
+// src/common/menu_mouse.cpp; the clip kept empty meanwhile, and the shot let past free aim's block), and the game
+// reloads it as when an empty gun is fired: Bond's reload played, its event filling the clip (0x168110, 0x180590).
+// Emptied alone the game refilled it at once with no animation, as did the scripted reload (0x180590 with 1) (Harry).
+// What Bond carries counts the clip too (6 and 34, then 10 and 30), so no round is lost EON_RELOAD_TEST (headless): a file named reload in the run folder
 bool ReloadPressed() {
     static const bool test = std::getenv("EON_RELOAD_TEST") != nullptr;
     if (test) {  // headless: a file named reload in the run folder, taken
@@ -191,7 +196,14 @@ void Reload(X86Context& ctx, uint32_t bond) {
     uint32_t keep = ctx.ecx;
     ctx.ecx = machine;
     uint32_t state = kernel::CallGuest(ctx, kMachineState, {});
-    if (state == 4) kernel::W32(gun + 0x3E8, 0);
+    if (state == 4) {
+        int64_t now = NowMs();
+        g_reload_until = now + kReloadEmpty;
+        eon::aim_release = now + 40;  // the trigger let go, then pulled, for a press the game sees
+        eon::reload_fire_from = now + 40;
+        eon::reload_fire_until = now + kReloadEmpty;
+        kernel::W32(gun + 0x3E8, 0);
+    }
     ctx.ecx = keep;
 }
 
@@ -199,6 +211,10 @@ void Reload(X86Context& ctx, uint32_t bond) {
 X86_EXTERN_FUNC(EON_ORIG(00156E50, 001566C0));
 X86_FUNC(EON_FN(00156E50, 001566C0)) {
     uint32_t bond = ctx.ecx;
+    if (bond == g_bond && NowMs() < g_reload_until) {  // R: the clip kept empty until the pull meets it
+        uint32_t inv = kernel::R32(bond + 0x274), gun = inv ? kernel::R32(inv + 0x10) : 0;
+        if (gun) kernel::W32(gun + 0x3E8, 0);
+    }
     // In the locked stance with no lock his facing update (0x171500) sets no facing, so the game turned him back to the
     // one he had as the stance began while free aim turned him to the view, and his body, arms and gun parted (Harry's
     // log: his yaw held at 92 while the camera was at 137). While he aims in it the game's own facing is set to the
@@ -310,7 +326,7 @@ X86_FUNC(EON_FN(00156E50, 001566C0)) {
 // state, the kinds 0x161E00 asks for), and Bond's gun does not go off
 X86_EXTERN_FUNC(EON_ORIG(00181250, 00180AC0));
 X86_FUNC(EON_FN(00181250, 00180AC0)) {
-    if (g_aim_only) {
+    if (g_aim_only && NowMs() >= g_reload_until) {  // R's pull goes through: the gun is empty
         uint32_t keep = ctx.ecx;
         uint32_t owner = kernel::CallGuest(ctx, kGunOwner, {});
         ctx.ecx = keep;
