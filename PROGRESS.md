@@ -21,6 +21,9 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-07 - Free aim: reload text confirmed, its log removed (branch strafe-b)
+- Harry on d93e6a9: "Yep fixed." The reload text log came out again.
+
 ### 2026-11-07 - Free aim: the reload's flash was the game's quiet refill in R's window (branch strafe-b)
 - Harry's a1ffc2e log: R at 67.255 (count 6), the held P99's clip 10 at 67.289 for one frame, 6 again at 67.305, the
   real refill at 68.005; his 240 fps video shows that frame as "10 - 3" with the full bullet row. In R's 200 ms window

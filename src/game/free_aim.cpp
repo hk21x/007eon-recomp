@@ -562,41 +562,16 @@ X86_EXTERN_FUNC(EON_ORIG(0017F280, 0017EAF0));
 X86_FUNC(EON_FN(0017F280, 0017EAF0)) {
     uint32_t gun = ctx.ecx, inv = g_bond ? kernel::R32(g_bond + 0x274) : 0;
     int shown = g_reload_clip;
-    // what the text shows through R's reloads (the first 6, from R to the clip's refill), for Harry's flicker
-    static int reloads = 0, said = 0;
-    static int64_t watch_until = 0;
-    static uint32_t last_text = ~0u;
     bool held = inv && gun == kernel::R32(inv + 0x10);
-    if (held && shown >= 0 && watch_until == 0 && reloads < 6) {
-        watch_until = NowMs() + 4000;
-        said = 0;
-        LOGR("eon: free aim: R's reload %d: the clip %d", ++reloads, shown);
-    }
-    bool watch = held && watch_until && NowMs() < watch_until;
-    if (!watch && shown < 0) watch_until = 0;
-    uint32_t clip = kernel::R32(gun + 0x3E8), loading_was = kernel::R32(gun + 0x3F0);
+    uint32_t clip = kernel::R32(gun + 0x3E8), loading = kernel::R32(gun + 0x3F0);
     // R's window (g_reload_until): the game refills the emptied clip for a frame before the pull meets it, and the
     // update above empties it again (Harry's log: 6, then 10 for one frame 34 ms after R, then 6)
-    if (shown <= 0 || !held || (clip != 0 && NowMs() >= g_reload_until)) {
-        EON_ORIG(0017F280, 0017EAF0)(ctx, base);
-        if (watch && ctx.eax) {
-            uint32_t text = kernel::R32(ctx.eax + 0xCC);
-            if (text != last_text && said++ < 40)
-                LOGR("eon: free aim: reload text %u (the game's: clip %u, loading %u, R's %d)", text, clip, loading_was, shown);
-            last_text = text;
-        }
-        return;
-    }
-    uint32_t loading = loading_was;
+    if (shown <= 0 || !held || (clip != 0 && NowMs() >= g_reload_until))
+        return EON_ORIG(0017F280, 0017EAF0)(ctx, base);
     kernel::W32(gun + 0x3E8, uint32_t(shown));
     kernel::W32(gun + 0x3F0, uint32_t(shown));
     EON_ORIG(0017F280, 0017EAF0)(ctx, base);
     kernel::W32(gun + 0x3E8, clip);
     kernel::W32(gun + 0x3F0, loading);
-    if (watch && ctx.eax) {
-        uint32_t text = kernel::R32(ctx.eax + 0xCC);
-        if (text != last_text && said++ < 40)
-            LOGR("eon: free aim: reload text %u (R's clip shown: clip %u, loading %u, R's %d)", text, clip, loading, shown);
-        last_text = text;
-    }
+}
 }
