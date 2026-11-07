@@ -19,6 +19,7 @@
 #include <chrono>
 #include <cmath>
 #include <cstdlib>
+#include <cstdio>
 
 #include "core/input.h"
 #include "core/log.h"
@@ -157,6 +158,24 @@ X86_FUNC(EON_FN(00156E50, 001566C0)) {
     bool plays = Plays(ctx, bond);
     bool scope = plays && ScopeView(ctx, mode);
     uint32_t buttons = Forced() == 2 ? 3 : input::MouseButtons();
+    {  // DIAGNOSTIC (branch gun-trace): the held gun against Bond, twice a second
+        static int64_t last = 0;
+        uint32_t inv = kernel::R32(bond + 0x274), gun = inv ? kernel::R32(inv + 0x10) : 0;
+        if (gun && NowMs() - last >= 500) {
+            last = NowMs();
+            float d[3], loc[3];
+            for (int i = 0; i < 3; i++) d[i] = kernel::G<float>(gun + 0xB0 + 4 * i) - kernel::G<float>(bond + kPosition + 4 * i);
+            for (int r = 0; r < 3; r++) {
+                loc[r] = 0;
+                for (int i = 0; i < 3; i++) loc[r] += kernel::G<float>(bond + kMatrix + 0x10 * r + 4 * i) * d[i];
+            }
+            uint32_t act = kernel::R32(bond + 0x11B0);
+            LOGR("eon: gun %.2f gun %X local %.1f %.1f %.1f grow %.2f %.2f %.2f st %X kind %u lock %u aim %d grip %X yaw %.1f cam %.1f",
+                         kernel::G<float>(EON_VA(0x3210B4, 0x3205AC)), gun, loc[0], loc[1], loc[2], kernel::G<float>(gun + 0x70), kernel::G<float>(gun + 0x74), kernel::G<float>(gun + 0x78),
+                         kernel::R32(bond + 0x14AC), act ? kernel::R32(act + 0x1AC) : 99, kernel::G<uint8_t>(bond + 0x1275), int(buttons & 2), kernel::R32(gun + 0x370),
+                 kernel::G<float>(bond + kYaw), cam ? kernel::G<float>(cam + 0xD4) : 0.f);
+        }
+    }
     // play: the follow camera (the lock's and the cutscenes' are other classes) with the HUD up
     bool on = plays && !scope && kind == kFollowCamera && (Forced() >= 0 || NowMs() - eon::hud_drawn_ms < 500);
     g_crosshair = on && (buttons & 2);  // while aiming: the right button
