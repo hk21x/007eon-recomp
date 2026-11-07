@@ -21,6 +21,15 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-07 - Free aim: R once a reload, and the HUD keeps the count (branch strafe-b)
+
+Harry on ff323a9: "Works" (Bond's reload plays), but R spammed restarts it so it never finishes, and the HUD shows 0
+during it (his video: 8 - 9 became 0 - 17 for about 0.7 s). R now does nothing while its reload is under way (the
+gun's reload time +0x3D4 and 0.5 s). Putting the clip back once the reload had begun cancelled it (headless: 6 stayed
+6), so the HUD's ammo text (0x17F280, the gun's "%3d - %3d", found by its string at 0x2DF774) is given the clip from
+before R while R's reload waits on an empty clip. Headless (P99, 6 and 34): during it 6 - 34, after it 10 - 30; R five
+times in 1.3 s, done at 10 - 30 all the same. Smoke OK.
+
 ### 2026-11-07 - Free aim: R pulls the trigger on an empty clip (branch strafe-b)
 
 Harry on 55dd1d9: still no animation; it plays when the clip is empty and you fire again. Emptied alone the clip came

@@ -84,6 +84,8 @@ std::atomic<bool> g_turned{false};    // play, and a mouse button held
 std::atomic<bool> g_aim_only{false};  // play, and the right button held without the left
 std::atomic<bool> g_aiming{false};    // play, and the right button held
 std::atomic<int64_t> g_reload_until{0};  // R's empty clip and trigger pull, until then (ms)
+std::atomic<int64_t> g_reload_busy{0};   // R's reload under way until then (ms): R does nothing meanwhile
+std::atomic<int> g_reload_clip{-1};      // the clip before R emptied it, shown again once the reload has begun
 constexpr int64_t kReloadEmpty = 200;
 std::atomic<bool> g_strafe_ask{false};  // the strafe's check runs while he aims (below)
 std::atomic<int64_t> g_updated{0};
@@ -196,8 +198,11 @@ void Reload(X86Context& ctx, uint32_t bond) {
     uint32_t keep = ctx.ecx;
     ctx.ecx = machine;
     uint32_t state = kernel::CallGuest(ctx, kMachineState, {});
-    if (state == 4) {
-        int64_t now = NowMs();
+    int64_t now = NowMs();
+    if (state == 4 && now >= g_reload_busy) {
+        // busy for the gun's reload time (+0x3D4, seconds, as 0x180590 times it) and a little: R spammed restarted it
+        g_reload_busy = now + kReloadEmpty + int64_t(kernel::G<float>(gun + 0x3D4) * 1000) + 300;
+        g_reload_clip = int(kernel::R32(gun + 0x3E8));
         g_reload_until = now + kReloadEmpty;
         eon::aim_release = now + 40;  // the trigger let go, then pulled, for a press the game sees
         eon::reload_fire_from = now + 40;
@@ -211,9 +216,13 @@ void Reload(X86Context& ctx, uint32_t bond) {
 X86_EXTERN_FUNC(EON_ORIG(00156E50, 001566C0));
 X86_FUNC(EON_FN(00156E50, 001566C0)) {
     uint32_t bond = ctx.ecx;
-    if (bond == g_bond && NowMs() < g_reload_until) {  // R: the clip kept empty until the pull meets it
+    if (bond == g_bond && (NowMs() < g_reload_until || g_reload_clip >= 0)) {
         uint32_t inv = kernel::R32(bond + 0x274), gun = inv ? kernel::R32(inv + 0x10) : 0;
-        if (gun) kernel::W32(gun + 0x3E8, 0);
+        if (gun && NowMs() < g_reload_until) {
+            kernel::W32(gun + 0x3E8, 0);  // R: the clip kept empty until the pull meets it
+        } else if (gun && kernel::R32(gun + 0x3E8) != 0) {
+            g_reload_clip = -1;  // refilled: the HUD shows the clip again
+        }
     }
     // In the locked stance with no lock his facing update (0x171500) sets no facing, so the game turned him back to the
     // one he had as the stance began while free aim turned him to the view, and his body, arms and gun parted (Harry's
@@ -541,4 +550,17 @@ X86_FUNC(EON_FN(001519E0, 00151250)) {
     if (g_aiming && bond == g_bond && action && kernel::R32(action + 0x1AC) == 0x12 && !kernel::G<uint8_t>(bond + 0x1275))
         return kernel::Return(ctx, 1, 0);
     EON_ORIG(001519E0, 00151250)(ctx, base);
+}
+
+// The HUD's ammo ("%3d - %3d", thiscall on the gun): while R's reload waits on an empty clip, the clip it shows is the
+// one before R, as the game's own shows until a reload that the player asked for is done (it read 0: Harry)
+X86_EXTERN_FUNC(EON_ORIG(0017F280, 0017EAF0));
+X86_FUNC(EON_FN(0017F280, 0017EAF0)) {
+    uint32_t gun = ctx.ecx, inv = g_bond ? kernel::R32(g_bond + 0x274) : 0;
+    int shown = g_reload_clip;
+    if (shown < 0 || !inv || gun != kernel::R32(inv + 0x10) || kernel::R32(gun + 0x3E8) != 0)
+        return EON_ORIG(0017F280, 0017EAF0)(ctx, base);
+    kernel::W32(gun + 0x3E8, uint32_t(shown));
+    EON_ORIG(0017F280, 0017EAF0)(ctx, base);
+    kernel::W32(gun + 0x3E8, 0);
 }
