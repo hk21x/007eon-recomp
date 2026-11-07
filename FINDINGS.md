@@ -85,6 +85,16 @@ game's own code and data, with its addresses).
   (0x156E50). With no lock and 0x153CD0 answering the camera's angles the bullet's forward is the camera's exactly.
   The camera mode in use is camera +8 + [camera +0x80] * 12: class 0x2E2694 the follow camera, 0x2DCF54 during the
   lock, 0x2E2624 the tutorial's cutscene.
+- **[game]** Damage from a hit: 0x167810 (thiscall: the victim; the event on the stack, vtable 0x2C341C, made by
+  0xA1D90), every character's (enemies' vtable +0x90 0x190E80, the base's 0x2DDD80; props and glass have others). The
+  event: +0x20 the attacker (the bullet's owner), +0x14 the gun, +0x2C the damage type (the gun's +0x410), +0x30 the
+  bone's hash ("m_head" at [0x356808], made at start by 0x4CAD0), +0x70 the base damage, +0x40/+0x50/+0x60 the point,
+  direction and normal, +0x78 flags (0x80 from behind). The health is a float at the victim's +0x164 (its most
+  +0x160); it answers whether any damage was dealt; 0x8F180 calls the death (+0xA0) after it at 0 or less. Measured:
+  a training target 75, 42.5, 10, -22.5 from three SIG 552 rounds.
+- **[game]** Wall cover: his action's kind 0x18 and the camera mode class 0x2DCF7C (USA 0x2DC4A4), which stay while he
+  locks on there. Fire without a lock does nothing and the mouse does not turn the view; the lock leans him out and
+  aims at the target, the right stick moving it.
 - **[game]** Bond's camera: the camera manager [0x3210C0] +4, 0x240 bytes a camera, by the player index at +0x1130
   (0x8D960 copies its +0xC0 position, +0xD0 pitch/yaw/roll in degrees, +0x100 field of view).
 

@@ -21,6 +21,17 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-07 - Free aim extras: hit feedback, aiming from wall cover (branch free-aim-extras)
+- Hit marker: 0x167810 (every character's damage from a hit; traced by a research agent, FINDINGS) is hooked: Bond's
+  hits on others light four short diagonals round the crosshair, 220 ms, red for 450 ms on a kill (health from above 0
+  to 0 or less), further out on the head (the bone hash "m_head"). Headless (the training's first target, from cover):
+  75, 42.5, 10, -22.5, the third a kill. Shown while the crosshair can be (free aim on foot).
+- Wall cover (the training's first step, headless): kind 0x18, camera 0x2DCF7C; there fire without a lock does nothing,
+  the lock leans Bond out. With free aim the right button there now holds the lock (menu_mouse.cpp: LT, analog 6):
+  right held leaned him out and locked on, right with fire killed the target (30 to 22 rounds), the training went to
+  step 4, letting go put him back in cover. The mouse moves the lock's aim as with the middle button.
+- Next: Harry's play test of all four (queued: he is away).
+
 ### 2026-11-07 - Free aim extras: sensitivity while aiming, the hip fire crosshair (branch free-aim-extras)
 - Harry chose 1, 2, 4 and 5 of the list: hip fire, aiming from wall cover, a sensitivity while aiming, hit feedback.
 - Sensitivity while aiming (Mouse 2 page, free_aim_sensitivity, 10 to 200%, 100 the same as before): the camera's

@@ -42,6 +42,7 @@ extern uint32_t aim_raise;            // the setting, degrees (src/common/game_i
 extern void (*frame_ui)(double fps);  // drawn each frame (src/common/game_info.cpp)
 extern std::atomic<bool> aim_trigger;  // the fire input held for the stance (src/common/menu_mouse.cpp)
 extern std::atomic<int64_t> aim_release;
+extern std::atomic<bool> cover_aim;     // the right button holds the lock in wall cover (src/common/menu_mouse.cpp)
 extern std::atomic<int64_t> reload_fire_from, reload_fire_until;  // R's trigger pull (src/common/menu_mouse.cpp)  // the fire input let go until then, ms (src/common/menu_mouse.cpp)
 extern std::atomic<float> mouse_turn;    // the mouse's turn waiting for the camera (src/game/camera.cpp)
 extern std::atomic<int64_t> hud_drawn_ms;  // when the HUD last drew (src/game/hud.cpp): none in movies or the like
@@ -61,6 +62,8 @@ constexpr uint32_t kMounted = EON_VA(0x1500B0, 0x14F920);        // thiscall on 
 constexpr uint32_t kZoomable = EON_VA(0x14B640, 0x14AEB0);       // thiscall on Bond: a weapon with a scope
 constexpr uint32_t kAnglesToMatrix = EON_VA(0xF0A90, 0xF0610);   // cdecl (angles, matrix out)
 constexpr uint32_t kFollowCamera = EON_VA(0x2E2694, 0X2E1BBC);      // the camera mode's class in play
+constexpr uint32_t kCoverCamera = EON_VA(0x2DCF7C, 0x2DC4A4);       // the camera mode's class in wall cover
+constexpr uint32_t kCoverStance = 0x18;                             // his action's kind in wall cover
 constexpr uint32_t kGunOwner = EON_VA(0x1A7A40, 0x1A7270);       // thiscall on a gun
 constexpr uint32_t kBodyTable = EON_VA(0x2DD118, 0x2DC640);      // 0x14A2C0's numbers for the upper body
 constexpr uint32_t kAlloc = EON_VA(0x99970, 0x996E0);           // cdecl (bytes): a movement state's memory
@@ -84,6 +87,11 @@ std::atomic<bool> g_crosshair{false};
 std::atomic<bool> g_on{false};           // free aim plays on foot (the follow camera, the HUD up)
 std::atomic<int64_t> g_hip_until{0};     // the left button fired without aiming: a fainter crosshair until then (ms)
 constexpr int64_t kHipShown = 1000;
+// hit feedback: Bond's last hit on someone (damage dealt through 0x167810, below), drawn on the crosshair
+std::atomic<int64_t> g_hit_ms{0};
+std::atomic<bool> g_hit_kill{false}, g_hit_head{false};
+constexpr int64_t kHitShown = 220, kKillShown = 450;
+constexpr uint32_t kHeadHash = EON_VA(0x356808, 0x355D08);  // the hash of "m_head", made at start (0x4CAD0)
 std::atomic<bool> g_turned{false};    // play, and a mouse button held
 std::atomic<bool> g_aim_only{false};  // play, and the right button held without the left
 std::atomic<bool> g_aiming{false};    // play, and the right button held
@@ -163,7 +171,9 @@ void DrawCrosshair(double) {
     float a = 1;
     if (!g_crosshair) {
         int64_t left = g_hip_until - now;
-        if (!g_on || left <= 0) return;
+        bool hit = NowMs() - g_hit_ms < kKillShown;
+        if (!g_on || (left <= 0 && !hit)) return;
+        if (left <= 0) left = 0;
         a = 0.6f * std::min(1.0f, float(left) / (kHipShown / 3.0f));
     }
     ImGuiViewport* vp = ImGui::GetMainViewport();
@@ -178,6 +188,21 @@ void DrawCrosshair(double) {
     };
     lines(IM_COL32(0, 0, 0, int(170 * a)), 3.5f * k);
     lines(IM_COL32(255, 255, 255, int(235 * a)), 1.5f * k);
+    // a hit: four short diagonals round it, fading; red for a kill, further out for the head
+    bool kill = g_hit_kill;
+    int64_t since = now - g_hit_ms, shown = kill ? kKillShown : kHitShown;
+    if (since >= 0 && since < shown) {
+        float f = 1 - float(since) / float(shown);
+        float in = (g_hit_head ? 9 : 6) * k, out = in + (g_hit_head ? 9 : 7) * k;
+        ImU32 col = kill ? IM_COL32(235, 40, 30, int(255 * f)) : IM_COL32(255, 255, 255, int(255 * f));
+        auto diag = [&](ImU32 c2, float w) {
+            for (int sx = -1; sx <= 1; sx += 2)
+                for (int sy = -1; sy <= 1; sy += 2)
+                    d->AddLine(ImVec2(c.x + sx * in, c.y + sy * in), ImVec2(c.x + sx * out, c.y + sy * out), c2, w);
+        };
+        diag(IM_COL32(0, 0, 0, int(170 * f)), 3.5f * k);
+        diag(col, 2.0f * k);
+    }
 #endif
 }
 
@@ -266,6 +291,15 @@ X86_FUNC(EON_FN(00156E50, 001566C0)) {
     reload_was = reload;
     bool scope = plays && ScopeView(ctx, mode);
     uint32_t buttons = Forced() == 2 ? 3 : input::MouseButtons();
+    // wall cover: the game aims from it only with a lock (the lock leans him out; fire without one does nothing), so
+    // there the right button holds the lock, the left fires and the mouse moves the lock's aim (src/game/mouse.cpp)
+    {
+        uint32_t action = kernel::R32(bond + 0x11B0);
+        int forced = Forced();
+        bool mouse = forced > 0 || (forced < 0 && eon::free_aim && input::UsingKeyboard());
+        bool cover = action && kernel::R32(action + 0x1AC) == kCoverStance && kind == kCoverCamera;
+        eon::cover_aim = mouse && cover && (buttons & 2);
+    }
     // play: the follow camera (the lock's and the cutscenes' are other classes) with the HUD up
     bool on = plays && !scope && kind == kFollowCamera && (Forced() >= 0 || NowMs() - eon::hud_drawn_ms < 500);
     g_crosshair = on && (buttons & 2);  // while aiming: the right button
@@ -590,4 +624,22 @@ X86_FUNC(EON_FN(0017F280, 0017EAF0)) {
     EON_ORIG(0017F280, 0017EAF0)(ctx, base);
     kernel::W32(gun + 0x3E8, clip);
     kernel::W32(gun + 0x3F0, loading);
+}
+
+// A character's damage from a hit, thiscall (victim; the event: +0x20 the attacker, +0x30 the bone's hash), every
+// character's (enemies' vtable +0x90, 0x190E80, and the base's): it takes the damage off the health (+0x164, a float)
+// and answers whether any was dealt. Bond's hits on others are kept for the crosshair's hit marker: a kill when the
+// health went from above 0 to 0 or less, the head when the bone is "m_head"
+X86_EXTERN_FUNC(EON_ORIG(00167810, 00167080));
+X86_FUNC(EON_FN(00167810, 00167080)) {
+    uint32_t victim = ctx.ecx, ev = kernel::R32(ctx.esp + 4);
+    uint32_t bond = g_bond, attacker = ev ? kernel::R32(ev + 0x20) : 0;
+    float before = kernel::G<float>(victim + 0x164);
+    EON_ORIG(00167810, 00167080)(ctx, base);
+    if (!bond || attacker != bond || victim == bond) return;
+    float after = kernel::G<float>(victim + 0x164);
+    if (!(ctx.eax & 0xFF) && !(after < before)) return;
+    g_hit_kill = before > 0 && after <= 0;
+    g_hit_head = kernel::R32(ev + 0x30) == kernel::R32(kHeadHash);
+    g_hit_ms = NowMs();
 }
