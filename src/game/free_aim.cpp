@@ -11,7 +11,8 @@
 // Bond stands in the middle of the view: the camera info every view and aim reads (0x8D960: position, then pitch, yaw,
 // roll in degrees) is moved to the right, over his shoulder. While a mouse button is held he faces the camera's way:
 // his yaw is the angles' +0x64, from which the game rebuilds his matrix (+0x70) each update, so he turns and his shots
-// stay in the gun's 90 degrees. The right button also zooms a little, and alone holds the fire input with the shot blocked, for the stance firing gives. The crosshair is drawn here while the right button is held.
+// stay in the gun's 90 degrees. The right button also zooms a little, and alone holds the fire input with the shot blocked, for the stance firing gives. The crosshair is drawn here while the right button is held, and
+// fainter for a second after the left fires from the hip, where the shots go too.
 //
 // EON_FREE_AIM (headless, no mouse): 0 off, 1 on, 2 on with a button held.
 #include <algorithm>
@@ -80,6 +81,9 @@ std::atomic<uint32_t> g_bond{0};
 std::atomic<float> g_shoulder{0};
 std::atomic<float> g_zoom{1};
 std::atomic<bool> g_crosshair{false};
+std::atomic<bool> g_on{false};           // free aim plays on foot (the follow camera, the HUD up)
+std::atomic<int64_t> g_hip_until{0};     // the left button fired without aiming: a fainter crosshair until then (ms)
+constexpr int64_t kHipShown = 1000;
 std::atomic<bool> g_turned{false};    // play, and a mouse button held
 std::atomic<bool> g_aim_only{false};  // play, and the right button held without the left
 std::atomic<bool> g_aiming{false};    // play, and the right button held
@@ -153,7 +157,15 @@ bool Plays(X86Context& ctx, uint32_t bond) {
 
 void DrawCrosshair(double) {
 #ifdef _WIN32
-    if (!g_crosshair || NowMs() - g_updated > 150) return;  // a paused game does not update Bond
+    int64_t now = NowMs();
+    if (now - g_updated > 150) return;  // a paused game does not update Bond
+    // aiming: the full crosshair; firing from the hip: fainter, fading over the last third of kHipShown
+    float a = 1;
+    if (!g_crosshair) {
+        int64_t left = g_hip_until - now;
+        if (!g_on || left <= 0) return;
+        a = 0.6f * std::min(1.0f, float(left) / (kHipShown / 3.0f));
+    }
     ImGuiViewport* vp = ImGui::GetMainViewport();
     ImVec2 c(vp->WorkPos.x + vp->WorkSize.x * 0.5f, vp->WorkPos.y + vp->WorkSize.y * 0.5f);
     float k = vp->WorkSize.y / 720, gap = 5 * k, arm = 9 * k;
@@ -164,8 +176,8 @@ void DrawCrosshair(double) {
         d->AddLine(ImVec2(c.x, c.y - gap - arm), ImVec2(c.x, c.y - gap), col, w);
         d->AddLine(ImVec2(c.x, c.y + gap), ImVec2(c.x, c.y + gap + arm), col, w);
     };
-    lines(IM_COL32(0, 0, 0, 170), 3.5f * k);
-    lines(IM_COL32(255, 255, 255, 235), 1.5f * k);
+    lines(IM_COL32(0, 0, 0, int(170 * a)), 3.5f * k);
+    lines(IM_COL32(255, 255, 255, int(235 * a)), 1.5f * k);
 #endif
 }
 
@@ -257,6 +269,8 @@ X86_FUNC(EON_FN(00156E50, 001566C0)) {
     // play: the follow camera (the lock's and the cutscenes' are other classes) with the HUD up
     bool on = plays && !scope && kind == kFollowCamera && (Forced() >= 0 || NowMs() - eon::hud_drawn_ms < 500);
     g_crosshair = on && (buttons & 2);  // while aiming: the right button
+    g_on = on;
+    if (on && (buttons & 1) && !(buttons & 2)) g_hip_until = NowMs() + kHipShown;  // hip fire: shots go there too
     float shoulder = g_shoulder, want = on ? kShoulder : 0;
     g_shoulder = shoulder + std::clamp(want - shoulder, -kShoulder * kBlendPerUpdate, kShoulder * kBlendPerUpdate);
     float zoom = g_zoom, zoom_want = on && (buttons & 2) ? kRightButtonZoom : 1;
@@ -402,6 +416,9 @@ void FreeAimCamera(uint32_t cam, bool keep) {
     last[0] = x;
     last[1] = y;
 }
+
+// whether the right button aims now (src/game/mouse.cpp: its sensitivity)
+bool FreeAimAiming() { return g_aiming; }
 
 // the camera info (src/game/fov.cpp calls this after it): the right button's zoom, in the one field of view every view
 // and frustum starts from (0xF6170 builds a frustum from it and from the scales 0x61080 makes of it), and the view

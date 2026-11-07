@@ -7,7 +7,7 @@
 // While the camera takes the mouse (src/game/camera.cpp: on foot, not locked on), the mouse's counts turn it directly:
 // kDegreesPerCount at 100% sensitivity. Otherwise (the lock's dot, the scope, mounted guns) its movement
 // (input::TakeMouse, a rate in full deflections) is added to the right stick there, after the curve and the clamp,
-// scaled by the aim sensitivity. The game flips the stick's y (up is negative here).
+// scaled by the aim sensitivity. While free aim aims (the right button) the camera's turn is scaled by its own setting. The game flips the stick's y (up is negative here).
 #include "app/app.h"
 #include "core/input.h"
 #include "kernel/kernel.h"
@@ -21,6 +21,8 @@
 
 namespace eon {
 extern uint32_t aim_sensitivity;                     // the setting, percent (src/common/game_info.cpp)
+extern uint32_t free_aim_sensitivity;                // the camera's while free aim aims, percent (the same)
+bool FreeAimAiming();                                // src/game/free_aim.cpp: the right button aims
 extern std::atomic<float> mouse_turn, mouse_tilt;   // src/game/camera.cpp
 extern std::atomic<int64_t> camera_takes_mouse_ms;
 }
@@ -57,8 +59,10 @@ X86_FUNC(EON_FN(0001BC90, 0001BA50)) {
     float cx, cy, x, y;
     if (port != 0 || !Take(cx, cy, x, y)) return;
     if (NowMs() - eon::camera_takes_mouse_ms < 250) {
-        eon::mouse_turn = eon::mouse_turn - cx * kDegreesPerCount;  // right lowers the heading, as the stick's turn does
-        eon::mouse_tilt = eon::mouse_tilt + cy * kDegreesPerCount;
+        // while free aim aims, its own share of the sensitivity (Sensitivity while aiming)
+        float k = eon::FreeAimAiming() ? float(eon::free_aim_sensitivity) / 100 : 1;
+        eon::mouse_turn = eon::mouse_turn - cx * kDegreesPerCount * k;  // right lowers the heading, as the stick's turn does
+        eon::mouse_tilt = eon::mouse_tilt + cy * kDegreesPerCount * k;
         return;
     }
     eon::mouse_turn = 0;  // nothing left over for when the camera takes it again

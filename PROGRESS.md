@@ -21,6 +21,15 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-07 - Free aim extras: sensitivity while aiming, the hip fire crosshair (branch free-aim-extras)
+- Harry chose 1, 2, 4 and 5 of the list: hip fire, aiming from wall cover, a sensitivity while aiming, hit feedback.
+- Sensitivity while aiming (Mouse 2 page, free_aim_sensitivity, 10 to 200%, 100 the same as before): the camera's
+  mouse turn while the right button aims is scaled by it (src/game/mouse.cpp, eon::FreeAimAiming()).
+- Hip fire: shots already went to the middle of the view with no lock (0x153CD0/0x153BE0 hold whenever free aim
+  plays), and the left button turns Bond to the view; now a fainter crosshair shows for a second after the left fires
+  without the right, fading over the last third.
+- Next: hit feedback (the bullet's hit path, being traced), then cover.
+
 ### 2026-11-07 - Free aim: reload text confirmed, its log removed (branch strafe-b)
 - Harry on d93e6a9: "Yep fixed." The reload text log came out again.
 

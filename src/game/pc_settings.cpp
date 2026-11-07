@@ -31,7 +31,7 @@
 
 namespace eon {
 extern bool skip_intro, modern_buttons, driving_60fps, hide_hud, slow_motion_blend, camera_follow;
-extern uint32_t fov_percent, aim_sensitivity, aim_raise;
+extern uint32_t fov_percent, aim_sensitivity, aim_raise, free_aim_sensitivity;
 }
 
 namespace {
@@ -224,6 +224,11 @@ const Page kPages[] = {
      {{"Aim sensitivity", [] { return std::to_string(eon::aim_sensitivity) + "%"; },
        [](int d) {
            eon::aim_sensitivity = uint32_t(std::clamp(int(eon::aim_sensitivity) + d * 10, 10, 1000));
+           app::Save();
+       }},
+      {"Sensitivity while aiming", [] { return std::to_string(eon::free_aim_sensitivity) + "%"; },
+       [](int d) {
+           eon::free_aim_sensitivity = uint32_t(std::clamp(int(eon::free_aim_sensitivity) + d * 10, 10, 200));
            app::Save();
        }},
       FLAG("Camera follows movement", eon::camera_follow),

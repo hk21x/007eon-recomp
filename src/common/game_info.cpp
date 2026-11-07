@@ -25,7 +25,8 @@ void (*frame_ui)(double fps) = nullptr;  // an exe's own drawing each frame, set
 uint32_t fov_percent = 100;  // the on-foot views' field of view, percent of the game's (src/game/fov.cpp)
 bool camera_follow = false;  // mouse: the camera swings behind Bond as he moves, as the game's does (src/game/camera.cpp)
 uint32_t aim_sensitivity = 100;  // mouse: the lock's dot and the scope, percent (src/game/mouse.cpp)
-uint32_t aim_raise = 6;      // free aim: the view raised, degrees, so the crosshair sits higher (src/game/free_aim.cpp)
+uint32_t aim_raise = 6;
+uint32_t free_aim_sensitivity = 100;  // free aim: the camera while the right button aims, percent of Mouse sensitivity      // free aim: the view raised, degrees, so the crosshair sits higher (src/game/free_aim.cpp)
 extern bool modern_buttons;           // src/common/buttons.cpp
 bool ButtonPictures(uint32_t header, uint32_t palette);  // GameInfo::texture_bound
 void TitleScreen(uint32_t header);                       // src/common/title_screen.cpp (default.xbe's)
@@ -223,6 +224,8 @@ const app::GameInfo app::kGame = {
                  "With the mouse, the camera swings behind Bond as he moves, as with the controller. Off: only the mouse turns it."},
                 {"aim_sensitivity", nullptr, &eon::aim_sensitivity, "Aim sensitivity (%)",
                  "The mouse moving the lock-on dot and the sniper scope, apart from the camera's Mouse sensitivity; 100 as before."},
+                {"free_aim_sensitivity", nullptr, &eon::free_aim_sensitivity, "Sensitivity while aiming (%)",
+                 "Free aim: the camera's mouse sensitivity while the right button aims, as a percent of Mouse sensitivity; 100 is the same."},
                 {"hide_hud", &eon::hide_hud, nullptr, "Hide the HUD", "For screenshots; at once, on foot and driving."},
                 {"slow_motion_blend", &eon::slow_motion_blend, nullptr, "Smooth slow motion",
                  "Direct3D 12, driving missions at 60: slow motion's pictures fade into each other instead of each showing three times."},
