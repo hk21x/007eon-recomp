@@ -21,6 +21,15 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-07 - Strafing: the gun turns with him (branch strafe-b)
+
+Harry on 85b4a78: WASD after a turn right; "a flick of the mouse whilst aiming shows the weapon delayed in catching up
+to Bond's hands" (his video, 240 frames a second: the gun a little off his hands for a few frames of a flick). Free aim
+turns Bond to the view after his update by rotating his matrix; the game had set the gun from his hand in that update,
+before the turn, and the game's own turn is gradual, so on a flick the turn is large and the gun was left behind. The
+held gun's rows (+0x70) and place (+0xB0) now turn about him by the same angle. Headless: no crash, no error. Smoke OK.
+Next: Harry.
+
 ### 2026-11-07 - Strafing: WASD after a turn, and the gun a frame late (branch strafe-b)
 
 Harry on a64cecb: "So much better! The gun no longer floats", but the gun is slower than the mouse, and after aiming

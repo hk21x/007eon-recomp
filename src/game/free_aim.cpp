@@ -244,6 +244,20 @@ X86_FUNC(EON_FN(00156E50, 001566C0)) {
         kernel::G<float>(bond + row) = c * x - s * y;
         kernel::G<float>(bond + row + 4) = s * x + c * y;
     }
+    // and his gun (Bond +0x274's +0x10: its rows at +0x70, its place at +0xB0) about him by the same turn: the game set
+    // it from his hand before this, so on a quick turn it lagged his hands by a frame (Harry)
+    uint32_t inv = kernel::R32(bond + 0x274), gun = inv ? kernel::R32(inv + 0x10) : 0;
+    if (gun && std::fabs(d) > 1e-5f) {
+        for (uint32_t row = kMatrix; row < kMatrix + 0x30; row += 0x10) {
+            float x = kernel::G<float>(gun + row), y = kernel::G<float>(gun + row + 4);
+            kernel::G<float>(gun + row) = c * x - s * y;
+            kernel::G<float>(gun + row + 4) = s * x + c * y;
+        }
+        float bx = kernel::G<float>(bond + kPosition), by = kernel::G<float>(bond + kPosition + 4);
+        float x = kernel::G<float>(gun + kPosition) - bx, y = kernel::G<float>(gun + kPosition + 4) - by;
+        kernel::G<float>(gun + kPosition) = bx + c * x - s * y;
+        kernel::G<float>(gun + kPosition + 4) = by + s * x + c * y;
+    }
 }
 
 // A gun's shot, thiscall (mode): the right button alone holds the fire input, for the stance firing has (his action
