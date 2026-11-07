@@ -21,6 +21,13 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-07 - A reload key: the clip found, the reload's start not yet
+
+EoN has no reload action; guns reload when the clip runs out. Found headless (the P99's object dumped while firing
+with RT: the clip counting 10 to 0 and back to 10): the clip +0x3E8, its size +0x3E4, waiting rounds +0x3F0, the
+reload's end 0x17F130 (FINDINGS.md, Aiming). Not found: what starts the reload (a watch on the clip under gdb missed,
+the gun at another address in that run). Kept on branch reload-trace's notes only; strafe-b unchanged.
+
 ### 2026-11-07 - Free aim's keys: C crouches, the wheel changes gun (branch strafe-b)
 
 Harry on 2214dff: "Much better". Asked for free aim keys: R to reload, C to crouch, the wheel to change guns. The

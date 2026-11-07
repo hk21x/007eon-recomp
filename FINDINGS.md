@@ -117,6 +117,13 @@ game's own code and data, with its addresses).
   starts and he sidesteps (headless: 120 units a second, facing kept), as a real lock's strafe does. Traced in branch
   strafe-b against a real lock: the real one had action kind 0x12 and +0x17C following +0x10B8; ours kind 0 and
   +0x17C left where it started.
+- **[game]** A gun (vtable 0x2DF788, built by 0x17FE30): its clip +0x3E8, the clip's size +0x3E4, its ammo type +0x3D8
+  (the owner's count of it: 0x197170 on the owner's +0x278), rounds waiting to go in +0x3F0. There is no reload
+  action in the button map (global\xbbtnmap.csv); a reload ends in 0x17F130 (an event with the gun's vtable +0x15C
+  check): the waiting rounds, at most what the owner carries, become the clip. Putting a gun away (0x180670, 0x180810)
+  moves the clip into the waiting rounds; equipping (vtable +0x110, 0x181100) fills them to the clip's size if none
+  wait. What starts a reload when the clip runs out (Bond's weapon animation, not found yet) is the step left for a
+  reload key.
 
 ## Language
 
