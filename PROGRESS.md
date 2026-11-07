@@ -21,6 +21,16 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-07 - Free aim: the reload's one-frame flash of the full clip (branch strafe-b)
+- Harry: "a little flicker of the reload text". His video at 10 fps: the P99 at "7 - 3", R, one frame of "10 - 0",
+  then "7 - 3" until the reload ends. The ammo text 0x17F280 shows the clip (+0x3E8) or, while the gun's state is 1
+  (vtable +0x154 = 0x1C05C0: [+0x2F0] state == 1, loading), the rounds going in (+0x3F0); the override gave only the
+  clip the old count. Now +0x3F0 gets it too for the call, and both are put back afterwards.
+- Headless: 0x17F280 runs for every gun each frame (unheld guns: clip 0, +0x3F0 their size); the held gun's log shows
+  R's reload keeping the count. The tutorial's guns there had nothing in reserve, so the loading path itself is
+  checked from the code and Harry's video, not reproduced.
+- Next: Harry rechecks R on the P99 with rounds in reserve.
+
 ### 2026-11-07 - Free aim: R once a reload, and the HUD keeps the count (branch strafe-b)
 
 Harry on ff323a9: "Works" (Bond's reload plays), but R spammed restarts it so it never finishes, and the HUD shows 0

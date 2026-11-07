@@ -553,14 +553,20 @@ X86_FUNC(EON_FN(001519E0, 00151250)) {
 }
 
 // The HUD's ammo ("%3d - %3d", thiscall on the gun): while R's reload waits on an empty clip, the clip it shows is the
-// one before R, as the game's own shows until a reload that the player asked for is done (it read 0: Harry)
+// one before R, as the game's own shows until a reload that the player asked for is done (it read 0: Harry). The text
+// is the clip (+0x3E8), or while the gun's state (+0x2F0) is 1, loading (its vtable +0x154, 0x1C05C0), the rounds
+// going in (+0x3F0, the clip's size when 0); both are given the old clip for the call, else that path flashed the full
+// clip for a frame mid-reload (Harry's video: "7 - 3", one frame of "10 - 0", "7 - 3")
 X86_EXTERN_FUNC(EON_ORIG(0017F280, 0017EAF0));
 X86_FUNC(EON_FN(0017F280, 0017EAF0)) {
     uint32_t gun = ctx.ecx, inv = g_bond ? kernel::R32(g_bond + 0x274) : 0;
     int shown = g_reload_clip;
-    if (shown < 0 || !inv || gun != kernel::R32(inv + 0x10) || kernel::R32(gun + 0x3E8) != 0)
+    if (shown <= 0 || !inv || gun != kernel::R32(inv + 0x10) || kernel::R32(gun + 0x3E8) != 0)
         return EON_ORIG(0017F280, 0017EAF0)(ctx, base);
+    uint32_t loading = kernel::R32(gun + 0x3F0);
     kernel::W32(gun + 0x3E8, uint32_t(shown));
+    kernel::W32(gun + 0x3F0, uint32_t(shown));
     EON_ORIG(0017F280, 0017EAF0)(ctx, base);
     kernel::W32(gun + 0x3E8, 0);
+    kernel::W32(gun + 0x3F0, loading);
 }
