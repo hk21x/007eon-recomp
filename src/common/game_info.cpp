@@ -25,8 +25,8 @@ void (*frame_ui)(double fps) = nullptr;  // an exe's own drawing each frame, set
 uint32_t fov_percent = 100;  // the on-foot views' field of view, percent of the game's (src/game/fov.cpp)
 bool camera_follow = false;  // mouse: the camera swings behind Bond as he moves, as the game's does (src/game/camera.cpp)
 uint32_t aim_sensitivity = 100;  // mouse: the lock's dot and the scope, percent (src/game/mouse.cpp)
-uint32_t aim_raise = 6;
-uint32_t free_aim_sensitivity = 100;  // free aim: the camera while the right button aims, percent of Mouse sensitivity      // free aim: the view raised, degrees, so the crosshair sits higher (src/game/free_aim.cpp)
+uint32_t aim_raise = 6;      // free aim: the view raised, degrees, so the crosshair sits higher (src/game/free_aim.cpp)
+uint32_t free_aim_sensitivity = 100;  // free aim: the camera while the right button aims, percent of Mouse sensitivity
 extern bool modern_buttons;           // src/common/buttons.cpp
 bool ButtonPictures(uint32_t header, uint32_t palette);  // GameInfo::texture_bound
 void TitleScreen(uint32_t header);                       // src/common/title_screen.cpp (default.xbe's)
@@ -250,7 +250,7 @@ const app::GameInfo app::kGame = {
     .mouse_look = true,                   // the mouse aims
     .mouse_direct = true,                 // straight into the game's look input (src/game/mouse.cpp)
     .default_keys = Keys,                 // a shooter's keys and mouse buttons on foot, a racing game's driving
-    .texture_bound = TextureBound,         // modern_buttons, the title screen on ultrawide
     .same_code = SameCode(),              // the other copies of this release's code
+    .texture_bound = TextureBound,         // modern_buttons, the title screen on ultrawide
     // optional, after these: .wheel (what a steering wheel's force feedback follows)
 };
