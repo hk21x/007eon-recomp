@@ -574,4 +574,3 @@ X86_FUNC(EON_FN(0017F280, 0017EAF0)) {
     kernel::W32(gun + 0x3E8, clip);
     kernel::W32(gun + 0x3F0, loading);
 }
-}
