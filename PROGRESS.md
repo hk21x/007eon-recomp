@@ -21,6 +21,12 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-07 - Free aim: logging the reload's ammo text (branch strafe-b)
+- Harry on 9b92bd2: still "a very short visual flick" while reloading. His earlier video, every frame at 240 fps,
+  had only the one flash fixed in 9b92bd2. Added a log: for R's first 6 reloads, each change of the count the HUD
+  text gets (0x17F280's result +0xCC) for 4 s, with the gun's clip, +0x3F0 and R's count. Headless shows it logging.
+- Next: Harry's log (and a 240 fps recording) of a reload on the P99 with rounds in reserve.
+
 ### 2026-11-07 - Free aim: the reload's one-frame flash of the full clip (branch strafe-b)
 - Harry: "a little flicker of the reload text". His video at 10 fps: the P99 at "7 - 3", R, one frame of "10 - 0",
   then "7 - 3" until the reload ends. The ammo text 0x17F280 shows the clip (+0x3E8) or, while the gun's state is 1
