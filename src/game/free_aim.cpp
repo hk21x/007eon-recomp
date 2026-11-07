@@ -36,6 +36,7 @@ extern bool free_aim;                 // the setting (src/common/game_info.cpp)
 extern void (*frame_ui)(double fps);  // drawn each frame (src/common/game_info.cpp)
 extern std::atomic<bool> aim_trigger;  // the fire input held for the stance (src/common/menu_mouse.cpp)
 extern std::atomic<int64_t> aim_release;  // the fire input let go until then, ms (src/common/menu_mouse.cpp)
+extern std::atomic<float> mouse_turn;    // the mouse's turn waiting for the camera (src/game/camera.cpp)
 extern std::atomic<int64_t> hud_drawn_ms;  // when the HUD last drew (src/game/hud.cpp): none in movies or the like
 }
 
@@ -96,6 +97,10 @@ uint32_t Camera(uint32_t bond) {
     uint32_t list = cams ? kernel::R32(cams + 4) : 0;
     return list ? list + kernel::R32(bond + kPlayerIndex) * kCameraBytes : 0;
 }
+
+// the view's heading, degrees: the camera's, and the mouse's turn still waiting for it (src/game/camera.cpp turns the
+// camera after Bond's update, so without it he faced the view a frame late, which a quick turn showed)
+float ViewHeading(uint32_t cam) { return kernel::G<float>(cam + 0xD4) + eon::mouse_turn.load(); }
 
 // the camera mode in use (0x8DDD0), 0 if none
 uint32_t CameraMode(uint32_t cam) { return cam ? kernel::R32(cam + 8 + kernel::R32(cam + 0x80) * 12) : 0; }
@@ -160,13 +165,11 @@ X86_FUNC(EON_FN(00156E50, 001566C0)) {
     if (bond == g_bond && g_aiming) {
         uint32_t action = kernel::R32(bond + 0x11B0), cam = Camera(bond);
         if (action && cam && kernel::R32(action + 0x1AC) == 0x12 && !kernel::G<uint8_t>(bond + 0x1275)) {
-            float heading = kernel::G<float>(cam + 0xD4) * kRadians;
+            float heading = ViewHeading(cam) * kRadians;
             uint32_t bits;
             std::memcpy(&bits, &heading, 4);
             ctx.ecx = action;
             kernel::CallGuest(ctx, kFaceBody, {bits});
-            ctx.ecx = action;
-            kernel::CallGuest(ctx, kFaceAim, {bits, 0});
             ctx.ecx = bond;
         }
     }
@@ -232,7 +235,7 @@ X86_FUNC(EON_FN(00156E50, 001566C0)) {
     g_aim_only = on && (buttons & 2) && !(buttons & 1) && now >= real_until;
     eon::aim_trigger = on && (buttons & 2);
     if (!on || !(buttons & 3)) return;
-    float yaw = kernel::G<float>(cam + 0xD4);
+    float yaw = ViewHeading(cam);
     float have = std::atan2(kernel::G<float>(bond + kMatrix + 4), kernel::G<float>(bond + kMatrix));
     float d = yaw * kRadians - have, c = std::cos(d), s = std::sin(d);
     kernel::G<float>(bond + kYaw) = yaw;

@@ -21,6 +21,17 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-07 - Strafing: WASD after a turn, and the gun a frame late (branch strafe-b)
+
+Harry on a64cecb: "So much better! The gun no longer floats", but the gun is slower than the mouse, and after aiming
+and turning, W, A, S and D all move him forward. Forward: the second facing call (0x16D4E0, the action's +0xD0) is the
+direction the steps are measured from (0x1641B0), so setting it to his facing made every step forward; it is dropped,
+0x16D490 (the body's, +0xC0) kept. Headless after mouse turns: left and right +90 and -90 from his facing again, his
+facing still the camera's. Slow: traced each frame (the follow camera's heading, the camera's +0xD4, Bond's yaw, the
+gun's direction): his yaw a frame behind the view and the gun 4 to 5 degrees off it, as at rest; the camera takes the
+mouse's turn after Bond's update, so he faced the view a frame late, which a quick flick (10 to 30 degrees a frame)
+shows. His facing now adds the turn still waiting for the camera (eon::mouse_turn). Smoke OK. Next: Harry.
+
 ### 2026-11-07 - Strafing: the floating gun found and fixed (branches gun-trace, strafe-b)
 
 Harry: investigate the gun. A diagnostic (gun-trace 101bfa6: the held gun, [[Bond +0x274] +0x10], its +0xB0 in Bond's
