@@ -178,6 +178,14 @@ X86_FUNC(EON_FN(00156E50, 001566C0)) {
             ctx.ecx = bond;
             kernel::W32(bond + 0xD70, kernel::R32(bond + 0xD70) & ~0x20u);
         };
+        // and in that stance his arms and gun take the lock's point (+0x1190), which with no lock stayed where it was
+        // and left the gun there as he turned: kept 2000 units along the view while he aims, as the shots go
+        if (g_aiming && cam && !kernel::G<uint8_t>(bond + 0x1275)) {
+            float pitch = kernel::G<float>(cam + 0xD0) * kRadians, yaw = kernel::G<float>(cam + 0xD4) * kRadians;
+            float f[3] = {std::cos(pitch) * std::cos(yaw), std::cos(pitch) * std::sin(yaw), -std::sin(pitch)};
+            for (int i = 0; i < 3; i++) kernel::G<float>(bond + 0x1190 + 4 * i) = kernel::G<float>(cam + 0xC0 + 4 * i) + f[i] * 2000;
+            kernel::G<float>(bond + 0x119C) = 1;
+        }
         if (g_aiming && stance == 0) {
             set(0x12);
             stanced = true;

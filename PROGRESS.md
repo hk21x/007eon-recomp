@@ -21,6 +21,14 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-07 - Strafing: the gun follows the aim in the locked stance (branch strafe-b)
+
+Harry on 9e3642b: still some oddities; his screenshot: Bond turned with the view, the gun left floating where he aimed
+before. In the locked stance (0x12) his arms and gun take the lock's point +0x1190, which with no lock was never
+updated. Now while free aim aims with no lock it is kept 2000 units along the view (the camera's +0xC0 position and
++0xD0/+0xD4 angles, as the shots' line). His log's 26 strafe restarts: one at each change of push, none in a burst.
+Headless the frames could not show the gun (the camera mid-turn); no crash. Smoke OK. Next: Harry.
+
 ### 2026-11-06 - Strafing: a fresh strafe on any change of push (branch strafe-b)
 
 Harry on 70f1e7e: sideways after W or S right now; forward then back (W then S) still catches. The restart now covers
