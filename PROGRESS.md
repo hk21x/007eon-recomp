@@ -21,6 +21,19 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-08 - PC controls: the scope's let go, three attempts; a state log for Harry (branch pc-controls)
+- Harry on 25aacfa: up and down in the scope now wrong (the flip in 78719be never applied, the scope was never seen
+  up; it was right without it), and letting go of the right button still leaves the sniper view up.
+- The flip is gone: the scope's mouse as everywhere else.
+- Three attempts at closing the scope on letting go, all a second tap of the lock: (1) waited on free aim's Plays
+  (78719be: no tap); (2) the zoom's +0x10 as the scope's state (no tap); (3) +0x10 or +0x40 bit 1, or as the right
+  button opened it (25aacfa): his log has both taps, 0.6 s apart, the zoom's +0x10 0 and +0x40 0 then 0x10000 (the
+  changed bit) while the sniper view was up. 0x153810 takes the scope as up only from those two (0x153948), so the
+  second tap reads as opening, not closing. What I think: the view he sees is held by other state than the zoom's
+  (+0xD74 0x10000002 set as it opens, the action's kind, a camera mode), or the zoom is not the one 0x14B640 answers
+  while it is up. Stopped guessing: a log of Bond's and the zoom's state every 6th update for 2 s after each of the
+  first 8 presses and let gos ("eon: scope state:"), for one run of Harry's. Smoke OK.
+
 ### 2026-11-08 - PC controls: the scope's state (branch pc-controls)
 - Harry on 78719be: the wheel does not zoom the rifle; letting go still leaves the scope up. Both lean on the scope
   being up, read as the zoom's +0x10 byte; 0x153810 (0x153948) also takes its +0x40 bit 1. Now either, or a scope the

@@ -341,6 +341,28 @@ X86_FUNC(EON_FN(00156E50, 001566C0)) {
     }
     bool scoped = flagged || ours;
     eon::scoped = scoped;
+    // the scope's state through a press and a let go (Harry's runs: the let go's tap left the scope up with the zoom's
+    // +0x10 and +0x40 bit 1 both clear): every 6th update for 2 s after each, the first 4 presses
+    {
+        static int64_t watch_until = 0;
+        static int presses = 0, n = 0;
+        static bool right_seen = false;
+        bool right_now = input::MouseButtons() & 2;
+        if (gun_zoom && !mounted && right_now != right_seen && presses < 8) {
+            presses++;
+            watch_until = NowMs() + 2000;
+        }
+        right_seen = right_now;
+        uint32_t act = kernel::R32(bond + 0x11B0);
+        if (NowMs() < watch_until && (n++ % 6) == 0)
+            LOGR("eon: scope state: right %d kind %X d70 %08X d74 %08X 1550 %08X zoom %08X +0x10 %u +0x40 %08X factor %.2f cam %08X "
+                 "sel %08X held %08X second %08X",
+                 int(right_now), act ? kernel::R32(act + 0x1AC) : 0, kernel::R32(bond + 0xD70), kernel::R32(bond + 0xD74),
+                 kernel::R32(bond + 0x1550), gun_zoom, gun_zoom ? kernel::G<uint8_t>(gun_zoom + 0x10) : 0,
+                 gun_zoom ? kernel::R32(gun_zoom + 0x40) : 0, gun_zoom ? kernel::G<float>(gun_zoom) : 0.f, kind,
+                 kernel::R32(kernel::R32(bond + 0x274) + 0x18), kernel::R32(kernel::R32(bond + 0x274) + 0x10),
+                 kernel::R32(kernel::R32(bond + 0x274) + 0x14));
+    }
     eon::ZoomWheel(gun_zoom, mounted, scoped);  // the wheel zooms them (src/game/zoom.cpp)
     bool cover_right = false;  // the right button held in wall cover (below)
     // wall cover (his action's kind 0x18, its camera 0x2DCF7C): at an edge (+0xD70 bit 0x400, 0x14B450) fire leans him

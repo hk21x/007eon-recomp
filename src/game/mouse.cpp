@@ -73,9 +73,7 @@ X86_FUNC(EON_FN(0001BC90, 0001BA50)) {
     std::memcpy(&rx, &kernel::G<uint32_t>(out + 8), 4);
     std::memcpy(&ry, &kernel::G<uint32_t>(out + 12), 4);
     rx += x * k;
-    // in a scope the mouse's up and down the other way round: fed as elsewhere it was "inverted compared to normal
-    // aiming" (Harry)
-    ry += eon::scoped ? y * k : -y * k;
+    ry -= y * k;  // a scope too: flipped there it was the wrong way (Harry, 25aacfa)
     std::memcpy(&kernel::G<uint32_t>(out + 8), &rx, 4);
     std::memcpy(&kernel::G<uint32_t>(out + 12), &ry, 4);
 }
