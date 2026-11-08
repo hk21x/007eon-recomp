@@ -77,3 +77,7 @@ IDirectSound_CreateSoundBuffer                       = 0x28055B  # xtlid B003A
 XAudioCalculatePitch                                 = 0x27E32D  # xtlid B00A3
 D3DDevice_BeginPushBuffer                            = 0x26E800  # points the device's push at the buffer (+0x764 it, +0x770/+0x76C the old push), flag 4
 D3DDevice_EndPushBuffer                              = 0x26E870  # stores the size recorded, puts the push back
+
+# extra entry points the analysis folds into their callers
+[functions]
+0x148C70 = "BondShot"  # takes Bond's fire bit (+0x1550 & 0x10) and fires his gun (src/game/free_aim.cpp)

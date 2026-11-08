@@ -122,3 +122,23 @@ X86_FUNC(EON_FN(001D1C70, 001D14A0)) {
         g_tilt_held = false;
     }
 }
+
+// Wall cover's camera (0x1AECD0, thiscall, its mode class 0x2DCF7C): the right stick sets turn speeds (+0xD8 across,
+// +0xD4 up and down) that add into offsets from the wall's direction, +0xE0 (degrees, within 80) and +0xDC (within 60),
+// unless Bond is locked on (0x148EF0), +0xD04 or +0x10F3. There the mouse sets the offsets directly, as it turns the
+// follow camera, and the speeds are held at 0; locked on, it moves the lock's aim (src/game/mouse.cpp)
+X86_EXTERN_FUNC(EON_ORIG(001AECD0, 001AE500));
+X86_FUNC(EON_FN(001AECD0, 001AE500)) {
+    uint32_t mode = ctx.ecx;
+    uint32_t bond = Ask(ctx, kernel::R32(kPlayers), kBondOf, {kernel::R32(mode + 0x44)});
+    if (bond && kernel::R32(bond + kPlayerIndex) == 0 && input::UsingKeyboard() &&
+        !(Ask(ctx, bond, kAiming, {}) & 0xFF) && !kernel::R32(bond + 0xD04) && !kernel::G<uint8_t>(bond + 0x10F3)) {
+        eon::camera_takes_mouse_ms = NowMs();
+        float turn = eon::mouse_turn.exchange(0), tilt = eon::mouse_tilt.exchange(0);
+        kernel::G<float>(mode + 0xE0) = std::clamp(kernel::G<float>(mode + 0xE0) + turn, -80.0f, 80.0f);
+        kernel::G<float>(mode + 0xDC) = std::clamp(kernel::G<float>(mode + 0xDC) + tilt, -60.0f, 60.0f);
+        kernel::G<float>(mode + 0xD4) = 0;
+        kernel::G<float>(mode + 0xD8) = 0;
+    }
+    EON_ORIG(001AECD0, 001AE500)(ctx, base);
+}

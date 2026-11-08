@@ -21,6 +21,20 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-08 - Free aim from wall cover: the right button leans out, the mouse aims (branch free-aim-extras)
+- Harry on d9fedee: the right button in cover gave the lock's auto aim. Traced (research agent, then measured): the
+  lean out is fire's, at a cover edge (D70 bit 0x400): 0x148B70 builds state 0x3C8; the lock only leans him out at a
+  target. Now, in cover with free aim, the right button's press calls 0x148B70 (no lock), held keeps +0x106C up so he
+  stays out, let go he goes back. The mouse turns the cover camera directly (0x1AECD0: offsets +0xE0/+0xDC set, the
+  stick's speeds held at 0; src/game/camera.cpp, also outside free aim), the shots go to the middle of the view (as on
+  foot), his shoulders turn to the view (0x14A740 with the yaw offset), the crosshair and hit markers show.
+- The lean's own shot as he comes out (the bit +0x1550 & 0x10, taken by 0x149400) is left out without the left
+  button, read live (a frame-old flag kept the first real shot back), and the gun marked as after a shot (+0x328
+  0x80000), which the lean waits for before firing again. Refusing the gun's shot at 0x181250 instead ended the lean.
+  0x149400 (USA 0x148C70) added to [functions]: the analysis had folded it into its caller.
+- Headless (the training's cover, step 4): right alone leaned out, 22 rounds kept; turned left and fired, 15; turned
+  right and fired, 8; the bullets' hits round the middle of the view. The right-button lock in cover is gone.
+
 ### 2026-11-08 - Free aim extras: Harry's test of d9fedee (branch free-aim-extras)
 - Harry: hip fire works; hit markers work; right click in cover "goes back into auto aim": the lock leans Bond out
   but aims for him. Wanted: lean out with the view turned by the mouse and the shots to the crosshair. Cover aiming

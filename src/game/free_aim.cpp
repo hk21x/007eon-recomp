@@ -42,7 +42,6 @@ extern uint32_t aim_raise;            // the setting, degrees (src/common/game_i
 extern void (*frame_ui)(double fps);  // drawn each frame (src/common/game_info.cpp)
 extern std::atomic<bool> aim_trigger;  // the fire input held for the stance (src/common/menu_mouse.cpp)
 extern std::atomic<int64_t> aim_release;
-extern std::atomic<bool> cover_aim;     // the right button holds the lock in wall cover (src/common/menu_mouse.cpp)
 extern std::atomic<int64_t> reload_fire_from, reload_fire_until;  // R's trigger pull (src/common/menu_mouse.cpp)  // the fire input let go until then, ms (src/common/menu_mouse.cpp)
 extern std::atomic<float> mouse_turn;    // the mouse's turn waiting for the camera (src/game/camera.cpp)
 extern std::atomic<int64_t> hud_drawn_ms;  // when the HUD last drew (src/game/hud.cpp): none in movies or the like
@@ -64,6 +63,7 @@ constexpr uint32_t kAnglesToMatrix = EON_VA(0xF0A90, 0xF0610);   // cdecl (angle
 constexpr uint32_t kFollowCamera = EON_VA(0x2E2694, 0X2E1BBC);      // the camera mode's class in play
 constexpr uint32_t kCoverCamera = EON_VA(0x2DCF7C, 0x2DC4A4);       // the camera mode's class in wall cover
 constexpr uint32_t kCoverStance = 0x18;                             // his action's kind in wall cover
+constexpr uint32_t kLeanOut = EON_VA(0x148B70, 0x1483E0);           // fastcall (Bond): fire's lean out of cover
 constexpr uint32_t kGunOwner = EON_VA(0x1A7A40, 0x1A7270);       // thiscall on a gun
 constexpr uint32_t kBodyTable = EON_VA(0x2DD118, 0x2DC640);      // 0x14A2C0's numbers for the upper body
 constexpr uint32_t kAlloc = EON_VA(0x99970, 0x996E0);           // cdecl (bytes): a movement state's memory
@@ -85,6 +85,8 @@ std::atomic<float> g_shoulder{0};
 std::atomic<float> g_zoom{1};
 std::atomic<bool> g_crosshair{false};
 std::atomic<bool> g_on{false};           // free aim plays on foot (the follow camera, the HUD up)
+std::atomic<bool> g_cover_lean{false};   // leaned out of wall cover by the right button
+std::atomic<bool> g_cover_right{false};  // the right button held in wall cover
 std::atomic<int64_t> g_hip_until{0};     // the left button fired without aiming: a fainter crosshair until then (ms)
 constexpr int64_t kHipShown = 1000;
 // hit feedback: Bond's last hit on someone (damage dealt through 0x167810, below), drawn on the crosshair
@@ -291,19 +293,35 @@ X86_FUNC(EON_FN(00156E50, 001566C0)) {
     reload_was = reload;
     bool scope = plays && ScopeView(ctx, mode);
     uint32_t buttons = Forced() == 2 ? 3 : input::MouseButtons();
-    // wall cover: the game aims from it only with a lock (the lock leans him out; fire without one does nothing), so
-    // there the right button holds the lock, the left fires and the mouse moves the lock's aim (src/game/mouse.cpp)
+    bool cover_right = false;  // the right button held in wall cover (below)
+    // wall cover (his action's kind 0x18, its camera 0x2DCF7C): at an edge (+0xD70 bit 0x400, 0x14B450) fire leans him
+    // out (0x148B70: the state 0x3C8, steps 0x1B60E0) to shoot and back. Here the right button's press leans him out
+    // the same way, with no lock: the mouse turns the cover camera (src/game/camera.cpp), his shots go to the middle
+    // of the view (0x153CD0/0x153BE0, as on foot) and his shoulders turn to it (0x14A740); the left fires. Held, he
+    // stays out (+0x106C, the time the lean's step waits after a shot); let go, he goes back. The lean's own shot as
+    // he comes out is left out (0x149400, below)
     {
         uint32_t action = kernel::R32(bond + 0x11B0);
         int forced = Forced();
         bool mouse = forced > 0 || (forced < 0 && eon::free_aim && input::UsingKeyboard());
         bool cover = action && kernel::R32(action + 0x1AC) == kCoverStance && kind == kCoverCamera;
-        eon::cover_aim = mouse && cover && (buttons & 2);
+        static bool right_was = false;
+        bool right = mouse && cover && (buttons & 2);
+        cover_right = right;
+        if (right && !right_was && !(kernel::R32(bond + 0xD70) & 8)) {
+            ctx.ecx = bond;
+            kernel::CallGuest(ctx, kLeanOut, {});
+            ctx.ecx = bond;
+        }
+        bool out = right && (kernel::R32(bond + 0xD70) & 8);
+        if (out) kernel::G<float>(bond + 0x106C) = 0.5f;
+        g_cover_lean = out;
+        right_was = right;
     }
     // play: the follow camera (the lock's and the cutscenes' are other classes) with the HUD up
     bool on = plays && !scope && kind == kFollowCamera && (Forced() >= 0 || NowMs() - eon::hud_drawn_ms < 500);
-    g_crosshair = on && (buttons & 2);  // while aiming: the right button
-    g_on = on;
+    g_crosshair = (on && (buttons & 2)) || g_cover_lean;  // while aiming: the right button
+    g_on = on || g_cover_lean;
     if (on && (buttons & 1) && !(buttons & 2)) g_hip_until = NowMs() + kHipShown;  // hip fire: shots go there too
     float shoulder = g_shoulder, want = on ? kShoulder : 0;
     g_shoulder = shoulder + std::clamp(want - shoulder, -kShoulder * kBlendPerUpdate, kShoulder * kBlendPerUpdate);
@@ -352,6 +370,7 @@ X86_FUNC(EON_FN(00156E50, 001566C0)) {
     }
     left_was = buttons & 1;
     g_aim_only = on && (buttons & 2) && !(buttons & 1) && now >= real_until;
+    g_cover_right = cover_right;
     eon::aim_trigger = on && (buttons & 2);
     if (!on || !(buttons & 3)) return;
     float yaw = ViewHeading(cam);
@@ -403,7 +422,7 @@ X86_FUNC(EON_FN(00181250, 00180AC0)) {
 X86_EXTERN_FUNC(EON_ORIG(0014A740, 00149FB0));
 X86_FUNC(EON_FN(0014A740, 00149FB0)) {
     uint32_t bond = ctx.ecx;
-    if (bond != g_bond || !g_turned) return EON_ORIG(0014A740, 00149FB0)(ctx, base);
+    if (bond != g_bond || !(g_turned || g_cover_lean)) return EON_ORIG(0014A740, 00149FB0)(ctx, base);
     uint32_t cam = Camera(bond);
     float pitch = ViewPitch(cam);
     if (pitch > 180) pitch -= 360;
@@ -419,7 +438,14 @@ X86_FUNC(EON_FN(0014A740, 00149FB0)) {
     float b = flipped ? pitch * entry(wide ? 0x3C : 0x2C) - entry(wide ? 0x38 : 0x28)
                       : pitch * entry(wide ? 0x34 : 0x24) - entry(wide ? 0x30 : 0x20);
     float yaw_limit = kernel::G<float>(bond + 0x96C), pitch_limit = kernel::G<float>(bond + 0x974);
-    kernel::G<float>(bond + 0x988) = std::clamp(-b, -yaw_limit, yaw_limit);
+    // leaned out of cover he keeps the lean's facing: his shoulders turn the rest of the way to the view
+    float turn = 0;
+    if (g_cover_lean) {
+        turn = ViewHeading(cam) - kernel::G<float>(bond + kYaw);
+        turn -= 360 * std::floor((turn + 180) / 360);
+        turn *= kRadians;
+    }
+    kernel::G<float>(bond + 0x988) = std::clamp(-b + turn, -yaw_limit, yaw_limit);
     kernel::W32(bond + 0x98C, 0);
     kernel::G<float>(bond + 0x990) = std::clamp(a, -pitch_limit, pitch_limit);
     // +0xCDC bit 0 lets +0x114 apply them to his spine's bones
@@ -642,4 +668,24 @@ X86_FUNC(EON_FN(00167810, 00167080)) {
     g_hit_kill = before > 0 && after <= 0;
     g_hit_head = kernel::R32(ev + 0x30) == kernel::R32(kHeadHash);
     g_hit_ms = NowMs();
+}
+
+// Bond's shot, fastcall (Bond): with his +0x1550 bit 0x10 asked (fire's request, 0x1493F0, or the lean out of cover's
+// own) it takes the bit and fires his gun (vtable +0x178). Leaned out of cover by the right button alone, the lean's
+// shot as he comes out is left out: the bit taken as the game does when nothing fires. The left button is read here,
+// as it is now: the flag from his update is a frame old, and a press there kept the first shot back. Refusing the gun's
+// shot instead (0x181250) ended the lean and took him out of cover
+X86_EXTERN_FUNC(EON_ORIG(00149400, 00148C70));
+X86_FUNC(EON_FN(00149400, 00148C70)) {
+    uint32_t bond = ctx.ecx;
+    uint32_t flags = kernel::R32(bond + 0x1550);
+    if (bond == g_bond && (flags & 0x10) && g_cover_right && !(input::MouseButtons() & 1)) {
+        kernel::W32(bond + 0x1550, flags & ~0x18u);
+        // and the gun as after a shot (+0x328 bit 0x80000, as 0x181250 leaves it), which the lean waits for before
+        // fire's next shot (0x1B60E0's step 3): without it the left button fired nothing while he leaned out
+        uint32_t inv = kernel::R32(bond + 0x274), gun = inv ? kernel::R32(inv + 0x10) : 0;
+        if (gun) kernel::W32(gun + 0x328, kernel::R32(gun + 0x328) | 0x80000);
+        return;
+    }
+    EON_ORIG(00149400, 00148C70)(ctx, base);
 }

@@ -93,8 +93,17 @@ game's own code and data, with its addresses).
   +0x160); it answers whether any damage was dealt; 0x8F180 calls the death (+0xA0) after it at 0 or less. Measured:
   a training target 75, 42.5, 10, -22.5 from three SIG 552 rounds.
 - **[game]** Wall cover: his action's kind 0x18 and the camera mode class 0x2DCF7C (USA 0x2DC4A4), which stay while he
-  locks on there. Fire without a lock does nothing and the mouse does not turn the view; the lock leans him out and
-  aims at the target, the right stick moving it.
+  locks on there (traced by a research agent, then measured). Each frame 0x14B450 sets Bond +0xD70 bit 0x400 at an
+  edge (the action's +0x1B4 & 0x30 the side, within 26.2 of it). Fire there (0x152EE0) calls 0x148B70 (fastcall,
+  Bond), which builds the lean out, state 0x3C8 (0x1B5D90, vtable 0x2E192C, steps 0x1B60E0): D70 | 8 and 2 or 4 by
+  side; out, its step 3 aims and fires, and goes back when its animation ends with Bond +0x106C (a float, seconds)
+  at 0 or less; it fires again only once the gun's +0x328 has 0x80000 (a shot's end). As he comes out it sets Bond's
+  fire bit +0x1550 & 0x10, which 0x149400 (fastcall, Bond; folded into its caller 0x149B60 until listed in
+  [functions]) takes to fire the gun (vtable +0x178). In the training's step 2 fire does nothing (it waits for the
+  lock); the lock leans him out at the target, and can take him out of cover (0x175020, state 0x3C1).
+- **[game]** The cover camera's update 0x1AECD0 (thiscall; object vtable 0x2E173C): the right stick's speeds +0xD8
+  (across) and +0xD4 add into offsets from the wall's direction, +0xE0 (degrees, within 80) and +0xDC (within 60),
+  unless locked on (0x148EF0), +0xD04 or +0x10F3; with the lock they ease back to 0 and it looks toward the target.
 - **[game]** Bond's camera: the camera manager [0x3210C0] +4, 0x240 bytes a camera, by the player index at +0x1130
   (0x8D960 copies its +0xC0 position, +0xD0 pitch/yaw/roll in degrees, +0x100 field of view).
 

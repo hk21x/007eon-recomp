@@ -17,7 +17,6 @@ namespace eon {
 std::atomic<int64_t> g_menu_input{-1000};  // when a menu last took the input, ms (src/game/menu_input.cpp)
 extern bool free_aim;                 // the setting (src/common/game_info.cpp)
 std::atomic<bool> aim_trigger{false};  // free aim holds the fire input (src/game/free_aim.cpp)
-std::atomic<bool> cover_aim{false};   // in wall cover the right button holds the lock (src/game/free_aim.cpp)
 std::atomic<int64_t> reload_fire_from{0}, reload_fire_until{0};  // R's trigger pull, ms (src/game/free_aim.cpp)
 std::atomic<int64_t> aim_release{0};   // let go until then, ms (polls outrun frames: a press needs the game to see it up)
 
@@ -67,7 +66,6 @@ void MenuMouse(int port, input::Pad& p) {
             p.analog[7] = 255;
         }
         if (now >= eon::reload_fire_from && now < eon::reload_fire_until) p.analog[7] = 255;  // R: the empty gun's pull
-        if (eon::cover_aim) p.analog[6] = 255;  // in wall cover: the lock, which leans him out to aim
         return;
     }
     // the buttons out of what they play in play
