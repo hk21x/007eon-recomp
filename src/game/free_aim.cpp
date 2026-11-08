@@ -43,6 +43,7 @@ extern void (*frame_ui)(double fps);  // drawn each frame (src/common/game_info.
 extern std::atomic<bool> aim_trigger;  // the fire input held for the stance (src/common/menu_mouse.cpp)
 extern std::atomic<int64_t> aim_release;
 extern std::atomic<int64_t> lock_tap_ms;  // a tap of the lock (LT) from then (src/common/menu_mouse.cpp)
+std::atomic<bool> scoped{false};           // a scope is up (src/game/mouse.cpp: its up and down)
 extern std::atomic<int64_t> reload_fire_from, reload_fire_until;  // R's trigger pull (src/common/menu_mouse.cpp)  // the fire input let go until then, ms (src/common/menu_mouse.cpp)
 extern std::atomic<float> mouse_turn;    // the mouse's turn waiting for the camera (src/game/camera.cpp)
 extern std::atomic<int64_t> hud_drawn_ms;
@@ -312,9 +313,14 @@ X86_FUNC(EON_FN(00156E50, 001566C0)) {
     // a weapon with a scope (a zoom, not a mounted gun's): the right button is its scope, as the lock's tap (LT, let go)
     // opens it and taps again close it (0x153810): tapped here on its press and on its let go, through
     // src/common/menu_mouse.cpp; free aim's own aim is left out for it (Harry: the Dragunov aimed over the shoulder)
-    if (gun_zoom && !mounted && plays) {
+    // (free aim's own test, Plays, fails once the scope is up: so the keyboard and mouse alone, or letting go did not
+    // close it: Harry)
+    bool scoped = gun_zoom && !mounted && kernel::G<uint8_t>(gun_zoom + 0x10) != 0;
+    eon::scoped = scoped;
+    int forced = Forced();
+    if (gun_zoom && !mounted && (forced > 0 || (forced < 0 && eon::free_aim && input::UsingKeyboard()))) {
         static bool right_was = false;
-        bool right = buttons & 2, scoped = kernel::G<uint8_t>(gun_zoom + 0x10) != 0;
+        bool right = buttons & 2;
         if (right != right_was && right != scoped) eon::lock_tap_ms = NowMs();
         right_was = right;
         buttons &= ~2u;

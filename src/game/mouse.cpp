@@ -23,6 +23,7 @@ namespace eon {
 extern uint32_t aim_sensitivity;                     // the setting, percent (src/common/game_info.cpp)
 extern uint32_t free_aim_sensitivity;                // the camera's while free aim aims, percent (the same)
 bool FreeAimAiming();                                // src/game/free_aim.cpp: the right button aims
+extern std::atomic<bool> scoped;                     // src/game/free_aim.cpp: a scope is up
 extern std::atomic<float> mouse_turn, mouse_tilt;   // src/game/camera.cpp
 extern std::atomic<int64_t> camera_takes_mouse_ms;
 }
@@ -72,7 +73,9 @@ X86_FUNC(EON_FN(0001BC90, 0001BA50)) {
     std::memcpy(&rx, &kernel::G<uint32_t>(out + 8), 4);
     std::memcpy(&ry, &kernel::G<uint32_t>(out + 12), 4);
     rx += x * k;
-    ry -= y * k;
+    // in a scope the mouse's up and down the other way round: fed as elsewhere it was "inverted compared to normal
+    // aiming" (Harry)
+    ry += eon::scoped ? y * k : -y * k;
     std::memcpy(&kernel::G<uint32_t>(out + 8), &rx, 4);
     std::memcpy(&kernel::G<uint32_t>(out + 12), &ry, 4);
 }

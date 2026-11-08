@@ -21,6 +21,13 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-08 - PC controls: the scope closes on letting go, its up and down (branch pc-controls)
+- Harry on c6b2fda: the right button scopes in; letting go did not close it; the scope's up and down inverted against
+  normal aiming. The scope toggles on the lock's tap either way (0x153810: 0x147B30(0x4000) let go, the selected item
+  the held one), but the let go's tap waited on free aim's Plays, which fails once the scope is up: now on the
+  keyboard and mouse alone. In a scope the mouse's up and down are fed to the stick the other way round
+  (src/game/mouse.cpp, eon::scoped from the zoom's +0x10). Smoke OK; no sniper headless.
+
 ### 2026-11-08 - PC controls: the right button opens a sniper's scope (branch pc-controls)
 - Harry on ed30225: aiming the Dragunov did not go down the scope (free aim's over the shoulder aim took the right
   button). The scope opens on the lock's tap (LT let go, 0x153810), now the middle button. With a weapon that has a
