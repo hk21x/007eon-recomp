@@ -162,6 +162,15 @@ void MenuMouse(int port, input::Pad& p) {
             p.analog[input::kLT - input::kA] = (held & 2) ? 255 : 0;
         }
 #ifdef _WIN32
+        // the helicopter (Sand Storm) climbs and descends on the left stick's y (STEERVERTICAL; the down arrow climbs):
+        // E climbs and Q descends (Harry), and E no longer plays the gadget there (X: the right button alone)
+        if (vehicle == Vehicle::kHeli) {
+            bool up = GetAsyncKeyState('E') & 0x8000, down = GetAsyncKeyState('Q') & 0x8000;
+            if (up != down) p.ly = up ? -32767 : 32767;
+            p.analog[input::kX - input::kA] = (held & 2) ? 255 : 0;
+        }
+#endif
+#ifdef _WIN32
         // on foot in a driving mission (Train Chase) the gas and brake keys (W, S) also walk him: the left stick's up
         // and down, his walk there, unless the stick is already pushed (the arrows)
         if (eon::kDriving && now - eon::driving_on_foot_ms.load() < 250 && input::UsingKeyboard() && p.ly == 0) {

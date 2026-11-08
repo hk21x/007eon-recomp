@@ -21,6 +21,12 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-08 - The helicopter climbs on E, descends on Q (branch pc-controls)
+- Harry on 7c28443: A Show of Force's buttons work; its aim feels like a stick (asked how much a mouse style aim is).
+  Sand Storm (driveheli.def): the left stick's y climbs and descends (STEERVERTICAL; the down arrow climbs). In the
+  helicopter E now climbs and Q descends; E no longer plays the gadget there (right button only, as Harry chose).
+  wincheck clean, smoke OK; not reachable headless.
+
 ### 2026-11-08 - The rail tank's buttons (branch pc-controls)
 - Harry on 4c97c09: the mouse moves the gun in A Show of Force; left and right click do nothing, W fires. Its config
   is driverailtank.def: fire RT, aim (zoom) LT, the next weapon Black, no gas or brake; the driving keys put W and S
