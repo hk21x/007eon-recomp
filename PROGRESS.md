@@ -21,6 +21,15 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-08 - PC controls against Agent Under Fire's (branch pc-controls)
+- Harry asked to compare EoN's PC controls with AUF's corrected ones, then to do all five differences: Backspace for
+  back, the wheel in the driving missions, the wheel zooming a scope, mounted guns aimed directly by the mouse, a menu
+  pointer.
+- Done: B (dive roll, back in the menus) has Backspace as its second key; the wheel in the driving exe pulses Black,
+  its next weapon, free aim or not (it pulsed the d-pad's down there, not a weapon). Builds; the driving missions are
+  not reachable headless.
+- Next: the menus' items and rectangles (being traced), the scope's zoom, the mounted guns.
+
 ### 2026-11-08 - Number keys on main
 - Harry on be99d05: "Works as expected." Smoke OK, Europe and USA, on be99d05 (since then only PROGRESS); main
   fast-forwarded to weapon-keys.

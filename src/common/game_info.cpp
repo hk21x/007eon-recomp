@@ -100,7 +100,7 @@ std::array<uint16_t, 2> ShooterKeys(int c) {
         case kRT: return {kMouseLeft, 0};    // fire
         case kLT: return {kMouseMiddle, 0};  // lock on; the right button aims, R reloads (src/game/free_aim.cpp)
         case kA: return {kSpace, kEnter};
-        case kB: return {kLeftCtrl, 0};
+        case kB: return {kLeftCtrl, kBackspace};  // dive roll; back in the menus, as Agent Under Fire's
         case kX: return {'Q', 0};            // punch left
         case kY: return {'E', 0};            // punch right
         case kBlack: return {'F', 0};        // wall cover

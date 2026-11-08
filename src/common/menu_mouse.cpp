@@ -18,6 +18,7 @@
 #endif
 
 namespace eon {
+extern const bool kDriving;  // driving.xbe's exe (src/driving/hooks.cpp)
 
 std::atomic<int64_t> g_menu_input{-1000};  // when a menu last took the input, ms (src/game/menu_input.cpp)
 extern bool free_aim;                 // the setting (src/common/game_info.cpp)
@@ -44,10 +45,10 @@ void MenuMouse(int port, input::Pad& p) {
     if (menu != was) LOGI("eon: %s", menu ? "a menu takes the input: the mouse plays A, B and the d-pad" : "out of the menus");
     was = menu;
     // in play with free aim, the wheel: the next weapon a notch (CYCLEWEAPONSFORWARD, the d-pad's down; the game has
-    // no previous weapon, so both ways go forward)
+    // no previous weapon, so both ways go forward); in the driving missions Black, their next weapon, free aim or not
     static int weapons = 0;
     static int64_t weapon_pulse = 0;
-    if (!menu && eon::free_aim && notches) {
+    if (!menu && (eon::free_aim || eon::kDriving) && notches) {
         if (!weapons) weapon_pulse = now;
         weapons = std::min(weapons + std::abs(notches), 4);
     }
@@ -57,7 +58,8 @@ void MenuMouse(int port, input::Pad& p) {
         if (weapons) {
             int64_t t = now - weapon_pulse;
             if (t < kPress) {
-                p.buttons |= uint16_t(1u << input::kDown);
+                if (eon::kDriving) p.analog[input::kBlack - input::kA] = 255;  // driving: Black, its next weapon
+                else p.buttons |= uint16_t(1u << input::kDown);
             } else if (t >= kPress + kGap) {
                 weapons--;
                 weapon_pulse = now;

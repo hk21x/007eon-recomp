@@ -123,7 +123,7 @@ German on the other, English alone on the US disc. A language your disc does not
 | Lock on | Middle mouse button (hold) |
 | Reload | R (free aim) |
 | Jump, confirm (A) | Space or Enter |
-| B | Left Ctrl |
+| Dive roll (B), back in the menus | Left Ctrl or Backspace |
 | Punch left / right (X / Y) | Q / E |
 | Crouch (White) | C |
 | Wall cover (Black) | F |
@@ -144,7 +144,7 @@ In the menus the mouse wheel scrolls, the left button selects and the right butt
 | Handbrake | Space |
 | Fire weapon / fire gadget | Left mouse button or Enter / right mouse button or E |
 | Action | F |
-| Next weapon | R, or 3 / 4 |
+| Next weapon | Mouse wheel, R, or 3 / 4 |
 | Full screen map | M |
 | Look back / centre the camera | C / V or middle mouse button |
 | Change camera | 1 |
