@@ -21,6 +21,11 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-08 - PC controls: the scope moves at once (branch pc-controls)
+- Harry on 46f4c45: "It's working now": letting go closes the scope. A delay before the scope moved: the mouse stayed
+  the follow camera's for 250 ms after it last took it, so the scope's first quarter second went there. Not once a
+  scope is up (src/game/mouse.cpp). The state log removed. Smoke OK.
+
 ### 2026-11-08 - PC controls: the scope closes on letting go, from the pad's poll (branch pc-controls)
 - Harry's run of 516c263 (the middle button closes the scope): no state line at all from scoping in to the let go's
   (58.08 to 65.47; 2 s of lines expected after each press): Bond's update 0x156E50 does not run while the scope is

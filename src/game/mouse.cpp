@@ -59,7 +59,9 @@ X86_FUNC(EON_FN(0001BC90, 0001BA50)) {
     EON_ORIG(0001BC90, 0001BA50)(ctx, base);
     float cx, cy, x, y;
     if (port != 0 || !Take(cx, cy, x, y)) return;
-    if (NowMs() - eon::camera_takes_mouse_ms < 250) {
+    // the camera's for 250 ms after it last took it, but not once a scope is up: its first quarter second went to the
+    // camera it left (Harry: a delay before the scope moved)
+    if (NowMs() - eon::camera_takes_mouse_ms < 250 && !eon::scoped) {
         // while free aim aims, its own share of the sensitivity (Sensitivity while aiming)
         float k = eon::FreeAimAiming() ? float(eon::free_aim_sensitivity) / 100 : 1;
         eon::mouse_turn = eon::mouse_turn - cx * kDegreesPerCount * k;  // right lowers the heading, as the stick's turn does
