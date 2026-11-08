@@ -61,6 +61,17 @@ uint32_t Ask(X86Context& ctx, uint32_t self, uint32_t fn, std::initializer_list<
     return r;
 }
 
+// The game's Invert Horizontal and Invert Vertical (its Options): 0x1F970 and 0x1F9E0 (cdecl: the player) answer -1 when
+// on, else 1, in st0; the cameras multiply the stick's x and y by them (0x1D1CF7). The mouse turning a camera directly
+// takes them too, as it does through the stick while aiming and in a scope (Harry: the invert differed in and out of aim)
+float InvertSign(X86Context& ctx, uint32_t fn, uint32_t player) {
+    kernel::CallGuest(ctx, fn, {player});
+    double v = ctx.st[ctx.top & 7];
+    ctx.top = (ctx.top + 1) & 7;
+    return v < 0 ? -1.0f : 1.0f;
+}
+constexpr uint32_t kInvertX = EON_VA(0x1F970, 0x1F730), kInvertY = EON_VA(0x1F9E0, 0x1F7A0);
+
 // the update's own reasons to ignore the stick (0x1D1D5D on): two states, a third for 2 seconds from the mode's +0x1B0,
 // aiming, Bond's +0xD04 and +0x10F3
 bool IgnoresStick(X86Context& ctx, uint32_t mode, uint32_t bond) {
@@ -82,6 +93,11 @@ X86_FUNC(EON_FN(001D1C70, 001D14A0)) {
         eon::camera_takes_mouse_ms = NowMs();
         keep = !eon::camera_follow;
         float turn = eon::mouse_turn.exchange(0), tilt = eon::mouse_tilt.exchange(0);
+        uint32_t player = kernel::R32(mode + 0x44);
+        turn *= InvertSign(ctx, kInvertX, player);
+        // the height angle grows as the camera rises over Bond and looks down: the mouse's up lowers it, so up looks up
+        // as in the cover camera, a scope and aiming (it was the other way round, so one Invert mouse never fitted both)
+        tilt *= -InvertSign(ctx, kInvertY, player);
         if (turn != 0) {  // the orbit about Bond, as the stick's turn (0x1D2E50) rotates it
             float c = std::cos(turn * kRadians), s = std::sin(turn * kRadians);
             float x = kernel::G<float>(mode + kPosition) - kernel::G<float>(mode + kTarget);
@@ -136,6 +152,9 @@ X86_FUNC(EON_FN(001AECD0, 001AE500)) {
         !(Ask(ctx, bond, kAiming, {}) & 0xFF) && !kernel::R32(bond + 0xD04) && !kernel::G<uint8_t>(bond + 0x10F3)) {
         eon::camera_takes_mouse_ms = NowMs();
         float turn = eon::mouse_turn.exchange(0), tilt = eon::mouse_tilt.exchange(0);
+        uint32_t player = kernel::R32(mode + 0x44);
+        turn *= InvertSign(ctx, kInvertX, player);
+        tilt *= InvertSign(ctx, kInvertY, player);
         kernel::G<float>(mode + 0xE0) = std::clamp(kernel::G<float>(mode + 0xE0) + turn, -80.0f, 80.0f);
         kernel::G<float>(mode + 0xDC) = std::clamp(kernel::G<float>(mode + 0xDC) + tilt, -60.0f, 60.0f);
         kernel::G<float>(mode + 0xD4) = 0;

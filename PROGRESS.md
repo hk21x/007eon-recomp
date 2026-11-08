@@ -21,6 +21,14 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-08 - Mouse: up looks up on the normal camera too; the game's invert options everywhere (branch pc-controls)
+- Harry: the invert differs in and out of aim (right button, sniper or handgun): one Invert mouse never fits both.
+  Headless: on the follow camera the mouse's up raised the camera and looked down (its height angle +0xD0 grows as it
+  rises), where the cover camera, a scope and aiming (the stick) look up. The follow camera's tilt now goes the other
+  way: mouse up looks up (headless: up the sky, down the floor). And the game's own Invert Horizontal and Invert
+  Vertical (0x1F970/0x1F9E0, cdecl on the player: -1 or 1 in st0, as the cameras multiply the stick by them) now
+  apply to the mouse turning the follow and cover cameras directly, as they do through the stick. Smoke OK.
+
 ### 2026-11-08 - PC controls: the scope moves at once (branch pc-controls)
 - Harry on 46f4c45: "It's working now": letting go closes the scope. A delay before the scope moved: the mouse stayed
   the follow camera's for 250 ms after it last took it, so the scope's first quarter second went there. Not once a

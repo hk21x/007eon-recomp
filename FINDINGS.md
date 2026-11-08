@@ -133,6 +133,10 @@ game's own code and data, with its addresses).
   (0x4000000 disabled), +0x2C data (size +0x38/+0x3C); placed by 0x13DD50 (cdecl: object, interface, two floats out)
   in a 640x480 frame with 0 in the middle, y down. Menu buttons are 25 square boxes at x 278, on their row's height;
   the pause Options' value arrows at x 24 and 178 (344 and 498 of 640).
+- **[game]** The invert options: 0x1F970 (horizontal, options byte bit 8) and 0x1F9E0 (vertical, bit 4), cdecl on the
+  player, answer -1 when on, else 1, as a float in st0 (0x2FD3F0 per player, or the profile when 0x2FD49C is 0); the
+  follow camera (0x1D1CF7), the cover camera, aiming (0x16BFB0) and others multiply the stick's x and y by them. The
+  follow camera's height angle +0xD0 grows as the camera rises and looks down.
 - **[game]** Bond's camera: the camera manager [0x3210C0] +4, 0x240 bytes a camera, by the player index at +0x1130
   (0x8D960 copies its +0xC0 position, +0xD0 pitch/yaw/roll in degrees, +0x100 field of view).
 
