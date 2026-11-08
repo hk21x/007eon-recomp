@@ -33,7 +33,17 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
   src/game/zoom.cpp). A mounted gun turns with the mouse directly (0x1CCA70 hooked: the counts in degrees over its
   zoom, through its own turns 0x1C8770/0x1C8690, which keep its limits; src/game/camera.cpp). Neither reachable
   headless; smoke OK.
-- Next: the menus' items and rectangles (being traced).
+- The menus' pointer (src/game/pointer.cpp, in bbb95b4): the engine's own mouse path turned on (manager +2) and its
+  two stubs filled, the mouse (0x121E20: the cursor in the menus' 640x480, through the 16:9 squeeze) and the hit test
+  (0xD24C0: a button takes its row, from the screen's left to its right edge, up to 15 above and below; a row shared
+  split at the midpoints; text and big buttons their own rectangle; one button the whole screen). The engine then
+  focuses the item under the arrow with its own sound and a click accepts it; menu_mouse.cpp shows the Windows
+  arrow in the menus and no longer turns the left button into A while the engine takes the pointer. A click on the
+  focused row's arrow plays the d-pad's left or right. The pause Options' PC Settings row's button moved 3 below
+  Controller's instead of 14 (it sat midway between two rows). Headless (pause menu, a pointer file): Controller,
+  Invert Horizontal (from the far left), PC Settings highlighted under the pointer; the click opened PC Settings;
+  Field of view highlighted, its right arrow 100 to 105, the left twice to 95. Smoke OK, Europe and USA. Only
+  default.xbe's menus: the driving exe's are its own engine copy (wheel and buttons as before).
 
 ### 2026-11-08 - Number keys on main
 - Harry on be99d05: "Works as expected." Smoke OK, Europe and USA, on be99d05 (since then only PROGRESS); main

@@ -123,6 +123,16 @@ game's own code and data, with its addresses).
   +0x469) radians a second over the frame (at most 0.0583 s) over the zoom, through 0x1C8770 (yaw +0x2E4) and
   0x1C8690 (pitch +0x2E0), which keep the limits (+0x2D0/+0x2D4, +0x2C4/+0x2C8, unless +0x2CD/+0x2C1: free, wrapped).
   The stick's y is flipped with +0x504 bit 0x40.
+- **[game]** The menus' engine (EA FEng; traced by a research agent, then measured) has its own mouse path, off: its
+  manager (ecx of 0x131610) +2, cleared at 0x130B94, set nowhere. Set, each package's input 0x132000 reads the mouse
+  through the interface (manager +0x10C, vtable 0x2DBDB8) +0x48 (0x121E20, a bare ret 4: shorts x, y, wheel,
+  buttons into the manager's +0xC) and asks +0x4C (0xD24C0, answers false; ten vtables share it) whether a point
+  (floats) is on a button; the mouse moving onto another button focuses it as the d-pad does (0x132C80), and the left
+  press accepts it (0x0C407210) or plays A on the package. Packages: from the manager's +0xE4, next +4; +0x20 the
+  ports, +0x84 the button in focus, +0x8C/+0x90 the buttons. Objects: +0x18 the type (2 text, 11 a box), +0x1C flags
+  (0x4000000 disabled), +0x2C data (size +0x38/+0x3C); placed by 0x13DD50 (cdecl: object, interface, two floats out)
+  in a 640x480 frame with 0 in the middle, y down. Menu buttons are 25 square boxes at x 278, on their row's height;
+  the pause Options' value arrows at x 24 and 178 (344 and 498 of 640).
 - **[game]** Bond's camera: the camera manager [0x3210C0] +4, 0x240 bytes a camera, by the player index at +0x1130
   (0x8D960 copies its +0xC0 position, +0xD0 pitch/yaw/roll in degrees, +0x100 field of view).
 

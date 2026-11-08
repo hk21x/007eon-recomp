@@ -134,7 +134,7 @@ German on the other, English alone on the US disc. A language your disc does not
 | Pause / Back | Esc or P / Tab |
 | Stick clicks | V or Left Shift / T |
 
-In the menus the mouse wheel scrolls, the left button selects and the right button goes back.
+In the menus the mouse shows a pointer: the item under it is highlighted and a click selects it; a click on a value's arrows changes it. The wheel scrolls, the right button goes back (driving missions' menus: the wheel, and the left button selects).
 
 **Driving missions** have a layout of their own (rebound apart from the on-foot keys, while driving):
 
