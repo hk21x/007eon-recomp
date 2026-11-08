@@ -21,6 +21,12 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-08 - Release 1.2.0 drafted
+- Harry asked for the next release. Notes in docs/releases/v1.2.0.md (free aim, mouse look, keys, the menu pointer,
+  driving missions' mouse and keys, the mission start crash). Tag v1.2.0 on main: the workflow builds the launcher
+  and makes the draft release; the windows-vm builds the PAL and USA packages from a clean checkout for Harry to
+  attach.
+
 ### 2026-11-08 - PC controls on main
 - Harry on f0d11eb: the helicopter's E and Q, and the rail tank's buttons, "Both fixed". main fast-forwarded to
   pc-controls (with the mission start crash fix); smoke OK, Europe and USA, on f0d11eb. Next: release 1.2.0 (asked).
