@@ -21,6 +21,15 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-08 - Crash on starting a mission: the last mission's Bond read (branch pc-controls)
+- Harry: 937dc7a crashed starting a mission. The VM's log and dump: an access violation reading guest 00A479F4 in the
+  HUD ammo text override (0x17F280, src/game/free_aim.cpp, from the reload text work, on main since 33f7a68): it read
+  [g_bond + 0x274] + 0x10, and g_bond was the last mission's Bond, its memory gone. Not the invert change.
+- g_bond outlives a mission; the three places that read through it (the ammo text, FreeAimCamera, FreeAimInfo) now
+  take it only while his update ran in the last second and his memory is committed (LiveBond); the menus' pointer
+  checks its kept manager the same way. Headless: pause, Restart Mission, Yes: the mission's intro, then the level
+  with the ammo text drawn, no fault. Smoke OK.
+
 ### 2026-11-08 - Mouse: up looks up on the normal camera too; the game's invert options everywhere (branch pc-controls)
 - Harry: the invert differs in and out of aim (right button, sniper or handgun): one Invert mouse never fits both.
   Headless: on the follow camera the mouse's up raised the camera and looked down (its height angle +0xD0 grows as it

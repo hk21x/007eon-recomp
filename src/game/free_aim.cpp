@@ -27,6 +27,7 @@
 #include "core/input.h"
 #include "core/log.h"
 #include "kernel/kernel.h"
+#include "kernel/memory.h"
 #include "xdk/hle.h"
 #include "common/release.h"
 #ifdef _WIN32
@@ -120,6 +121,14 @@ int Forced() {
 int64_t NowMs() {
     using namespace std::chrono;
     return duration_cast<milliseconds>(steady_clock::now().time_since_epoch()).count();
+}
+
+// player 1's Bond to read from: g_bond outlives a mission, so only while his update ran in the last second and his
+// memory is still there (Harry's crash on starting a mission: the ammo text read the last mission's freed Bond)
+uint32_t LiveBond() {
+    uint32_t bond = g_bond;
+    if (!bond || NowMs() - g_updated > 1000) return 0;
+    return mem::IsCommitted(bond) && mem::IsCommitted(bond + 0x1600) ? bond : 0;
 }
 
 uint32_t Camera(uint32_t bond) {
@@ -508,7 +517,7 @@ X86_FUNC(EON_FN(0014A740, 00149FB0)) {
 // moved, the line stays, and only the mouse turns it
 namespace eon {
 void FreeAimCamera(uint32_t cam, bool keep) {
-    uint32_t bond = g_bond;
+    uint32_t bond = LiveBond();
     if (!bond) return;
     static float last[2] = {0, 0};
     float x = kernel::G<float>(bond + kPosition), y = kernel::G<float>(bond + kPosition + 4);
@@ -527,7 +536,7 @@ bool FreeAimAiming() { return g_aiming || g_cover_right; }  // on foot, or in wa
 // and frustum starts from (0xF6170 builds a frustum from it and from the scales 0x61080 makes of it), and the view
 // moved over Bond's shoulder
 void FreeAimInfo(uint32_t player, uint32_t out) {
-    uint32_t bond = g_bond;
+    uint32_t bond = LiveBond();
     if (!bond || player != kernel::R32(bond + kPlayerIndex)) return;
     kernel::G<float>(out + 0x30) *= g_zoom;
     kernel::G<float>(out + 0x10) -= RaiseNow();
@@ -680,7 +689,8 @@ X86_FUNC(EON_FN(001519E0, 00151250)) {
 // clip, whatever it holds, then put back as it was
 X86_EXTERN_FUNC(EON_ORIG(0017F280, 0017EAF0));
 X86_FUNC(EON_FN(0017F280, 0017EAF0)) {
-    uint32_t gun = ctx.ecx, inv = g_bond ? kernel::R32(g_bond + 0x274) : 0;
+    uint32_t bond = LiveBond();
+    uint32_t gun = ctx.ecx, inv = bond ? kernel::R32(bond + 0x274) : 0;
     int shown = g_reload_clip;
     bool held = inv && gun == kernel::R32(inv + 0x10);
     uint32_t clip = kernel::R32(gun + 0x3E8), loading = kernel::R32(gun + 0x3F0);

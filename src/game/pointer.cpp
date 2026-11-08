@@ -32,6 +32,7 @@
 #include "core/input.h"
 #include "core/log.h"
 #include "kernel/kernel.h"
+#include "kernel/memory.h"
 #include "xdk/hle.h"
 #include "common/release.h"
 #ifdef _WIN32
@@ -171,6 +172,7 @@ bool Hit(X86Context& ctx, uint32_t mgr, uint32_t iface, uint32_t obj, float x, f
 // a left press on an arrow of the row in focus: -1 the left one, 1 the right, 0 none
 int ArrowAt(X86Context& ctx, float x, float y) {
     uint32_t mgr = eon::menu_manager;
+    if (!mgr || !mem::IsCommitted(mgr + 0x10C)) return 0;  // kept from a menu since gone
     uint32_t iface = mgr ? kernel::R32(mgr + 0x10C) : 0;
     if (!iface) return 0;
     uint32_t pkg = kernel::R32(mgr + 0xE4);
@@ -220,7 +222,7 @@ X86_FUNC(EON_FN(00121E20, 00121720)) {
 X86_EXTERN_FUNC(EON_ORIG(000D24C0, 000D2040));
 X86_FUNC(EON_FN(000D24C0, 000D2040)) {
     uint32_t mgr = eon::menu_manager;
-    uint32_t iface = mgr ? kernel::R32(mgr + 0x10C) : 0;
+    uint32_t iface = mgr && mem::IsCommitted(mgr + 0x10C) ? kernel::R32(mgr + 0x10C) : 0;
     if (!iface || ctx.ecx != iface) return EON_ORIG(000D24C0, 000D2040)(ctx, base);
     float x, y;
     std::memcpy(&x, &kernel::G<uint32_t>(ctx.esp + 4), 4);
