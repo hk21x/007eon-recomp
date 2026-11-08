@@ -21,6 +21,14 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-08 - Free aim: number keys pick weapons, X the last (branch weapon-keys)
+- Harry asked for the number keys too. With free aim, in play: 1 to 6 pick his weapons in the cycle's order, X the one
+  held before (src/game/weapon_keys.cpp): the cycle's own switch (0x1AA2B0, 0x14D6F0, 0x25E40, +0x146C), done at
+  once. The d-pad 1 to 4 are also bound to is let go when only a number key holds it (menu_mouse.cpp); the arrows
+  keep the gadgets; in the menus and without free aim the numbers are the d-pad as before.
+- Headless (the training's three guns, EON_WEAPON_TEST): 1 kept the SIG 552, 2 the MP5K, 3 the P99, X the MP5K,
+  2 nothing (held), X the P99.
+
 ### 2026-11-08 - Free aim and its extras on main
 - Harry on 75604fb: the cover aim height and the sensitivity in cover "Both fixed". All four extras confirmed (hip
   fire, hit markers, free aim from cover, the sensitivity while aiming), with strafe-b's free aim before them.

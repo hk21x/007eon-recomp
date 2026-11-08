@@ -104,6 +104,14 @@ game's own code and data, with its addresses).
 - **[game]** The cover camera's update 0x1AECD0 (thiscall; object vtable 0x2E173C): the right stick's speeds +0xD8
   (across) and +0xD4 add into offsets from the wall's direction, +0xE0 (degrees, within 80) and +0xDC (within 60),
   unless locked on (0x148EF0), +0xD04 or +0x10F3; with the lock they ease back to 0 and it looks toward the target.
+- **[game]** Bond's weapons (traced by a research agent; the switch measured): the inventory [Bond +0x274] holds
+  12 byte entries at +0 (the item first), their count +4, the item held +0x10, a second +0x14, the selection +0x18
+  (0x1A8C80). A weapon has +0x328 bit 0x100 (0x1A8D10; gadgets the rest, 0x80). The weapon cycle 0x152070 (fastcall,
+  Bond; CYCLEWEAPONSFORWARD, action bit 0x40000, on release) goes in array order (0x1A9240, the mask 0x100), past an
+  item its vtable +0x12C (inventory +0x1C bit 0) disables and one sharing the held one's +0x294 (another mode); it
+  selects (0x1AA2B0 on the inventory), keeps the item at Bond +0x1474 (0x25E40) and the time at +0x146C ([0x3210B0]),
+  and switches 0.6 s later or on fire: 0x14D6F0 (thiscall on Bond: item, 0, 0) builds state 0x3CB with the animation,
+  and refuses while the gun is busy. Not while Bond +0x1550 has 0x400000 or state 0x3C5 runs.
 - **[game]** Bond's camera: the camera manager [0x3210C0] +4, 0x240 bytes a camera, by the player index at +0x1130
   (0x8D960 copies its +0xC0 position, +0xD0 pitch/yaw/roll in degrees, +0x100 field of view).
 

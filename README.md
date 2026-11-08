@@ -128,7 +128,8 @@ German on the other, English alone on the US disc. A language your disc does not
 | Crouch (White) | C |
 | Wall cover (Black) | F |
 | Next weapon | Mouse wheel (free aim), or Down / 2 |
-| Weapons and gadgets (d-pad) | 1 to 4, or the arrow keys |
+| Pick a weapon (free aim) | 1 to 6, in the order the next weapon key goes through them; X the last weapon |
+| Weapons and gadgets (d-pad) | The arrow keys, or 1 to 4 (with free aim, only in the menus) |
 | Pause / Back | Esc or P / Tab |
 | Stick clicks | V or Left Shift / T |
 

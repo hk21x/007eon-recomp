@@ -11,6 +11,11 @@
 
 #include "core/input.h"
 #include "core/log.h"
+#ifdef _WIN32
+#define NOMINMAX
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#endif
 
 namespace eon {
 
@@ -66,6 +71,21 @@ void MenuMouse(int port, input::Pad& p) {
             p.analog[7] = 255;
         }
         if (now >= eon::reload_fire_from && now < eon::reload_fire_until) p.analog[7] = 255;  // R: the empty gun's pull
+#ifdef _WIN32
+        // free aim's number keys pick weapons (src/game/weapon_keys.cpp): the d-pad they are also bound to (1 to 4 by
+        // default) is let go when only a number key holds it, so the gadgets do not cycle too
+        if (eon::free_aim && input::UsingKeyboard()) {
+            for (int c = input::kUp; c <= input::kRight; c++) {
+                if (!(p.buttons >> c & 1)) continue;
+                bool number = false, other = false;
+                for (uint16_t k : input::ControlKeys(c)) {
+                    if (!k || !(GetAsyncKeyState(k) & 0x8000)) continue;
+                    (k >= '1' && k <= '9' ? number : other) = true;
+                }
+                if (number && !other) p.buttons = uint16_t(p.buttons & ~(1u << c));
+            }
+        }
+#endif
         return;
     }
     // the buttons out of what they play in play
