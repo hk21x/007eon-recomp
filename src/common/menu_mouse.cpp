@@ -28,6 +28,7 @@ extern bool free_aim;                 // the setting (src/common/game_info.cpp)
 std::atomic<bool> aim_trigger{false};  // free aim holds the fire input (src/game/free_aim.cpp)
 std::atomic<int64_t> reload_fire_from{0}, reload_fire_until{0};  // R's trigger pull, ms (src/game/free_aim.cpp)
 std::atomic<int64_t> aim_release{0};
+std::atomic<int64_t> lock_tap_ms{-1000};  // a tap of the lock, LT: a scope opened or closed (src/game/free_aim.cpp)
 std::atomic<int64_t> pointer_ms{-1000};  // when the menus' engine last took the pointer (src/game/pointer.cpp)
 std::atomic<int> pointer_arrow{0};        // a click on a value row's arrow: -1 left, 1 right (src/game/pointer.cpp)
 std::atomic<int64_t> pointer_arrow_ms{-1000};
@@ -110,6 +111,7 @@ void MenuMouse(int port, input::Pad& p) {
             p.analog[7] = 255;
         }
         if (now >= eon::reload_fire_from && now < eon::reload_fire_until) p.analog[7] = 255;  // R: the empty gun's pull
+        if (now - eon::lock_tap_ms.load() < kPress) p.analog[6] = 255;  // the right button's scope: LT tapped
 #ifdef _WIN32
         // free aim's number keys pick weapons (src/game/weapon_keys.cpp): the d-pad they are also bound to (1 to 4 by
         // default) is let go when only a number key holds it, so the gadgets do not cycle too

@@ -42,6 +42,7 @@ extern uint32_t aim_raise;            // the setting, degrees (src/common/game_i
 extern void (*frame_ui)(double fps);  // drawn each frame (src/common/game_info.cpp)
 extern std::atomic<bool> aim_trigger;  // the fire input held for the stance (src/common/menu_mouse.cpp)
 extern std::atomic<int64_t> aim_release;
+extern std::atomic<int64_t> lock_tap_ms;  // a tap of the lock (LT) from then (src/common/menu_mouse.cpp)
 extern std::atomic<int64_t> reload_fire_from, reload_fire_until;  // R's trigger pull (src/common/menu_mouse.cpp)  // the fire input let go until then, ms (src/common/menu_mouse.cpp)
 extern std::atomic<float> mouse_turn;    // the mouse's turn waiting for the camera (src/game/camera.cpp)
 extern std::atomic<int64_t> hud_drawn_ms;
@@ -301,14 +302,23 @@ X86_FUNC(EON_FN(00156E50, 001566C0)) {
     if (reload && !reload_was && plays) Reload(ctx, bond);
     reload_was = reload;
     eon::WeaponKeys(ctx, bond, plays && (Forced() >= 0 || NowMs() - eon::hud_drawn_ms < 500));
-    {  // the wheel zooms a scope or a mounted gun (src/game/zoom.cpp)
-        ctx.ecx = bond;
-        uint32_t zoom = kernel::CallGuest(ctx, kZoomable, {});
-        eon::ZoomWheel(zoom, AskBond(ctx, bond, kMounted));
-    }
+    ctx.ecx = bond;
+    uint32_t gun_zoom = kernel::CallGuest(ctx, kZoomable, {});  // a scope's or a mounted gun's zoom, 0 for other guns
+    bool mounted = AskBond(ctx, bond, kMounted);
+    eon::ZoomWheel(gun_zoom, mounted);  // the wheel zooms them (src/game/zoom.cpp)
     ctx.ecx = bond;
     bool scope = plays && ScopeView(ctx, mode);
     uint32_t buttons = Forced() == 2 ? 3 : input::MouseButtons();
+    // a weapon with a scope (a zoom, not a mounted gun's): the right button is its scope, as the lock's tap (LT, let go)
+    // opens it and taps again close it (0x153810): tapped here on its press and on its let go, through
+    // src/common/menu_mouse.cpp; free aim's own aim is left out for it (Harry: the Dragunov aimed over the shoulder)
+    if (gun_zoom && !mounted && plays) {
+        static bool right_was = false;
+        bool right = buttons & 2, scoped = kernel::G<uint8_t>(gun_zoom + 0x10) != 0;
+        if (right != right_was && right != scoped) eon::lock_tap_ms = NowMs();
+        right_was = right;
+        buttons &= ~2u;
+    }
     bool cover_right = false;  // the right button held in wall cover (below)
     // wall cover (his action's kind 0x18, its camera 0x2DCF7C): at an edge (+0xD70 bit 0x400, 0x14B450) fire leans him
     // out (0x148B70: the state 0x3C8, steps 0x1B60E0) to shoot and back. Here the right button's press leans him out

@@ -21,6 +21,14 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-08 - PC controls: the right button opens a sniper's scope (branch pc-controls)
+- Harry on ed30225: aiming the Dragunov did not go down the scope (free aim's over the shoulder aim took the right
+  button). The scope opens on the lock's tap (LT let go, 0x153810), now the middle button. With a weapon that has a
+  zoom (0x14B640, not a mounted gun's; 0 for the training's SIG 552, MP5K and P99, logged), the right button taps LT
+  (70 ms) on its press to open the scope and on its let go to close it, and free aim's aim leaves it alone. Builds,
+  smoke OK; no sniper headless.
+- Harry: "The button labels need updating to match the new buttons": asked which.
+
 ### 2026-11-08 - PC controls against Agent Under Fire's (branch pc-controls)
 - Harry asked to compare EoN's PC controls with AUF's corrected ones, then to do all five differences: Backspace for
   back, the wheel in the driving missions, the wheel zooming a scope, mounted guns aimed directly by the mouse, a menu
