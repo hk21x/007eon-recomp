@@ -43,6 +43,7 @@ extern void (*frame_ui)(double fps);  // drawn each frame (src/common/game_info.
 extern std::atomic<bool> aim_trigger;  // the fire input held for the stance (src/common/menu_mouse.cpp)
 extern std::atomic<int64_t> aim_release;
 extern std::atomic<int64_t> lock_tap_ms;  // a tap of the lock (LT) from then (src/common/menu_mouse.cpp)
+extern std::atomic<bool> scope_by_right;   // the right button opened the scope (src/common/menu_mouse.cpp)
 std::atomic<bool> scoped{false};           // a scope is up (src/game/mouse.cpp: its up and down)
 extern std::atomic<int64_t> reload_fire_from, reload_fire_until;  // R's trigger pull (src/common/menu_mouse.cpp)  // the fire input let go until then, ms (src/common/menu_mouse.cpp)
 extern std::atomic<float> mouse_turn;    // the mouse's turn waiting for the camera (src/game/camera.cpp)
@@ -314,32 +315,23 @@ X86_FUNC(EON_FN(00156E50, 001566C0)) {
     // src/common/menu_mouse.cpp; free aim's own aim is left out for it (Harry: the Dragunov aimed over the shoulder)
     // (free aim's own test, Plays, fails once the scope is up: so the keyboard and mouse alone, or letting go did not
     // close it: Harry). Up as 0x153810 tells it (0x153948: the zoom's +0x10, or its +0x40 bit 1), or opened by the right
-    // button here: then letting go taps again whatever the zoom shows (the byte alone missed it: Harry)
-    static bool ours = false;
+    // button here; Bond's update stops while the scope is up, so its let go is caught in src/common/menu_mouse.cpp
     bool flagged = gun_zoom && !mounted && (kernel::G<uint8_t>(gun_zoom + 0x10) || (kernel::R32(gun_zoom + 0x40) & 1));
-    if (!gun_zoom || mounted) ours = false;
+    if (!gun_zoom || mounted) eon::scope_by_right = false;
     int forced = Forced();
     if (gun_zoom && !mounted && (forced > 0 || (forced < 0 && eon::free_aim && input::UsingKeyboard()))) {
         static bool right_was = false;
-        bool right = buttons & 2, tap = false;
-        if (right && !right_was && !flagged) {
-            tap = true;
-            ours = true;
-        } else if (!right && right_was && (flagged || ours)) {
-            tap = true;
-            ours = false;
-        }
-        if (tap) {
+        bool right = buttons & 2;
+        if (right && !right_was && !flagged && !eon::scope_by_right) {  // its let go: src/common/menu_mouse.cpp
             eon::lock_tap_ms = NowMs();
+            eon::scope_by_right = true;
             static int said = 0;
-            if (said++ < 20)
-                LOGR("eon: scope: the right button %s, the lock tapped (zoom +0x10 %u, +0x40 %08X)",
-                     right ? "pressed" : "let go", kernel::G<uint8_t>(gun_zoom + 0x10), kernel::R32(gun_zoom + 0x40));
+            if (said++ < 20) LOGR("eon: scope: the right button pressed, the lock tapped");
         }
         right_was = right;
         buttons &= ~2u;
     }
-    bool scoped = flagged || ours;
+    bool scoped = flagged || eon::scope_by_right;
     eon::scoped = scoped;
     // the scope's state through a press and a let go (Harry's runs: the let go's tap left the scope up with the zoom's
     // +0x10 and +0x40 bit 1 both clear): every 6th update for 2 s after each, the first 4 presses

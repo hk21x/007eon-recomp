@@ -29,6 +29,7 @@ std::atomic<bool> aim_trigger{false};  // free aim holds the fire input (src/gam
 std::atomic<int64_t> reload_fire_from{0}, reload_fire_until{0};  // R's trigger pull, ms (src/game/free_aim.cpp)
 std::atomic<int64_t> aim_release{0};
 std::atomic<int64_t> lock_tap_ms{-1000};  // a tap of the lock, LT: a scope opened or closed (src/game/free_aim.cpp)
+std::atomic<bool> scope_by_right{false};  // the right button opened the scope (src/game/free_aim.cpp): closed on its let go
 std::atomic<int64_t> pointer_ms{-1000};  // when the menus' engine last took the pointer (src/game/pointer.cpp)
 std::atomic<int> pointer_arrow{0};        // a click on a value row's arrow: -1 left, 1 right (src/game/pointer.cpp)
 std::atomic<int64_t> pointer_arrow_ms{-1000};
@@ -72,6 +73,13 @@ void MenuMouse(int port, input::Pad& p) {
     uint32_t held = input::MouseButtons();
     int64_t now = NowMs();
     bool menu = now - g_menu_input.load() <= kStale;
+    // a scope the right button opened closes on its let go, a tap of the lock: here, as Bond's update (where it was
+    // opened) does not run while the scope is up (Harry's log: none from scoping in to letting go)
+    if (eon::scope_by_right && !(held & 2)) {
+        eon::scope_by_right = false;
+        eon::lock_tap_ms = now;
+        LOGR("eon: scope: the right button let go, the lock tapped");
+    }
 #ifdef _WIN32
     ShowArrow(menu && now - eon::pointer_ms.load() < 250);
 #endif

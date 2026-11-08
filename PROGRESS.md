@@ -21,6 +21,14 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-08 - PC controls: the scope closes on letting go, from the pad's poll (branch pc-controls)
+- Harry's run of 516c263 (the middle button closes the scope): no state line at all from scoping in to the let go's
+  (58.08 to 65.47; 2 s of lines expected after each press): Bond's update 0x156E50 does not run while the scope is
+  up, so the right button's let go was seen only once something else closed it, and its tap opened it again. The
+  wheel zoomed meanwhile (factor 1.10 to 1.38). Now a scope the right button opened (eon::scope_by_right) is closed
+  by a tap of the lock from the pad's poll (src/common/menu_mouse.cpp) when the button lets go, as the middle button
+  closes it. The state log stays for one more run. Smoke OK.
+
 ### 2026-11-08 - PC controls: the scope's let go, three attempts; a state log for Harry (branch pc-controls)
 - Harry on 25aacfa: up and down in the scope now wrong (the flip in 78719be never applied, the scope was never seen
   up; it was right without it), and letting go of the right button still leaves the sniper view up.
