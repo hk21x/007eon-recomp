@@ -52,7 +52,9 @@ extern bool free_aim;                 // the setting (src/common/game_info.cpp)
 std::atomic<bool> aim_trigger{false};  // free aim holds the fire input (src/game/free_aim.cpp)
 std::atomic<int64_t> reload_fire_from{0}, reload_fire_until{0};  // R's trigger pull, ms (src/game/free_aim.cpp)
 std::atomic<int64_t> aim_release{0};
-std::atomic<int64_t> driving_on_foot_ms{-1000};  // Bond on foot in a driving mission (src/driving/on_foot.cpp)
+std::atomic<int64_t> driving_on_foot_ms{-1000};
+std::atomic<float> drive_turn{0}, drive_tilt{0};  // the mouse for the tanks' aim camera, degrees (src/driving/aim_camera.cpp)
+std::atomic<int64_t> drive_aim_camera_ms{-1000};  // Bond on foot in a driving mission (src/driving/on_foot.cpp)
 std::atomic<int64_t> lock_tap_ms{-1000};  // a tap of the lock, LT: a scope opened or closed (src/game/free_aim.cpp)
 std::atomic<bool> scope_by_right{false};  // the right button opened the scope (src/game/free_aim.cpp): closed on its let go
 std::atomic<int64_t> pointer_ms{-1000};  // when the menus' engine last took the pointer (src/game/pointer.cpp)
@@ -149,10 +151,22 @@ void MenuMouse(int port, input::Pad& p) {
         // stick (a rate in full deflections, scaled by Aim sensitivity); the game's invert options apply to it there
         Vehicle vehicle = eon::kDriving && input::UsingKeyboard() ? DrivingVehicle() : Vehicle::kOther;
         float mx, my;
+        static auto last_take = std::chrono::steady_clock::now();
+        auto take_now = std::chrono::steady_clock::now();
+        float dt = std::clamp(std::chrono::duration<float>(take_now - last_take).count(), 0.001f, 0.1f);
+        last_take = take_now;
         if (vehicle != Vehicle::kOther && input::TakeMouse(mx, my)) {
-            float k = float(eon::aim_sensitivity) / 100 * 32767;
-            p.rx = int16_t(std::clamp(float(p.rx) + mx * k, -32767.0f, 32767.0f));
-            p.ry = int16_t(std::clamp(float(p.ry) + my * k, -32767.0f, 32767.0f));
+            if (vehicle != Vehicle::kHeli && now - eon::drive_aim_camera_ms.load() < 250) {
+                // the tanks' aim camera turns by the mouse directly (src/driving/aim_camera.cpp): its counts (a rate
+                // in full deflections, 2400 counts a second) at the camera's 0.04 degrees a count on foot
+                constexpr float kFullRate = 2400, kDegreesPerCount = 0.04f;
+                eon::drive_turn = eon::drive_turn + mx * kFullRate * dt * kDegreesPerCount;
+                eon::drive_tilt = eon::drive_tilt + my * kFullRate * dt * kDegreesPerCount;
+            } else {
+                float k = float(eon::aim_sensitivity) / 100 * 32767;
+                p.rx = int16_t(std::clamp(float(p.rx) + mx * k, -32767.0f, 32767.0f));
+                p.ry = int16_t(std::clamp(float(p.ry) + my * k, -32767.0f, 32767.0f));
+            }
         }
         // the rail tank (A Show of Force) fires with RT and aims with LT, where the car's keys have gas and brake (W,
         // S) and the mouse's buttons play A and X, which it does not use: there the left button fires and the right

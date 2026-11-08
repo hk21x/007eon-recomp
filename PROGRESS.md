@@ -21,6 +21,15 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-08 - The tanks' gun camera turned by the mouse directly (branch rail-aim)
+- Harry: the rail tank's mouse aim in this release (v1.2.0 held, the tag to move). Traced (research agent): the tanks'
+  aim camera (type 0x800, AutoDrive; tank_sa, tanksa_rail*, tank_plat) turns its yaw +0x24C and pitch +0x248 (turns:
+  1.0 is 360 degrees) by a stick rate, eased and ramped, in 0xCEE70 (USA 0xCEDE0), which then keeps the arm's limits.
+  Now with the keyboard and mouse the mouse's degrees (0.04 a count, as on foot) are added there and the rate, easing,
+  ramp and aiming cursor cleared (src/driving/aim_camera.cpp); menu_mouse.cpp sends the tanks' mouse there instead of
+  the right stick. The helicopter's camera is another (0xD1590): its mouse stays the stick. wincheck clean; the
+  function exists in both regions' driving code; smoke OK; not reachable headless: the signs to be seen by Harry.
+
 ### 2026-11-08 - Release 1.2.0 drafted
 - Harry asked for the next release. Notes in docs/releases/v1.2.0.md (free aim, mouse look, keys, the menu pointer,
   driving missions' mouse and keys, the mission start crash). Tag v1.2.0 on main: the workflow builds the launcher
