@@ -28,6 +28,7 @@ extern bool free_aim;                 // the setting (src/common/game_info.cpp)
 std::atomic<bool> aim_trigger{false};  // free aim holds the fire input (src/game/free_aim.cpp)
 std::atomic<int64_t> reload_fire_from{0}, reload_fire_until{0};  // R's trigger pull, ms (src/game/free_aim.cpp)
 std::atomic<int64_t> aim_release{0};
+std::atomic<int64_t> driving_on_foot_ms{-1000};  // Bond on foot in a driving mission (src/driving/on_foot.cpp)
 std::atomic<int64_t> lock_tap_ms{-1000};  // a tap of the lock, LT: a scope opened or closed (src/game/free_aim.cpp)
 std::atomic<bool> scope_by_right{false};  // the right button opened the scope (src/game/free_aim.cpp): closed on its let go
 std::atomic<int64_t> pointer_ms{-1000};  // when the menus' engine last took the pointer (src/game/pointer.cpp)
@@ -120,6 +121,19 @@ void MenuMouse(int port, input::Pad& p) {
         }
         if (now >= eon::reload_fire_from && now < eon::reload_fire_until) p.analog[7] = 255;  // R: the empty gun's pull
         if (now - eon::lock_tap_ms.load() < kPress) p.analog[6] = 255;  // the right button's scope: LT tapped
+#ifdef _WIN32
+        // on foot in a driving mission (Train Chase) the gas and brake keys (W, S) also walk him: the left stick's up
+        // and down, his walk there, unless the stick is already pushed (the arrows)
+        if (eon::kDriving && now - eon::driving_on_foot_ms.load() < 250 && input::UsingKeyboard() && p.ly == 0) {
+            auto held_key = [](int c) {
+                for (uint16_t k : input::ControlKeys(c))
+                    if (k && (GetAsyncKeyState(k) & 0x8000)) return true;
+                return false;
+            };
+            bool fwd = held_key(input::kRT), back = held_key(input::kLT);
+            if (fwd != back) p.ly = fwd ? 32767 : -32767;
+        }
+#endif
 #ifdef _WIN32
         // free aim's number keys pick weapons (src/game/weapon_keys.cpp): the d-pad they are also bound to (1 to 4 by
         // default) is let go when only a number key holds it, so the gadgets do not cycle too

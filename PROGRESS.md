@@ -21,6 +21,18 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-08 - Train Chase: W and S walk Bond on foot (branch pc-controls)
+- Harry: the wheel in a driving mission and the menus confirmed. In Train Chase on foot WASD did not walk Bond, only
+  drove. Traced (research agent): driving.xbe's character (vtable 0x2C8948, [0x360A24], made only in a mission with an
+  on-foot part) reads the left stick's x and y (STEER, STEERVERTICAL) as his walk in 0x1878E0 (fastcall, each frame);
+  gas and brake never reach him, and there is no on-foot control config (he keeps the car's). His state +0x2C is 0x1B
+  to 0x27 in a vehicle. The helicopter and rail tank use the stick's y (pitch, camera), so W and S cannot be the stick
+  always: 0x1878E0 (USA 0x187840) now marks him on foot (src/driving/on_foot.cpp), and then the gas and brake keys
+  also push the stick up and down (menu_mouse.cpp; the arrows win). wincheck clean on both files; not reachable
+  headless (the driving exe); smoke OK.
+- Also: a relaunch between the two exes empties eon.log, so that run's driving half was lost (the VM now snapshots it);
+  the SDK's log rotation (render-mt2) would keep both halves.
+
 ### 2026-11-08 - Crash fix confirmed (branch pc-controls)
 - Harry on 1ab770d: "Fixed". Still to hear on this branch: the wheel in a driving mission, a mounted gun with the
   mouse and wheel, Backspace and the menu footers, and the mouse's up and down with the invert settings.
