@@ -21,6 +21,11 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-08 - Free aim extras: Harry's test of d9fedee (branch free-aim-extras)
+- Harry: hip fire works; hit markers work; right click in cover "goes back into auto aim": the lock leans Bond out
+  but aims for him. Wanted: lean out with the view turned by the mouse and the shots to the crosshair. Cover aiming
+  being traced (the cover camera 0x2DCF7C, the cover action kind 0x18, what leans him out and aims him).
+
 ### 2026-11-07 - Free aim extras: hit feedback, aiming from wall cover (branch free-aim-extras)
 - Hit marker: 0x167810 (every character's damage from a hit; traced by a research agent, FINDINGS) is hooked: Bond's
   hits on others light four short diagonals round the crosshair, 220 ms, red for 450 ms on a kill (health from above 0
