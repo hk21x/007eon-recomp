@@ -21,6 +21,10 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-08 - Number keys on main
+- Harry on be99d05: "Works as expected." Smoke OK, Europe and USA, on be99d05 (since then only PROGRESS); main
+  fast-forwarded to weapon-keys.
+
 ### 2026-11-08 - Free aim: number keys pick weapons, X the last (branch weapon-keys)
 - Harry asked for the number keys too. With free aim, in play: 1 to 6 pick his weapons in the cycle's order, X the one
   held before (src/game/weapon_keys.cpp): the cycle's own switch (0x1AA2B0, 0x14D6F0, 0x25E40, +0x146C), done at
