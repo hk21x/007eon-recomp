@@ -21,6 +21,13 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-08 - The rail tank's buttons (branch pc-controls)
+- Harry on 4c97c09: the mouse moves the gun in A Show of Force; left and right click do nothing, W fires. Its config
+  is driverailtank.def: fire RT, aim (zoom) LT, the next weapon Black, no gas or brake; the driving keys put W and S
+  on RT and LT and the mouse's buttons on A and X. In the rail tank RT and LT are now the left and right buttons only.
+  The tank and the helicopter fire with A (the left button) already; the wheel is Black, the next weapon, in all.
+  wincheck clean; smoke OK; not reachable headless.
+
 ### 2026-11-08 - The mouse aims the tanks' and the helicopter's guns in the driving missions (branch pc-controls)
 - Harry: in A Show of Force the mouse does not move the gun at all. It is SouthDriving2, a driving mission (SD2):
   the mounted gun change is default.xbe's, and the driving exe never had the mouse. There the vehicle's control config
