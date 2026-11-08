@@ -127,7 +127,14 @@ uint32_t Camera(uint32_t bond) {
 // shoulder's blend), so the crosshair in the middle of the view sits higher on what Bond faces (Harry: it sat low,
 // and a head shot meant aiming up). The view itself is raised in the camera info (FreeAimInfo), and the shot, its
 // line, his arms and the stance's aim point all take the same pitch
-float RaiseNow() { return float(eon::aim_raise) * (g_shoulder / kShoulder); }
+// Leaned out of cover the cover camera looks 8 degrees down from the wall's line (0x1AECD0: its pitch offset +0xDC
+// less 8), so the crosshair sat low (Harry: "the aim is way too low"): there the view is raised by those 8 degrees and
+// the aim height, eased in and out as the lean comes and goes
+constexpr float kCoverLevel = 8;
+std::atomic<float> g_cover_blend{0};
+float RaiseNow() {
+    return float(eon::aim_raise) * (g_shoulder / kShoulder) + (float(eon::aim_raise) + kCoverLevel) * g_cover_blend;
+}
 float ViewPitch(uint32_t cam) { return kernel::G<float>(cam + 0xD0) - RaiseNow(); }
 
 // the view's heading, degrees: the camera's, and the mouse's turn still waiting for it (src/game/camera.cpp turns the
@@ -325,6 +332,8 @@ X86_FUNC(EON_FN(00156E50, 001566C0)) {
     if (on && (buttons & 1) && !(buttons & 2)) g_hip_until = NowMs() + kHipShown;  // hip fire: shots go there too
     float shoulder = g_shoulder, want = on ? kShoulder : 0;
     g_shoulder = shoulder + std::clamp(want - shoulder, -kShoulder * kBlendPerUpdate, kShoulder * kBlendPerUpdate);
+    float blend = g_cover_blend;
+    g_cover_blend = blend + std::clamp((g_cover_lean ? 1.0f : 0.0f) - blend, -kBlendPerUpdate, kBlendPerUpdate);
     float zoom = g_zoom, zoom_want = on && (buttons & 2) ? kRightButtonZoom : 1;
     g_zoom = zoom + std::clamp(zoom_want - zoom, -0.03f, 0.03f);
     g_turned = on && (buttons & 3);
@@ -477,8 +486,8 @@ void FreeAimCamera(uint32_t cam, bool keep) {
     last[1] = y;
 }
 
-// whether the right button aims now (src/game/mouse.cpp: its sensitivity)
-bool FreeAimAiming() { return g_aiming; }
+// whether the right button aims now, on foot or in wall cover (src/game/mouse.cpp: its sensitivity)
+bool FreeAimAiming() { return g_aiming || g_cover_right; }  // on foot, or in wall cover
 
 // the camera info (src/game/fov.cpp calls this after it): the right button's zoom, in the one field of view every view
 // and frustum starts from (0xF6170 builds a frustum from it and from the scales 0x61080 makes of it), and the view

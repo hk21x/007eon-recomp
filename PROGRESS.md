@@ -21,6 +21,13 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-08 - Free aim from cover: the view raised, the aiming sensitivity there (branch free-aim-extras)
+- Harry on 1f351d1: "Cover works perfectly, but the aim is way too low"; the sensitivity while aiming did nothing in
+  cover. The cover camera looks 8 degrees down from the wall's line, and the aim height went only with the on-foot
+  shoulder: leaned out, the view (and with it the shots, his arms and shoulders) is now raised by 8 degrees and the
+  aim height, eased in over the lean. The sensitivity while aiming now also holds with the right button in cover.
+- Headless: leaned out, the view rises; turned and fired, the hits round the middle of the view.
+
 ### 2026-11-08 - Free aim from wall cover: the right button leans out, the mouse aims (branch free-aim-extras)
 - Harry on d9fedee: the right button in cover gave the lock's auto aim. Traced (research agent, then measured): the
   lean out is fire's, at a cover edge (D70 bit 0x400): 0x148B70 builds state 0x3C8; the lock only leans him out at a
