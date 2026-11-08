@@ -21,6 +21,12 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-08 - PC controls: the scope's state (branch pc-controls)
+- Harry on 78719be: the wheel does not zoom the rifle; letting go still leaves the scope up. Both lean on the scope
+  being up, read as the zoom's +0x10 byte; 0x153810 (0x153948) also takes its +0x40 bit 1. Now either, or a scope the
+  right button opened itself: letting go taps the lock again whatever the zoom shows, the wheel and the scope's up
+  and down follow the same state. The taps and the zoom's two fields are logged ("eon: scope:", first 20). Smoke OK.
+
 ### 2026-11-08 - PC controls: the scope closes on letting go, its up and down (branch pc-controls)
 - Harry on c6b2fda: the right button scopes in; letting go did not close it; the scope's up and down inverted against
   normal aiming. The scope toggles on the lock's tap either way (0x153810: 0x147B30(0x4000) let go, the selected item
