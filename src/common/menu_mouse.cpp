@@ -9,9 +9,13 @@
 #include <atomic>
 #include <chrono>
 #include <cstdint>
+#include <cstring>
 
 #include "core/input.h"
 #include "core/log.h"
+#include "kernel/kernel.h"
+#include "kernel/memory.h"
+#include "common/release.h"
 #ifdef _WIN32
 #define NOMINMAX
 #define WIN32_LEAN_AND_MEAN
@@ -22,6 +26,22 @@
 
 namespace eon {
 extern const bool kDriving;  // driving.xbe's exe (src/driving/hooks.cpp)
+extern uint32_t aim_sensitivity;  // the setting, percent (src/common/game_info.cpp)
+
+// driving.xbe: the vehicle's control config (data\control\*.def) is a tank's, the rail tank's or the helicopter's, where
+// the right stick turns the camera and the gun with it. The controls manager 0x320E24 (getter 0x28F90): +4 the config in
+// use, +0xC its entries, 0x24 bytes each, the name first (0x29F80 picks one by name). The car's is drivecfg, whose
+// right stick down looks back, so the mouse is left out there
+bool DrivingAimsWithStick() {
+    constexpr uint32_t kControls = EON_VA(0x320E24, 0x320E04);
+    if (!kDriving || !mem::IsCommitted(kControls + 0x10)) return false;
+    uint32_t index = kernel::R32(kControls + 4), count = kernel::R32(kControls + 8), list = kernel::R32(kControls + 0xC);
+    if (!list || index >= count || count > 16 || !mem::IsCommitted(list + index * 0x24 + 0x1F)) return false;
+    char name[33] = {};
+    for (int i = 0; i < 32; i++) name[i] = char(kernel::G<uint8_t>(list + index * 0x24 + i));
+    for (char& c : name) c = char(c >= 'A' && c <= 'Z' ? c + 32 : c);
+    return std::strstr(name, "tank") || std::strstr(name, "heli");
+}
 
 std::atomic<int64_t> g_menu_input{-1000};  // when a menu last took the input, ms (src/game/menu_input.cpp)
 extern bool free_aim;                 // the setting (src/common/game_info.cpp)
@@ -121,6 +141,14 @@ void MenuMouse(int port, input::Pad& p) {
         }
         if (now >= eon::reload_fire_from && now < eon::reload_fire_until) p.analog[7] = 255;  // R: the empty gun's pull
         if (now - eon::lock_tap_ms.load() < kPress) p.analog[6] = 255;  // the right button's scope: LT tapped
+        // a driving mission's tank, rail tank or helicopter (A Show of Force): the mouse turns the gun, as the right
+        // stick (a rate in full deflections, scaled by Aim sensitivity); the game's invert options apply to it there
+        float mx, my;
+        if (eon::kDriving && input::UsingKeyboard() && DrivingAimsWithStick() && input::TakeMouse(mx, my)) {
+            float k = float(eon::aim_sensitivity) / 100 * 32767;
+            p.rx = int16_t(std::clamp(float(p.rx) + mx * k, -32767.0f, 32767.0f));
+            p.ry = int16_t(std::clamp(float(p.ry) + my * k, -32767.0f, 32767.0f));
+        }
 #ifdef _WIN32
         // on foot in a driving mission (Train Chase) the gas and brake keys (W, S) also walk him: the left stick's up
         // and down, his walk there, unless the stick is already pushed (the arrows)

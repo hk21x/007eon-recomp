@@ -149,6 +149,7 @@ In the menus the mouse shows a pointer: the item under it is highlighted and a c
 | Full screen map | M |
 | Look back / centre the camera | C / V or middle mouse button |
 | Walk, on foot in a driving mission | W S A D, or the arrow keys |
+| Aim a tank's or the helicopter's gun | Mouse |
 | Change camera | 1 |
 | Bond sense | Tab |
 | Pause | Esc or P |

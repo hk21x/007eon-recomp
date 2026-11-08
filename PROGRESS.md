@@ -21,10 +21,19 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
-### 2026-11-08 - PC controls on main; the multi-core renderer measured
+### 2026-11-08 - The mouse aims the tanks' and the helicopter's guns in the driving missions (branch pc-controls)
+- Harry: in A Show of Force the mouse does not move the gun at all. It is SouthDriving2, a driving mission (SD2):
+  the mounted gun change is default.xbe's, and the driving exe never had the mouse. There the vehicle's control config
+  (data\control\*.def) turns the camera, and the gun with it, with the right stick (CAMROTATEX2/Y2) in the tank, rail
+  tank and helicopter; the car's right stick down looks back. The config in use is the controls manager's (0x320E24,
+  USA 0x320E04: +4 its index, +0xC 0x24 byte entries, the name first; 0x29F80 picks by name): with a name holding
+  tank or heli the mouse is added to the right stick (scaled by Aim sensitivity; the game's invert options apply).
+  wincheck clean; not reachable headless; smoke OK. main waits for it (not merged yet).
+
+### 2026-11-08 - PC controls confirmed; the multi-core renderer measured
 - Harry on 21d6c30: W and S walk Bond on foot in Train Chase; earlier the crash fix, the scope, the footers, the menus
-  and the wheel in a driving mission. Not yet tried: a mounted gun with the mouse and the wheel. main fast-forwarded
-  to pc-controls (it carries the mission start crash fix); smoke OK, Europe and USA.
+  and the wheel in a driving mission. Not yet tried: a mounted gun with the mouse and the wheel (then: not at all in A
+  Show of Force, below). main not yet fast-forwarded.
 - The SDK's render-mt2 (5114ead), throwaway branch perf-render-mt2 (bd90cb9), against 21d6c30 on Harry's PC (XBE_PERF,
   the same save and level, about 75 s on foot): both 60 fps (the game's cap); host 7.14 to 6.56 ms a frame, draw 2.48
   to 1.84; mt2's record thread 0.83 ms, its render thread waiting for it 0.34; 1% low 50.5, 0.1% 47.7, slowest frame
