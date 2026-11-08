@@ -21,6 +21,11 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-08 - Free aim and its extras on main
+- Harry on 75604fb: the cover aim height and the sensitivity in cover "Both fixed". All four extras confirmed (hip
+  fire, hit markers, free aim from cover, the sensitivity while aiming), with strafe-b's free aim before them.
+  Smoke OK, Europe and USA, on the final commit; main fast-forwarded to free-aim-extras.
+
 ### 2026-11-08 - Free aim from cover: the view raised, the aiming sensitivity there (branch free-aim-extras)
 - Harry on 1f351d1: "Cover works perfectly, but the aim is way too low"; the sensitivity while aiming did nothing in
   cover. The cover camera looks 8 degrees down from the wall's line, and the aim height went only with the on-foot
