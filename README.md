@@ -118,7 +118,8 @@ German on the other, English alone on the US disc. A language your disc does not
 | Action | Keys |
 | --- | --- |
 | Move | W A S D |
-| Look and aim | Mouse |
+| Look and aim | Mouse (also a mounted gun, directly) |
+| Zoom a scope or a mounted gun | Mouse wheel |
 | Fire / aim | Left / right mouse button (free aim: shots go to the crosshair, also from the hip; in wall cover, at its edge, the right button leans out to aim with the mouse; F1 turns it off) |
 | Lock on | Middle mouse button (hold) |
 | Reload | R (free aim) |

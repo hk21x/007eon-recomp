@@ -28,7 +28,12 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 - Done: B (dive roll, back in the menus) has Backspace as its second key; the wheel in the driving exe pulses Black,
   its next weapon, free aim or not (it pulsed the d-pad's down there, not a weapon). Builds; the driving missions are
   not reachable headless.
-- Next: the menus' items and rectangles (being traced), the scope's zoom, the mounted guns.
+- The wheel zooms a scope (scoped in) or a mounted gun instead of changing weapon: each notch 1.25 times in or out,
+  added to the zoom button's analog in the game's own zoom step (0x17FB30: its limits, sounds and view follow;
+  src/game/zoom.cpp). A mounted gun turns with the mouse directly (0x1CCA70 hooked: the counts in degrees over its
+  zoom, through its own turns 0x1C8770/0x1C8690, which keep its limits; src/game/camera.cpp). Neither reachable
+  headless; smoke OK.
+- Next: the menus' items and rectangles (being traced).
 
 ### 2026-11-08 - Number keys on main
 - Harry on be99d05: "Works as expected." Smoke OK, Europe and USA, on be99d05 (since then only PROGRESS); main

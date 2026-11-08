@@ -45,7 +45,8 @@ extern std::atomic<int64_t> aim_release;
 extern std::atomic<int64_t> reload_fire_from, reload_fire_until;  // R's trigger pull (src/common/menu_mouse.cpp)  // the fire input let go until then, ms (src/common/menu_mouse.cpp)
 extern std::atomic<float> mouse_turn;    // the mouse's turn waiting for the camera (src/game/camera.cpp)
 extern std::atomic<int64_t> hud_drawn_ms;
-void WeaponKeys(X86Context& ctx, uint32_t bond, bool plays);  // src/game/weapon_keys.cpp  // when the HUD last drew (src/game/hud.cpp): none in movies or the like
+void WeaponKeys(X86Context& ctx, uint32_t bond, bool plays);  // src/game/weapon_keys.cpp
+void ZoomWheel(uint32_t zoom, bool mounted);                    // src/game/zoom.cpp  // when the HUD last drew (src/game/hud.cpp): none in movies or the like
 }
 
 namespace {
@@ -300,6 +301,11 @@ X86_FUNC(EON_FN(00156E50, 001566C0)) {
     if (reload && !reload_was && plays) Reload(ctx, bond);
     reload_was = reload;
     eon::WeaponKeys(ctx, bond, plays && (Forced() >= 0 || NowMs() - eon::hud_drawn_ms < 500));
+    {  // the wheel zooms a scope or a mounted gun (src/game/zoom.cpp)
+        ctx.ecx = bond;
+        uint32_t zoom = kernel::CallGuest(ctx, kZoomable, {});
+        eon::ZoomWheel(zoom, AskBond(ctx, bond, kMounted));
+    }
     ctx.ecx = bond;
     bool scope = plays && ScopeView(ctx, mode);
     uint32_t buttons = Forced() == 2 ? 3 : input::MouseButtons();

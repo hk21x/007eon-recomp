@@ -112,6 +112,17 @@ game's own code and data, with its addresses).
   selects (0x1AA2B0 on the inventory), keeps the item at Bond +0x1474 (0x25E40) and the time at +0x146C ([0x3210B0]),
   and switches 0.6 s later or on fire: 0x14D6F0 (thiscall on Bond: item, 0, 0) builds state 0x3CB with the animation,
   and refuses while the gun is busy. Not while Bond +0x1550 has 0x400000 or state 0x3C5 runs.
+- **[game]** Zoom (a scope's or a mounted gun's; traced by a research agent): 0x14B640 (thiscall on Bond) answers
+  the one in use: on a mounted gun its 0x1C8BB0, else the second item's (inventory +0x14) answer to 0xE07689D3. The
+  zoom: +0 the factor, +4 the least (1), +8 the most (weapon property 0x6C), +0xC the rate (0x6D, 0.1), +0x10 a byte
+  scoped in, +0x40 flags (0x10000 changed, 0x20000 in, 0x40000 out: the sounds +0x4C/+0x50, 0x180BC0). Each scoped
+  frame 0x153810 passes the ZOOM analog (Bond +0x1228; d-pad up +1, down -1, 0x1B310) to 0x17FB30 (thiscall on the
+  zoom, a float): factor * (1 + rate * a), held to the least and the most. The scope's camera 0x1AC560: 60 / factor.
+- **[game]** A mounted gun: [Bond +0x11D4] (vtable 0x2E2418). The player's control 0x1CCA70 (thiscall on Bond
+  +0x11D4, the pads +0x11F0 and +0x1230 on the stack, from 0x159722) turns it by the stick at +0x300 (+0x304 with
+  +0x469) radians a second over the frame (at most 0.0583 s) over the zoom, through 0x1C8770 (yaw +0x2E4) and
+  0x1C8690 (pitch +0x2E0), which keep the limits (+0x2D0/+0x2D4, +0x2C4/+0x2C8, unless +0x2CD/+0x2C1: free, wrapped).
+  The stick's y is flipped with +0x504 bit 0x40.
 - **[game]** Bond's camera: the camera manager [0x3210C0] +4, 0x240 bytes a camera, by the player index at +0x1130
   (0x8D960 copies its +0xC0 position, +0xD0 pitch/yaw/roll in degrees, +0x100 field of view).
 

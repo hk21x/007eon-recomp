@@ -24,7 +24,9 @@ std::atomic<int64_t> g_menu_input{-1000};  // when a menu last took the input, m
 extern bool free_aim;                 // the setting (src/common/game_info.cpp)
 std::atomic<bool> aim_trigger{false};  // free aim holds the fire input (src/game/free_aim.cpp)
 std::atomic<int64_t> reload_fire_from{0}, reload_fire_until{0};  // R's trigger pull, ms (src/game/free_aim.cpp)
-std::atomic<int64_t> aim_release{0};   // let go until then, ms (polls outrun frames: a press needs the game to see it up)
+std::atomic<int64_t> aim_release{0};
+std::atomic<bool> zoom_wheel{false};   // scoped in or on a mounted gun: the wheel zooms (src/game/zoom.cpp)
+std::atomic<int> zoom_notches{0};      // the wheel's notches waiting for the zoom, in positive   // let go until then, ms (polls outrun frames: a press needs the game to see it up)
 
 int64_t NowMs() {
     using namespace std::chrono;
@@ -48,6 +50,10 @@ void MenuMouse(int port, input::Pad& p) {
     // no previous weapon, so both ways go forward); in the driving missions Black, their next weapon, free aim or not
     static int weapons = 0;
     static int64_t weapon_pulse = 0;
+    if (!menu && eon::zoom_wheel && notches) {  // a scope or a mounted gun: the wheel zooms instead
+        eon::zoom_notches += notches;
+        notches = 0;
+    }
     if (!menu && (eon::free_aim || eon::kDriving) && notches) {
         if (!weapons) weapon_pulse = now;
         weapons = std::min(weapons + std::abs(notches), 4);

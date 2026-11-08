@@ -16,6 +16,7 @@
 #include <atomic>
 #include <chrono>
 #include <cmath>
+#include <cstring>
 
 #include "core/input.h"
 #include "kernel/kernel.h"
@@ -141,4 +142,36 @@ X86_FUNC(EON_FN(001AECD0, 001AE500)) {
         kernel::G<float>(mode + 0xD8) = 0;
     }
     EON_ORIG(001AECD0, 001AE500)(ctx, base);
+}
+
+// A mounted gun, the player's control of it (0x1CCA70, thiscall on Bond +0x11D4, whose first dword is the gun; Bond's
+// pads +0x11F0 and +0x1230 on the stack): the stick turns it at a rate (gun +0x300) for the frame, so the mouse fed to
+// the stick was held to the stick's full speed. With the keyboard and mouse the mouse turns it directly here, as the
+// camera on foot: its counts in degrees (src/game/mouse.cpp), divided by the gun's zoom, through its own turns (yaw
+// 0x1C8770, pitch 0x1C8690: thiscall on the gun, radians; they keep its limits). Pitch up is negative, and flipped where
+// the gun flips the stick's (+0x504 bit 0x40)
+X86_EXTERN_FUNC(EON_ORIG(001CCA70, 001CC2A0));
+X86_FUNC(EON_FN(001CCA70, 001CC2A0)) {
+    constexpr uint32_t kTurnYaw = EON_VA(0x1C8770, 0x1C7FA0), kTurnPitch = EON_VA(0x1C8690, 0x1C7EC0);
+    constexpr uint32_t kZoomOf = EON_VA(0x14B640, 0x14AEB0);  // thiscall on Bond: the zoom in use, its factor at +0
+    uint32_t link = ctx.ecx, bond = link - 0x11D4;
+    bool mouse = input::UsingKeyboard() && kernel::R32(bond + kPlayerIndex) == 0;
+    if (mouse) eon::camera_takes_mouse_ms = NowMs();
+    EON_ORIG(001CCA70, 001CC2A0)(ctx, base);
+    uint32_t gun = kernel::R32(link);
+    if (!mouse || !gun) return;
+    float turn = eon::mouse_turn.exchange(0), tilt = eon::mouse_tilt.exchange(0);
+    uint32_t zoom = Ask(ctx, bond, kZoomOf, {});
+    float factor = zoom ? std::max(1.0f, kernel::G<float>(zoom)) : 1.0f;
+    float yaw = turn / factor * kRadians, pitch = -tilt / factor * kRadians;
+    if (kernel::R32(gun + 0x504) & 0x40) pitch = -pitch;
+    uint32_t bits;
+    if (yaw != 0) {
+        std::memcpy(&bits, &yaw, 4);
+        Ask(ctx, gun, kTurnYaw, {bits});
+    }
+    if (pitch != 0) {
+        std::memcpy(&bits, &pitch, 4);
+        Ask(ctx, gun, kTurnPitch, {bits});
+    }
 }
