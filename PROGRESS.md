@@ -28,6 +28,10 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
   keep the gadgets; in the menus and without free aim the numbers are the d-pad as before.
 - Headless (the training's three guns, EON_WEAPON_TEST): 1 kept the SIG 552, 2 the MP5K, 3 the P99, X the MP5K,
   2 nothing (held), X the P99.
+- Correction: the USA smokes reported for 1f351d1 and 5d48584 (main) ran d9fedee's files. .local/usatest is a git
+  worktree of this repository; with free-aim-extras checked out there, commits made here moved its branch but not its
+  files, and its checkout then failed. It now checks out detached. The USA smoke on be99d05 (all of main's free aim,
+  the cover lean, 0x149400 in [functions], and the number keys), recompiled from usa_eon.toml: SMOKE OK. Europe OK.
 
 ### 2026-11-08 - Free aim and its extras on main
 - Harry on 75604fb: the cover aim height and the sensitivity in cover "Both fixed". All four extras confirmed (hip
