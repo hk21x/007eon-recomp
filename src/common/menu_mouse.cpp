@@ -1,4 +1,5 @@
-// The mouse in the menus: the wheel scrolls (d-pad up and down), the left button selects (A), the right goes back (B).
+// The mouse in the menus: the wheel scrolls (d-pad up and down), the left button selects (A; on foot the item under the
+// arrow, src/game/pointer.cpp), the right goes back (B).
 //
 // While a menu takes the controller's input (src/game/menu_input.cpp and src/driving/menu_input.cpp mark it), the
 // mouse's buttons stop playing what they are bound to in play (fire, lock on) and
@@ -15,6 +16,8 @@
 #define NOMINMAX
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+
+#include "app/app.h"
 #endif
 
 namespace eon {
@@ -25,8 +28,33 @@ extern bool free_aim;                 // the setting (src/common/game_info.cpp)
 std::atomic<bool> aim_trigger{false};  // free aim holds the fire input (src/game/free_aim.cpp)
 std::atomic<int64_t> reload_fire_from{0}, reload_fire_until{0};  // R's trigger pull, ms (src/game/free_aim.cpp)
 std::atomic<int64_t> aim_release{0};
+std::atomic<int64_t> pointer_ms{-1000};  // when the menus' engine last took the pointer (src/game/pointer.cpp)
+std::atomic<int> pointer_arrow{0};        // a click on a value row's arrow: -1 left, 1 right (src/game/pointer.cpp)
+std::atomic<int64_t> pointer_arrow_ms{-1000};
 std::atomic<bool> zoom_wheel{false};   // scoped in or on a mounted gun: the wheel zooms (src/game/zoom.cpp)
 std::atomic<int> zoom_notches{0};      // the wheel's notches waiting for the zoom, in positive   // let go until then, ms (polls outrun frames: a press needs the game to see it up)
+
+#ifdef _WIN32
+// the arrow while the menus take the pointer: the runtime hides the cursor while the mouse looks (as Agent Under Fire)
+WNDPROC g_proc = nullptr;
+std::atomic<bool> g_arrow{false};
+LRESULT CALLBACK PointerProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp) {
+    if (msg == WM_SETCURSOR && LOWORD(lp) == HTCLIENT && g_arrow.load() && input::MouseLooking()) {
+        SetCursor(LoadCursorW(nullptr, reinterpret_cast<LPCWSTR>(IDC_ARROW)));
+        return TRUE;
+    }
+    return CallWindowProcW(g_proc, hwnd, msg, wp, lp);
+}
+void ShowArrow(bool show) {
+    HWND hwnd = static_cast<HWND>(app::Window());
+    if (!hwnd) return;
+    if (!g_proc) {
+        g_proc = reinterpret_cast<WNDPROC>(SetWindowLongPtrW(hwnd, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(PointerProc)));
+        LOGR("eon: the menus' pointer is ready");
+    }
+    if (g_arrow.exchange(show) != show) PostMessageW(hwnd, WM_SETCURSOR, reinterpret_cast<WPARAM>(hwnd), MAKELPARAM(HTCLIENT, WM_MOUSEMOVE));
+}
+#endif
 
 int64_t NowMs() {
     using namespace std::chrono;
@@ -43,6 +71,9 @@ void MenuMouse(int port, input::Pad& p) {
     uint32_t held = input::MouseButtons();
     int64_t now = NowMs();
     bool menu = now - g_menu_input.load() <= kStale;
+#ifdef _WIN32
+    ShowArrow(menu && now - eon::pointer_ms.load() < 250);
+#endif
     static bool was = false;
     if (menu != was) LOGI("eon: %s", menu ? "a menu takes the input: the mouse plays A, B and the d-pad" : "out of the menus");
     was = menu;
@@ -106,7 +137,12 @@ void MenuMouse(int port, input::Pad& p) {
         if (c < input::kA) p.buttons = uint16_t(p.buttons & ~(1u << c));
         else p.analog[c - input::kA] = 0;
     }
-    if (held & 1) p.analog[0] = 255;  // A
+    // the left button is A, unless the menus' engine takes the pointer: then it accepts what it is over itself
+    // (src/game/pointer.cpp), or every click accepted twice
+    bool pointer = now - eon::pointer_ms.load() < 250;
+    if ((held & 1) && !pointer) p.analog[0] = 255;  // A
+    if (now - eon::pointer_arrow_ms.load() < kPress)  // a click on a row's arrow: the d-pad's left or right
+        p.buttons |= uint16_t(1u << (eon::pointer_arrow.load() < 0 ? input::kLeft : input::kRight));
     if (held & 2) p.analog[1] = 255;  // B
     // the wheel: a d-pad press a notch
     if (notches && !pending) pulse = now;

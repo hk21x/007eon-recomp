@@ -757,7 +757,7 @@ bool EditPauseOptions(std::vector<Chunk>& top) {
     constexpr uint32_t kButton = 0x430BE, kLit = 0x430E1, kPlain = 0x430C6, kNew = 0x0E200000;
     constexpr uint32_t kShowLit = 0x75C4820E, kShowPlain = 0xCC5C9467, kFocusSound = 0x44615BAF;
     // on Controller's line, to the right; its button between that line and the next, for the focus's order
-    constexpr float kRight = 260, kButtonDown = 14;
+    constexpr float kRight = 260, kButtonDown = 3;  // 3: the menus' pointer takes the two as one row (pointer.cpp)
     Chunk* objs = Find(top, "Obj\xcc");
     Chunk* targ = Find(top, "Targ");
     Chunk* butn = objs ? Find(objs->kids, "Butn") : nullptr;

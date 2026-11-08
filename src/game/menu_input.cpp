@@ -4,19 +4,25 @@
 // port); a package that takes port 1 (its mask +0x20) with a button in focus (+0x84) is a menu in use.
 #include <atomic>
 #include <cstdint>
+#include <cstdlib>
 
+#include "core/input.h"
 #include "kernel/kernel.h"
 #include "xdk/hle.h"
 #include "common/release.h"
 
 namespace eon {
 extern std::atomic<int64_t> g_menu_input;
+extern std::atomic<uint32_t> menu_manager;  // src/game/pointer.cpp
 int64_t NowMs();
 }  // namespace eon
 
 X86_EXTERN_FUNC(EON_ORIG(00131610, 00130F10));
 X86_FUNC(EON_FN(00131610, 00130F10)) {
     uint32_t pkg = kernel::R32(ctx.esp + 4), port = kernel::R32(ctx.esp + 8);
+    // the engine's own mouse path (its manager, ecx, +2), on with the keyboard and mouse: the pointer (src/game/pointer.cpp)
+    eon::menu_manager = ctx.ecx;
+    kernel::G<uint8_t>(ctx.ecx + 2) = input::UsingKeyboard() || std::getenv("EON_POINTER") ? 1 : 0;
     if (pkg && port == 0 && (kernel::R32(pkg + 0x20) & 1) && kernel::R32(pkg + 0x84)) eon::g_menu_input = eon::NowMs();
     EON_ORIG(00131610, 00130F10)(ctx, base);
 }
