@@ -21,6 +21,10 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-08 - PC controls on main
+- Harry on f0d11eb: the helicopter's E and Q, and the rail tank's buttons, "Both fixed". main fast-forwarded to
+  pc-controls (with the mission start crash fix); smoke OK, Europe and USA, on f0d11eb. Next: release 1.2.0 (asked).
+
 ### 2026-11-08 - The helicopter climbs on E, descends on Q (branch pc-controls)
 - Harry on 7c28443: A Show of Force's buttons work; its aim feels like a stick (asked how much a mouse style aim is).
   Sand Storm (driveheli.def): the left stick's y climbs and descends (STEERVERTICAL; the down arrow climbs). In the
