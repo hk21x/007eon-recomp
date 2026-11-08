@@ -21,6 +21,16 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-08 - PC controls on main; the multi-core renderer measured
+- Harry on 21d6c30: W and S walk Bond on foot in Train Chase; earlier the crash fix, the scope, the footers, the menus
+  and the wheel in a driving mission. Not yet tried: a mounted gun with the mouse and the wheel. main fast-forwarded
+  to pc-controls (it carries the mission start crash fix); smoke OK, Europe and USA.
+- The SDK's render-mt2 (5114ead), throwaway branch perf-render-mt2 (bd90cb9), against 21d6c30 on Harry's PC (XBE_PERF,
+  the same save and level, about 75 s on foot): both 60 fps (the game's cap); host 7.14 to 6.56 ms a frame, draw 2.48
+  to 1.84; mt2's record thread 0.83 ms, its render thread waiting for it 0.34; 1% low 50.5, 0.1% 47.7, slowest frame
+  20.9 ms (its own summary; the baseline SDK has none). One 222 ms frame, a first run shader compile. No flicker
+  (Harry). On foot EoN is light (about 560 draws a frame), so little to gain at 60.
+
 ### 2026-11-08 - Train Chase: W and S walk Bond on foot (branch pc-controls)
 - Harry: the wheel in a driving mission and the menus confirmed. In Train Chase on foot WASD did not walk Bond, only
   drove. Traced (research agent): driving.xbe's character (vtable 0x2C8948, [0x360A24], made only in a mission with an
