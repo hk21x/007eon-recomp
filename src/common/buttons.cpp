@@ -14,6 +14,7 @@
 // the palette's nearest colour.
 #include <algorithm>
 #include <atomic>
+#include <chrono>
 #include <cmath>
 #include <cstdint>
 #include <cstdlib>
@@ -33,8 +34,11 @@
 namespace eon {
 bool modern_buttons = true;
 
+extern std::atomic<int64_t> g_menu_input;  // when a menu last took the input (src/common/menu_mouse.cpp)
+
 namespace {
 
+constexpr uint16_t kVkLeftButtonKey = 0x01, kVkRightButtonKey = 0x02;
 constexpr uint32_t kDxt3 = 0x0E;
 constexpr int kSize = 128;                              // texels across and down
 constexpr uint64_t kOriginal = 0x09076852FE367BA4ull;  // FNV-1a of the atlas's 16384 bytes as the disc has them
@@ -285,6 +289,15 @@ Look Current() {
     l.modern = modern_buttons || l.keys;
     if (l.keys)
         for (int c = 0; c < input::kControls; c++) l.bound[size_t(c)] = input::ControlKeys(c);
+    // in the menus A and B are the mouse's buttons (a click selects, the right one goes back: src/common/menu_mouse.cpp,
+    // src/game/pointer.cpp), not play's jump and dive roll (Space, Left Ctrl): the footers' Select and Back (Harry).
+    // The atlas is drawn again as the menus come and go
+    using namespace std::chrono;
+    int64_t now = duration_cast<milliseconds>(steady_clock::now().time_since_epoch()).count();
+    if (l.keys && now - g_menu_input.load() <= 250) {
+        l.bound[size_t(input::kA)] = {kVkLeftButtonKey, 0x0D};
+        l.bound[size_t(input::kB)] = {kVkRightButtonKey, 0x08};
+    }
     return l;
 }
 

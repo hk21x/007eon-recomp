@@ -27,7 +27,11 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
   zoom (0x14B640, not a mounted gun's; 0 for the training's SIG 552, MP5K and P99, logged), the right button taps LT
   (70 ms) on its press to open the scope and on its let go to close it, and free aim's aim leaves it alone. Builds,
   smoke OK; no sniper headless.
-- Harry: "The button labels need updating to match the new buttons": asked which.
+- Harry: "The button labels need updating to match the new buttons": the menu footers (asked). The prompt atlas is
+  one for play and the menus, drawn from the bindings' first keys: A Space and B Left Ctrl (jump and dive roll). In
+  the menus (a menu took the input in the last 250 ms) with the keyboard A is now drawn as the left mouse button and
+  B as the right (src/common/buttons.cpp), the atlas drawn again as the menus come and go. Headless: the pause Game
+  tab's Select shows the left button; Restart Mission and Quit highlight under the pointer.
 
 ### 2026-11-08 - PC controls against Agent Under Fire's (branch pc-controls)
 - Harry asked to compare EoN's PC controls with AUF's corrected ones, then to do all five differences: Backspace for
