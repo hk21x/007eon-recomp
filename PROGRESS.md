@@ -21,6 +21,10 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-08 - Crash fix confirmed (branch pc-controls)
+- Harry on 1ab770d: "Fixed". Still to hear on this branch: the wheel in a driving mission, a mounted gun with the
+  mouse and wheel, Backspace and the menu footers, and the mouse's up and down with the invert settings.
+
 ### 2026-11-08 - Crash on starting a mission: the last mission's Bond read (branch pc-controls)
 - Harry: 937dc7a crashed starting a mission. The VM's log and dump: an access violation reading guest 00A479F4 in the
   HUD ammo text override (0x17F280, src/game/free_aim.cpp, from the reload text work, on main since 33f7a68): it read
