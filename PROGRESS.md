@@ -21,6 +21,29 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-09 - Driving above 60: GPU-only floor flicker, written up after three attempts (branch interp-mt2)
+- Harry's split (VM bats): the floor flickers with the in-between frames on, on D3D12 and D3D11, with or without the
+  render thread; not with high_fps off. So it is the replays, on any GPU renderer. Headless (reference renderer) still
+  0 flicker, also with a new paced test mode (XBE_INTERP_TEST_PACED: never ending a step on its own picture; uncommitted).
+- A WARP repro on the VM failed: EoNDriving.exe started straight from launch.bin crashes 13-18 s in (guest null read in
+  sub_0019C360 from sub_00032700's lookup FUN_0019ef40 returning 0), with or without Harry's save. Not chased.
+- Harry captured on his PC (capture-mt2.bat on the share: XBE_CAPTURE_DIR, XBE_CAPTURE_FRAMES=6, F3). Each captured
+  frame took 1.6 s, so all 18 are real steps, none in-between. They show: the step draws a 512x512 environment map
+  alternately into 811C0000 and 813C0000; 81040000 combines both; 810A0000 (256x256) is drawn sampling 811C0000; the
+  scene samples 810A0000. On the GPU 811C0000 has targets at 256x128, 512x512 and 640x480.
+- Found (headless, logged): every replay of the environment map pass draws into a 640x480 target. The step drew it at
+  512x512, but by the step's end the game has changed the surface header to 640x480, and the renderers read the size
+  from the header when they draw. On the GPU that is another target than the step's.
+- Tried: restoring the surface headers in guest memory crashed the title within 3 s. Describing a target from the
+  copy SurfaceOf made when it was set (sdk branch eon-interp-surface-size, 1 commit on d9c7ac4) runs, but headless it
+  makes a reflective object top right flicker (up to 4,000 pixels a frame, 0 before). Not given to Harry.
+- Think: on the console a replayed environment map would land in the 512x512 picture, which the replays then redraw
+  at blended places; the old 640x480 detour had hidden that. Whether that is also the GPU floor flicker is not shown:
+  the GPU already drew replays into the separate 640x480 target before the change.
+- Next (needs Harry's view): either keep the environment map passes (and what samples them) out of the replays at
+  the step's place, measured headless with the snapshot fix; or capture a real in-between frame on the GPU (a capture
+  that does not slow the step, e.g. copying the replay's targets without the readback stall).
+
 ### 2026-11-09 - Driving above 60: the barrier's flicker diagnosed and fixed (branch interp-mt2)
 - Harry: carry on, but diagnose first. Built two diagnostics (sdk 1f04244): the reference renderer's probes now name
   each writing draw's program, count and textures; a file interp_table in the run folder logs the next 8 replays'
