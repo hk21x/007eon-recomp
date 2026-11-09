@@ -21,6 +21,10 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-09 - W and S with a pad: on main
+- Harry on walk-pad (pad plugged in): "Fixed". Smoke OK, Europe and USA. main fast-forwarded to walk-pad; a 1.2.1 if
+  Harry wants it released.
+
 ### 2026-11-09 - Train Chase on foot: W and S with a pad plugged in (branch walk-pad; also on interp-mt2)
 - Harry: W and S stopped walking Bond on foot in the high frame rate build. The VM found an Xbox pad connected in those
   runs and not in the normal folder's (the log's "is an Xbox pad" line); the code is the same. The walk needed the
