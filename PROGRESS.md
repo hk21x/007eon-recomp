@@ -21,6 +21,19 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-09 - Driving above 60 again, on the multi-core renderer (branch interp-mt2)
+- Harry: re-explore above 60 now render-mt2 is there. Driving first (fixed steps; on foot is frame based). The interp
+  branch's state (2026-11-04): attempt 2's per-size colour targets made it playable (613-896 frames each 10 s at a cap
+  of 144), attempt 3 blended the fixed function matrices (the headlight pool), and the last fix (draws matched by stage
+  0's texture: 26 unmatched a step to 2) was never tried on Windows; the floor's glass shards flickered.
+- sdk eon-interp-mt2 (fork): render-mt2 bd6fc8c (it has the per-size targets, merged as eon-target-key) with the two
+  interp fixes cherry-picked (5c77c5d matrices, 145160e stage 0's key). EoN: the high_fps option again (off; F1 "High
+  frame rate (driving, experimental)"; EON_HIGH_FPS), step_interpolation for driving at 60 with it on, slow motion's
+  fade left out then.
+- Headless, Train Chase from .local/launch_trainchase.bin (.local/drive.sh; driving missions ARE reachable headless
+  this way), XBE_INTERP_TEST=2: 10440 frames in 5278 blanks over 90 s, no traps. wincheck 21 ok; smoke OK. The
+  reference renderer draws neither the record thread nor the flicker: Harry's D3D12 run decides.
+
 ### 2026-11-09 - GitHub issues answered for 1.2.0
 - Harry posted replies: #6 (mouse sensitivity: covered, the lock dot's Invert Vertical still open) and #3 (free aim:
   in 1.2.0); #16 (sluggish mouse and Train Chase's walk fixed; the first spawn's spin and walking on his own after a
