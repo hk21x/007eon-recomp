@@ -257,5 +257,6 @@ const app::GameInfo app::kGame = {
     .default_keys = Keys,                 // a shooter's keys and mouse buttons on foot, a racing game's driving
     .texture_bound = TextureBound,         // modern_buttons, the title screen on ultrawide
     .step_interpolation = [] { return eon::kDriving && eon::driving_60fps && eon::high_fps; },  // driving draws a frame a step
+    .interp_hold_small_targets = true,    // the driving view's small targets (a 512x512 pass drawn from its own view each step)
     // optional, after these: .wheel (what a steering wheel's force feedback follows)
 };

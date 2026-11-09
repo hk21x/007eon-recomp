@@ -21,6 +21,14 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-09 - Driving above 60: the small targets held between steps (branch interp-mt2)
+- Harry chose option 1. sdk eon-interp-mt2 05f66b7: GameInfo::interp_hold_small_targets (EoN on): an in-between frame
+  leaves what goes to a target smaller than the frame (draws, clears, copies) as its step drew it, so the 512x512 pass
+  the floor samples is one picture, its step's. A target's size comes from its guest header (the state's is 0 but for
+  the front buffer). Headless (Train Chase, two frames a step): draws a frame 719 to 640 (about 166 a step left out of
+  each in-between frame), four consecutive frames alike with the floor's glass shards in each, no traps; wincheck,
+  smoke OK. Harry's D3D12 run decides the flicker (attempt 5 overall, with his agreement).
+
 ### 2026-11-09 - Driving above 60: the floor's flicker, written up (branch interp-mt2)
 - Harry on e97355c (high_fps on, cap 144, vsync off, Train Chase): "Slight flicker on the floor again". His log: 600
   steps and 693 to 1065 frames each 10 s (69 to 106 a second, 1.1 to 1.8 frames a step), all steps blended.
