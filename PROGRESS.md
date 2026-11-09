@@ -21,6 +21,21 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-09 - Driving above 60: still flickering at the barrier; parked again (branch interp-mt2)
+- Harry on 9f43501: "Flickering is still happening ... walk forward to the barrier". Reproduced headless: walking from
+  Train Chase's start (.local/drv_barrier.sh, WALK=4: Bond reaches the railing after about 3 to 6 s; walking on dies,
+  .local/drv_path.sh), 24 snaps there, and a count of pixels that change one way and straight back from one frame to the
+  next (/tmp flick.py, kept in PROGRESS terms: changed by more than 24 of 255 each way, back to within 12): with in-between
+  frames 14 to 271 a frame (worst every 12 frames), on the floor's light pools right of Bond and the far railing's
+  lights; without them 0 to 2. So ours, and 0446387 did not reach it (its 0 reversals were measured on the light
+  pattern of the first stretch only).
+- Not it: the fixed function matrices' blend left out (DIAG_NOFIXED, taken out): 16 to 244, no better.
+- Tally on the floor flicker: 11-04's three, 767d909 (small targets held), 9f43501 (samplers of unblended targets at the
+  step's place), this. Parked: high_fps stays off on branch interp-mt2 (sdk eon-interp-mt2 0446387), not for main.
+  What would be next: tell which draw each flickering pixel comes from (a draw id buffer in the reference renderer, or
+  a per-draw on/off bisect) at the barrier, then why that draw lands elsewhere in the in-between frames. And the frame
+  rate: 69 to 106 a second on Harry's PC at a cap of 144 (a whole driving scene redrawn each in-between frame).
+
 ### 2026-11-09 - Driving above 60: the floor's flicker found and fixed headless (branch interp-mt2)
 - Harry on 767d909 (the held small targets): not fixed; "run the mission train chase headless and move forward,
   you'll see it". Headless (.local/drv_walk.sh: Train Chase from the launch file, LS walking, 24 to 48 snaps; the
