@@ -21,6 +21,23 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-09 - Driving above 60: the floor's flicker, written up (branch interp-mt2)
+- Harry on e97355c (high_fps on, cap 144, vsync off, Train Chase): "Slight flicker on the floor again". His log: 600
+  steps and 693 to 1065 frames each 10 s (69 to 106 a second, 1.1 to 1.8 frames a step), all steps blended.
+- Headless (.local/drive.sh, Train Chase, XBE_INTERP_TEST=2, XBE_INTERP_LOG=2 and a temporary log of each unmatched
+  draw, taken out): about 166 draws a step without a match, at most 172 (the 2 of 11-04 counted the screen's only).
+  In steady play nearly all are drawn into the 512x512 off-screen target 00398190, each with a draw in the step before
+  alike in every key (program, count, stage 0 to 3 textures, target, viewport): they are matched, then left at the
+  step's place as a leap (their matrix moves too far for one draw: a view of its own each step, a reflection or
+  shadow style pass). What the floor samples from that target is then a step's, among blended scenery: the likely
+  flicker.
+- The flicker has now outlived four attempts (three on 11-04, this one): stopped, as the rule says, for Harry. The
+  frame rate is the other limit: in-between frames redraw the whole driving scene (about 11500 draws), so on his PC it
+  reached 69 to 106, not 144.
+- Options: hold the off-screen target's in-between frames at the step's picture (draw it only on steps, so the floor
+  samples one consistent texture) and see if the flicker goes; or capture an in-between frame on D3D12 to see the
+  flickering draw itself; or park again.
+
 ### 2026-11-09 - Driving above 60 again, on the multi-core renderer (branch interp-mt2)
 - Harry: re-explore above 60 now render-mt2 is there. Driving first (fixed steps; on foot is frame based). The interp
   branch's state (2026-11-04): attempt 2's per-size colour targets made it playable (613-896 frames each 10 s at a cap
