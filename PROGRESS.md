@@ -21,6 +21,13 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-09 - GitHub issues answered for 1.2.0
+- Harry posted replies: #6 (mouse sensitivity: covered, the lock dot's Invert Vertical still open) and #3 (free aim:
+  in 1.2.0); #16 (sluggish mouse and Train Chase's walk fixed; the first spawn's spin and walking on his own after a
+  respawn not reproduced: log asked); #19 and #17 (60 on foot by design: frame based); #18 (the mouse in the train
+  mission: retry and a log asked; the car's and on-foot driving mouse is still the runtime's right stick option).
+  Not addressed: #15 cheats, #7 a 360 wireless receiver, #5 fast subtitles in some cutscenes.
+
 ### 2026-11-09 - Release 1.2.0 published
 - Harry re-ran the launcher job (attempt 2: success) and published v1.2.0 (tag d0a1573) with the VM's packages (clang
   22.1.3): EoN-PAL-package.zip 76,050,620 bytes, sha256 f7aaa16a...c0c119; EoN-USA-package.zip 76,050,617, 280c4813...
