@@ -186,8 +186,10 @@ void MenuMouse(int port, input::Pad& p) {
 #endif
 #ifdef _WIN32
         // on foot in a driving mission (Train Chase) the gas and brake keys (W, S) also walk him: the left stick's up
-        // and down, his walk there, unless the stick is already pushed (the arrows)
-        if (eon::kDriving && now - eon::driving_on_foot_ms.load() < 250 && input::UsingKeyboard() && p.ly == 0) {
+        // and down, his walk there, unless the stick is already pushed (the arrows, or a pad). The keys themselves are
+        // read, and a pad's stick at rest is a little off centre: with one plugged in, W and S did nothing (Harry)
+        constexpr int kStickRest = 8000;  // about a quarter: a resting stick is well inside it
+        if (eon::kDriving && now - eon::driving_on_foot_ms.load() < 250 && std::abs(int(p.ly)) < kStickRest) {
             auto held_key = [](int c) {
                 for (uint16_t k : input::ControlKeys(c))
                     if (k && (GetAsyncKeyState(k) & 0x8000)) return true;
