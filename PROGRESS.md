@@ -21,6 +21,12 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-09 - Rail tank aim confirmed; on main; release 1.2.0 to be tagged again
+- Harry on 0c95f0c: "Mouse movement works great". main fast-forwarded to rail-aim; smoke OK, Europe and USA. The notes
+  name the direct aim. v1.2.0 moves here (Harry's choice: the unpublished draft is deleted and the tag made again).
+  The packages: built on the VM with LLVM 22.1.3 (Harry's choice; 1.1.0 shipped clang 22.1.3, the VM had only VS's
+  19.1.5, about 10 MB smaller and the cause of the trial packages' smaller size).
+
 ### 2026-11-08 - The tanks' gun camera turned by the mouse directly (branch rail-aim)
 - Harry: the rail tank's mouse aim in this release (v1.2.0 held, the tag to move). Traced (research agent): the tanks'
   aim camera (type 0x800, AutoDrive; tank_sa, tanksa_rail*, tank_plat) turns its yaw +0x24C and pitch +0x248 (turns:
