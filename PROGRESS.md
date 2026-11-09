@@ -21,6 +21,20 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-09 - Driving above 60: the barrier's flicker diagnosed and fixed (branch interp-mt2)
+- Harry: carry on, but diagnose first. Built two diagnostics (sdk 1f04244): the reference renderer's probes now name
+  each writing draw's program, count and textures; a file interp_table in the run folder logs the next 8 replays'
+  draws and how each was blended. With .local/flick.py (pixels that change one way and straight back) the barrier's
+  worst pixels (507,239 and the floor's 436,401) were probed against the table.
+- Found: a surface drawn twice (program B0002EB1, 111 vertices, its base pass sampling the floor's reflection
+  00395A70, and B0002EF1 over the same mesh modulating a light from 00395B30, blend DESTCOLOR); 0446387 put the base
+  pass at the step's place and left the second blended, so in every in-between frame the light landed beside the
+  surface (the pixel 0.18 one frame, 0.36 the next).
+- Fix: draws of one matrix (one mesh's passes) go together: if any is at the step's place, all are. Barrier: flickering
+  pixels 322 to 1139 a frame before, 0 after; the first stretch: no reversals. Cost: those meshes (the wet floor and
+  what is drawn over it) move once a step (+n, 0 alternating in the in-between frames) while the rest is blended.
+  wincheck, smoke OK. Harry's run decides, and whether the floor's step is seen.
+
 ### 2026-11-09 - Driving above 60: still flickering at the barrier; parked again (branch interp-mt2)
 - Harry on 9f43501: "Flickering is still happening ... walk forward to the barrier". Reproduced headless: walking from
   Train Chase's start (.local/drv_barrier.sh, WALK=4: Bond reaches the railing after about 3 to 6 s; walking on dies,
