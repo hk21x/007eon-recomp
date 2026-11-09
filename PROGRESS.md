@@ -21,6 +21,17 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-09 - Train Chase on foot: W and S with a pad plugged in (branch walk-pad; also on interp-mt2)
+- Harry: W and S stopped walking Bond on foot in the high frame rate build. The VM found an Xbox pad connected in those
+  runs and not in the normal folder's (the log's "is an Xbox pad" line); the code is the same. The walk needed the
+  keyboard mode and the left stick at exactly 0: a pad's resting stick is a little off, and a pad may take the mode.
+  Now the gas and brake keys are read whatever the mode, and a stick within a quarter counts as at rest. A 1.2.0 bug for
+  anyone with a pad plugged in. Headless the walk path was checked (DIAG_WALK, taken out); smoke OK; wincheck clean.
+- Harry's 95f2955 timings (3440x1440, cap 144): the title 3.86 to 5.19 ms a step, matching 0.23 to 0.35, a replay 0.94
+  to 1.25, 2.1 frames planned; but only 434 and 521 steps in 10 s (not 600) and 126 frames over 25 ms: the game's own
+  steps fall behind, so few in-between frames are shown (about 67 a second). Not the replay's cost: the presents or the
+  renderer, to be seen with XBE_PERF (perf-mt2.bat).
+
 ### 2026-11-09 - GitHub issues answered for 1.2.0
 - Harry posted replies: #6 (mouse sensitivity: covered, the lock dot's Invert Vertical still open) and #3 (free aim:
   in 1.2.0); #16 (sluggish mouse and Train Chase's walk fixed; the first spawn's spin and walking on his own after a
