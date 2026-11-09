@@ -21,6 +21,15 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-09 - The v1.2.0 launcher build failed: GitHub's download timed out
+- The workflow run for the moved v1.2.0 tag (42567409852) failed in "Build the launcher" (exit 1; f7dea8d's had passed
+  five hours before, with the same SDK and launcher). The launcher's configure fetches nlohmann/json v3.12.0's json.hpp
+  from the release's download, which answered 504 Gateway Time-out on every try here (the same file from the API and
+  from raw.githubusercontent.com: 200, the pinned hash). It answers 200 again now: the job only needs re-running
+  (Harry: the run's page, Re-run failed jobs). The SDK fix, fork branch launcher-json-mirror (9cc0b05): the tag's
+  single_include as a second URL, the same hash (configure checked with the first URL still failing). Not on the
+  fork's main, not in this release.
+
 ### 2026-11-09 - Rail tank aim confirmed; on main; release 1.2.0 to be tagged again
 - Harry on 0c95f0c: "Mouse movement works great". main fast-forwarded to rail-aim; smoke OK, Europe and USA. The notes
   name the direct aim. v1.2.0 moves here (Harry's choice: the unpublished draft is deleted and the tag made again).
