@@ -21,6 +21,21 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-09 - Driving above 60: the floor's flicker found and fixed headless (branch interp-mt2)
+- Harry on 767d909 (the held small targets): not fixed; "run the mission train chase headless and move forward,
+  you'll see it". Headless (.local/drv_walk.sh: Train Chase from the launch file, LS walking, 24 to 48 snaps; the
+  patterned light on the floor measured by the centre of its bright pixels, .local scripts): with in-between frames the
+  pattern jumps back and forth every other step (+15 -13, +13 -19); without them it moves smoothly. The harness is
+  deterministic: repeated runs give the same numbers.
+- What it is: the reflection pass (target 00398190, a full size target drawn with a 512x512 viewport, so the hold of
+  05f66b7 never took it) is drawn from a mirrored view each step (its matrices' first row negated from one step to the
+  next): no draw of it can be blended. The screen's floor draws sampling it (texture 00395A70, stage 1) were blended
+  around it. Drawn at the step's place instead, the reversals go: 4 in 28 frames before, 0 after.
+- sdk 0446387 (eon-interp-mt2): GameInfo::interp_sampled_targets_at_step (EoN on) replaces interp_hold_small_targets: in
+  an in-between frame a draw sampling the memory of a target that this step's unblended draws drew is drawn at the
+  step's place. Not tried: a row flipped left unblended (no effect). wincheck, smoke OK. To see on Windows: the flicker,
+  and whether the floor at the step's place shows a step judder at driving speed.
+
 ### 2026-11-09 - Driving above 60: the small targets held between steps (branch interp-mt2)
 - Harry chose option 1. sdk eon-interp-mt2 05f66b7: GameInfo::interp_hold_small_targets (EoN on): an in-between frame
   leaves what goes to a target smaller than the frame (draws, clears, copies) as its step drew it, so the 512x512 pass
