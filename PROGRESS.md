@@ -3,7 +3,7 @@
 Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Status
-- Latest release: 1.0.3 (2026-10-31, tag v1.0.3).
+- Latest release: 1.2.0 (2026-11-09, tag v1.2.0); before it 1.0.3 (2026-10-31, tag v1.0.3).
 - Milestone: released 1.0.0 (2026-10-26, tag v1.0.0; the launcher built and published by .github/workflows/release.yml). Windows (Harry, D3D12, RX 7900 XT, 3440x1440): plays on foot and in the
   driving missions up to the last mission, with saves. The open issues of 2026-10-24 (the dark slab, the blue figures,
   the carousel's band, the loading screen's strip) are fixed (Harry, 2026-10-26).
@@ -20,6 +20,13 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 - Smoke: scripts/smoke.sh: SMOKE OK (2026-10-26). Soak: 30 minutes, no traps, memory flat
 
 ## Log
+
+### 2026-11-09 - Release 1.2.0 published
+- Harry re-ran the launcher job (attempt 2: success) and published v1.2.0 (tag d0a1573) with the VM's packages (clang
+  22.1.3): EoN-PAL-package.zip 76,050,620 bytes, sha256 f7aaa16a...c0c119; EoN-USA-package.zip 76,050,617, 280c4813...
+  8958f2; EoNLauncher.exe 2,502,656, 6834fd91...0435. Downloaded back and hashed: all match; the .json files match;
+  releases/latest is v1.2.0. GitHub's release downloads timed out (504) on and off during the check (their incident,
+  "increased timeouts"), then answered.
 
 ### 2026-11-09 - The v1.2.0 launcher build failed: GitHub's download timed out
 - The workflow run for the moved v1.2.0 tag (42567409852) failed in "Build the launcher" (exit 1; f7dea8d's had passed
