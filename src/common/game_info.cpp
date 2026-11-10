@@ -18,7 +18,7 @@ namespace eon {
 extern const bool kDriving;  // driving.xbe's exe (src/driving/hooks.cpp), default.xbe's false (src/game/hooks.cpp)
 bool skip_intro = false;  // no logo movies at start (HideFile)
 bool driving_60fps = true;   // the driving missions at 60 frames a second (src/driving/sixty.cpp)
-bool high_fps = false;  // driving above 60: frames in between the game's steps (sdk gpu/interp.cpp), with a frame cap over 60
+bool high_fps = false;  // above 60, on foot and driving: frames in between the game's steps (sdk gpu/interp.cpp), with a frame cap over 60
 bool slow_motion_blend = true;  // driving: slow motion's pictures fade into each other (src/driving/sixty.cpp)
 bool hide_hud = false;       // no HUD, for screenshots (src/driving/hud.cpp, src/game/hud.cpp)
 bool free_aim = true;        // on foot with the mouse, shots to the middle of the view (src/game/free_aim.cpp)
@@ -229,8 +229,8 @@ const app::GameInfo app::kGame = {
                 {"free_aim_sensitivity", nullptr, &eon::free_aim_sensitivity, "Sensitivity while aiming (%)",
                  "Free aim: the camera's mouse sensitivity while the right button aims, as a percent of Mouse sensitivity; 100 is the same."},
                 {"hide_hud", &eon::hide_hud, nullptr, "Hide the HUD", "For screenshots; at once, on foot and driving."},
-                {"high_fps", &eon::high_fps, nullptr, "High frame rate (driving, experimental)",
-                 "Driving missions above 60 with a frame cap over 60: frames drawn in between the game's 60 steps a second. Up to a step behind; may flicker."},
+                {"high_fps", &eon::high_fps, nullptr, "High frame rate (experimental)",
+                 "Above 60 with a frame cap over 60, on foot and driving: frames drawn in between the game's 60 steps a second. Up to a step behind; may flicker."},
                 {"slow_motion_blend", &eon::slow_motion_blend, nullptr, "Smooth slow motion",
                  "Direct3D 12, driving missions at 60: slow motion's pictures fade into each other instead of each showing three times."},
                 {"driving_60fps", &eon::driving_60fps, nullptr, "Driving missions at 60 frames a second",
@@ -256,7 +256,9 @@ const app::GameInfo app::kGame = {
     .mouse_direct = true,                 // straight into the game's look input (src/game/mouse.cpp)
     .default_keys = Keys,                 // a shooter's keys and mouse buttons on foot, a racing game's driving
     .texture_bound = TextureBound,         // modern_buttons, the title screen on ultrawide
-    .step_interpolation = [] { return eon::kDriving && eon::driving_60fps && eon::high_fps; },  // driving draws a frame a step
+    // a frame a step: driving at its 60, on foot always (frame based: the game moves a fixed amount a frame, so above 60 it
+    // would speed up, 2026-11-04)
+    .step_interpolation = [] { return eon::high_fps && (!eon::kDriving || eon::driving_60fps); },
     .interp_sampled_targets_at_step = true,  // the driving floor's reflection pass (mirrored each step) and what samples it
     .vertex_read_back_late = true,  // the driving water's 128x128 target read as vertices: a finished copy, no wait each frame
     // optional, after these: .wheel (what a steering wheel's force feedback follows)
