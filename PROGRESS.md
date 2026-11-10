@@ -21,6 +21,16 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-10 - Driving above 60: the GPU floor flicker fixed, confirmed by Harry (branch interp-mt2, sdk d9a2a71)
+- Harry chose "keep the environment maps out of the blending". Cause of the glitch the size fix showed: KeyOf keyed
+  draws by the surface header, and the game draws its two environment maps (811C0000, 813C0000, alternate steps)
+  through one header, so each map's draws were blended with the other map's of the step before. KeyOf now mixes in
+  the target's memory: they go unmatched, drawn at the step's place with what samples them. Targets are described
+  from SurfaceOf's copy (the size set), not the header at draw time.
+- Headless, Train Chase, 24 frames: start, barrier and paced mode all 0 flickering pixels.
+- Harry (RX 7900 XT, D3D12, VM build 8e45b5b): "Flickering is fixed."
+- Next: the frame rate (the late-step limiter falling to 1 frame a step), then bringing interp-mt2 onto fork main.
+
 ### 2026-11-09 - Driving above 60: GPU-only floor flicker, written up after three attempts (branch interp-mt2)
 - Harry's split (VM bats): the floor flickers with the in-between frames on, on D3D12 and D3D11, with or without the
   render thread; not with high_fps off. So it is the replays, on any GPU renderer. Headless (reference renderer) still
