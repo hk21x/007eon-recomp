@@ -21,6 +21,22 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-10 - Driving above 60: from 60 back to 90-118 frames a second at a 144 cap (branch interp-mt2, sdk a149497)
+- The flicker fix (sizes as set for every draw) cost the second frame: Harry's A/B (XBE_INTERP_KEY_HEADER,
+  XBE_SURFACE_AS_NOW) put it on the sizes. Replays only now take a target's size as drawn (Surface::as_drawn); the
+  title's draws read the header as before.
+- Still 60: XBE_PERF lock lines showed the cause. Each frame the driving draws a 128x128 swizzled target at 81522000
+  and draws vertices from that memory (the water); SyncDeferred read it back at once, about 7 ms behind the queued
+  in-between frames. Before the flicker fix the read-back found the 640x480 target the replays had left at that
+  address and skipped (stale vertices: fast by accident). GameInfo::vertex_read_back_late (EoN on) hands over the
+  newest finished copy instead (render thread SyncVertices; RecordLate/DeliverLate now carry swizzled targets).
+- The limiter: kept to the frames a step gets only when cutting, and only steps our frames made late count; a step's
+  last frame begins early enough to finish before the title's next step (it missed by a fraction of a ms).
+- Harry's run (73475c2): 905 to 1,184 frames for 600 steps (90 to 118 a second), the title 3 to 7 ms a step, the
+  floor and water pools clean. Headless at FPS=144: 1,200 for 600.
+- Next: Harry's view on smoothness; then the SDK branch eon-interp-surface-size through the all-games gate onto fork
+  main, and EoN's main.
+
 ### 2026-11-10 - Driving above 60: the GPU floor flicker fixed, confirmed by Harry (branch interp-mt2, sdk d9a2a71)
 - Harry chose "keep the environment maps out of the blending". Cause of the glitch the size fix showed: KeyOf keyed
   draws by the surface header, and the game draws its two environment maps (811C0000, 813C0000, alternate steps)
