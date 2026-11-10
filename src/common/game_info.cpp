@@ -258,5 +258,6 @@ const app::GameInfo app::kGame = {
     .texture_bound = TextureBound,         // modern_buttons, the title screen on ultrawide
     .step_interpolation = [] { return eon::kDriving && eon::driving_60fps && eon::high_fps; },  // driving draws a frame a step
     .interp_sampled_targets_at_step = true,  // the driving floor's reflection pass (mirrored each step) and what samples it
+    .vertex_read_back_late = true,  // the driving water's 128x128 target read as vertices: a finished copy, no wait each frame
     // optional, after these: .wheel (what a steering wheel's force feedback follows)
 };
