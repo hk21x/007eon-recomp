@@ -21,6 +21,20 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-11 - Three reported issues before 1.3.0 (branch issues-130)
+- Harry: review the open GitHub issues for quick wins before releasing; chose #26, #24, #32.
+- #26 (free aim off: Invert mouse fits the dot or the camera, not both): the lock's dot shares the right stick path
+  with the scope, signed for the scope; the dot's sign flipped (src/game/mouse.cpp). Headless could not get a lock in
+  the training level, so not measured: Harry's check on Windows.
+- #24 (skip an unseen mission intro): a research agent traced the play movie command 0x1D020 (USA 0x1CDE0), which
+  makes a mission movie unskippable until the profile has the mission played, unless flags bit 31; set for the call
+  (src/game/movie_skip.cpp). In gdb the new game's intro ended at the next A. The boot logos are unchanged.
+- #32 (menus too fast with a pad): not proven. The agent ruled out the repeat rate (timed: 267 ms then every 100 ms),
+  flicker and the dead zone; what reproduces two rows a tap is one pad on two ports (each port has its own repeat).
+  In a menu a later port holding just what port 1 holds is now let go (menu_mouse.cpp), logged. The reporter's log is
+  needed (the runtime's "controller N plugged in" is an info line, not in release logs). Side finding, not fixed: until
+  the first pad input the menus see up+left held (0x5D8F0 converts sticks only when the state differs from zero).
+
 ### 2026-11-11 - Release 1.3.0 (tag v1.3.0)
 - Fork main took main-next 8d9815a (the multi-core renderer, PGR2 1.6.3, the SDK session's host-read retry, the
   in-between frame fixes; Harry's go in the SDK session). EoN main fast-forwarded to high-fps df30020, pinned to it.

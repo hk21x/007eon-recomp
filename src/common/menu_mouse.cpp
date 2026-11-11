@@ -95,7 +95,28 @@ int64_t NowMs() {
 void MenuMouse(int port, input::Pad& p) {
     constexpr int64_t kStale = 250, kPress = 70, kGap = 70;  // ms
     constexpr uint16_t kMouseBits[3] = {0x01, 0x02, 0x04};    // VK_LBUTTON VK_RBUTTON VK_MBUTTON
-    if (port != 0) return;
+    // one controller seen on two ports (issue #32: a pad Windows offers through two interfaces; not proven for the
+    // reporter's): the menus take every port, each with its own press and repeat, so each tap moved two rows (measured
+    // headless with port 1 given port 0's input). In a menu, a later port holding just what port 1's controller holds
+    // is let go; two players' pads differ, and in play nothing changes
+    static input::Pad first{};
+    if (port == 0) first = p;
+    if (port != 0) {
+        const bool in_menu = NowMs() - g_menu_input.load() <= kStale;
+        const auto near = [](int a, int b) { return std::abs(a - b) < 6000; };
+        bool pressed = first.buttons != 0 || std::abs(int(first.lx)) > 12000 || std::abs(int(first.ly)) > 12000;
+        for (uint8_t a : first.analog) pressed |= a > 64;
+        bool same = p.buttons == first.buttons && near(p.lx, first.lx) && near(p.ly, first.ly);
+        for (int i = 0; i < 8; i++) same &= (p.analog[i] > 64) == (first.analog[i] > 64);
+        if (in_menu && pressed && same) {
+            static int told = 0;
+            if (told++ < 3) LOGR("eon: menus: controller %d holds exactly what controller 1 does, taken as the same pad", port + 1);
+            const bool connected = p.connected;
+            p = input::Pad{};
+            p.connected = connected;
+        }
+        return;
+    }
     static int pending = 0;  // notches to play, up positive
     static int64_t pulse = 0;
     int notches = input::TakeWheel();  // taken in play too, so none wait for the next menu
