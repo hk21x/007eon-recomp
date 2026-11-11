@@ -3,7 +3,7 @@
 Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Status
-- Latest release: 1.3.1 (2026-11-11, tag v1.3.1, a draft until Harry attaches the packages; v1.3.0 was tagged but never released: its launcher did not link); before it 1.2.0 (2026-11-09).
+- Latest release: 1.3.1 (2026-11-11, tag v1.3.1, published; v1.3.0 was tagged but never released: its launcher did not link); before it 1.2.0 (2026-11-09).
 - Milestone: released 1.0.0 (2026-10-26, tag v1.0.0; the launcher built and published by .github/workflows/release.yml). Windows (Harry, D3D12, RX 7900 XT, 3440x1440): plays on foot and in the
   driving missions up to the last mission, with saves. The open issues of 2026-10-24 (the dark slab, the blue figures,
   the carousel's band, the loading screen's strip) are fixed (Harry, 2026-10-26).
@@ -20,6 +20,12 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 - Smoke: scripts/smoke.sh: SMOKE OK (2026-10-26). Soak: 30 minutes, no traps, memory flat
 
 ## Log
+
+### 2026-11-11 - 1.3.1 published
+- Harry attached the packages and published. Checked from here: the release is public (not a draft), its five files
+  are there, and both packages' sizes and sha256s match their .json and the VM's builds from 0e45e99 (PAL 24be1330…,
+  USA 677fd4ca…).
+- Next: replies for the issues (#5, #16, #24, #26, #32 fixed; #3, #6, #20 shipped before; #25 and #18 need logs).
 
 ### 2026-11-11 - Release 1.3.1: the tag moved to the final code (Harry's explicit go)
 - Harry wanted #5, #16 and the Subtitles option in 1.3.1, whose tag (25d746c) was pushed with a draft never published.
