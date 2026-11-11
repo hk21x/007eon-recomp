@@ -21,6 +21,144 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-11 - Above 60 on foot: tried and backed off (branch interp-mt2)
+- 80a9dce turned the high_fps option's in-between frames on for on foot (frame based: a fixed step a frame, as driving).
+  Headless MI6 training walking: 1 flickering pixel (the camera barely moved).
+- Harry: lots of flicker, 60 a second. His log: on foot the title takes 8 to 15 ms a step and a replay 5 to 12 ms
+  (driving 3 to 7 and 1.3 to 1.5), so the frames rarely fit ("a replay takes too long" again and again).
+- Reverted: driving only again. Next for on foot: make a replay much cheaper (it binds and draws the whole step again),
+  then diagnose its flicker the way driving's was.
+
+### 2026-11-10 - Driving above 60: from 60 back to 90-118 frames a second at a 144 cap (branch interp-mt2, sdk a149497)
+- The flicker fix (sizes as set for every draw) cost the second frame: Harry's A/B (XBE_INTERP_KEY_HEADER,
+  XBE_SURFACE_AS_NOW) put it on the sizes. Replays only now take a target's size as drawn (Surface::as_drawn); the
+  title's draws read the header as before.
+- Still 60: XBE_PERF lock lines showed the cause. Each frame the driving draws a 128x128 swizzled target at 81522000
+  and draws vertices from that memory (the water); SyncDeferred read it back at once, about 7 ms behind the queued
+  in-between frames. Before the flicker fix the read-back found the 640x480 target the replays had left at that
+  address and skipped (stale vertices: fast by accident). GameInfo::vertex_read_back_late (EoN on) hands over the
+  newest finished copy instead (render thread SyncVertices; RecordLate/DeliverLate now carry swizzled targets).
+- The limiter: kept to the frames a step gets only when cutting, and only steps our frames made late count; a step's
+  last frame begins early enough to finish before the title's next step (it missed by a fraction of a ms).
+- Harry's run (73475c2): 905 to 1,184 frames for 600 steps (90 to 118 a second), the title 3 to 7 ms a step, the
+  floor and water pools clean. Headless at FPS=144: 1,200 for 600.
+- Next: Harry's view on smoothness; then the SDK branch eon-interp-surface-size through the all-games gate onto fork
+  main, and EoN's main.
+
+### 2026-11-10 - Driving above 60: the GPU floor flicker fixed, confirmed by Harry (branch interp-mt2, sdk d9a2a71)
+- Harry chose "keep the environment maps out of the blending". Cause of the glitch the size fix showed: KeyOf keyed
+  draws by the surface header, and the game draws its two environment maps (811C0000, 813C0000, alternate steps)
+  through one header, so each map's draws were blended with the other map's of the step before. KeyOf now mixes in
+  the target's memory: they go unmatched, drawn at the step's place with what samples them. Targets are described
+  from SurfaceOf's copy (the size set), not the header at draw time.
+- Headless, Train Chase, 24 frames: start, barrier and paced mode all 0 flickering pixels.
+- Harry (RX 7900 XT, D3D12, VM build 8e45b5b): "Flickering is fixed."
+- Next: the frame rate (the late-step limiter falling to 1 frame a step), then bringing interp-mt2 onto fork main.
+
+### 2026-11-09 - Driving above 60: GPU-only floor flicker, written up after three attempts (branch interp-mt2)
+- Harry's split (VM bats): the floor flickers with the in-between frames on, on D3D12 and D3D11, with or without the
+  render thread; not with high_fps off. So it is the replays, on any GPU renderer. Headless (reference renderer) still
+  0 flicker, also with a new paced test mode (XBE_INTERP_TEST_PACED: never ending a step on its own picture; uncommitted).
+- A WARP repro on the VM failed: EoNDriving.exe started straight from launch.bin crashes 13-18 s in (guest null read in
+  sub_0019C360 from sub_00032700's lookup FUN_0019ef40 returning 0), with or without Harry's save. Not chased.
+- Harry captured on his PC (capture-mt2.bat on the share: XBE_CAPTURE_DIR, XBE_CAPTURE_FRAMES=6, F3). Each captured
+  frame took 1.6 s, so all 18 are real steps, none in-between. They show: the step draws a 512x512 environment map
+  alternately into 811C0000 and 813C0000; 81040000 combines both; 810A0000 (256x256) is drawn sampling 811C0000; the
+  scene samples 810A0000. On the GPU 811C0000 has targets at 256x128, 512x512 and 640x480.
+- Found (headless, logged): every replay of the environment map pass draws into a 640x480 target. The step drew it at
+  512x512, but by the step's end the game has changed the surface header to 640x480, and the renderers read the size
+  from the header when they draw. On the GPU that is another target than the step's.
+- Tried: restoring the surface headers in guest memory crashed the title within 3 s. Describing a target from the
+  copy SurfaceOf made when it was set (sdk branch eon-interp-surface-size, 1 commit on d9c7ac4) runs, but headless it
+  makes a reflective object top right flicker (up to 4,000 pixels a frame, 0 before). Not given to Harry.
+- Think: on the console a replayed environment map would land in the 512x512 picture, which the replays then redraw
+  at blended places; the old 640x480 detour had hidden that. Whether that is also the GPU floor flicker is not shown:
+  the GPU already drew replays into the separate 640x480 target before the change.
+- Next (needs Harry's view): either keep the environment map passes (and what samples them) out of the replays at
+  the step's place, measured headless with the snapshot fix; or capture a real in-between frame on the GPU (a capture
+  that does not slow the step, e.g. copying the replay's targets without the readback stall).
+
+### 2026-11-09 - Driving above 60: the barrier's flicker diagnosed and fixed (branch interp-mt2)
+- Harry: carry on, but diagnose first. Built two diagnostics (sdk 1f04244): the reference renderer's probes now name
+  each writing draw's program, count and textures; a file interp_table in the run folder logs the next 8 replays'
+  draws and how each was blended. With .local/flick.py (pixels that change one way and straight back) the barrier's
+  worst pixels (507,239 and the floor's 436,401) were probed against the table.
+- Found: a surface drawn twice (program B0002EB1, 111 vertices, its base pass sampling the floor's reflection
+  00395A70, and B0002EF1 over the same mesh modulating a light from 00395B30, blend DESTCOLOR); 0446387 put the base
+  pass at the step's place and left the second blended, so in every in-between frame the light landed beside the
+  surface (the pixel 0.18 one frame, 0.36 the next).
+- Fix: draws of one matrix (one mesh's passes) go together: if any is at the step's place, all are. Barrier: flickering
+  pixels 322 to 1139 a frame before, 0 after; the first stretch: no reversals. Cost: those meshes (the wet floor and
+  what is drawn over it) move once a step (+n, 0 alternating in the in-between frames) while the rest is blended.
+  wincheck, smoke OK. Harry's run decides, and whether the floor's step is seen.
+
+### 2026-11-09 - Driving above 60: still flickering at the barrier; parked again (branch interp-mt2)
+- Harry on 9f43501: "Flickering is still happening ... walk forward to the barrier". Reproduced headless: walking from
+  Train Chase's start (.local/drv_barrier.sh, WALK=4: Bond reaches the railing after about 3 to 6 s; walking on dies,
+  .local/drv_path.sh), 24 snaps there, and a count of pixels that change one way and straight back from one frame to the
+  next (/tmp flick.py, kept in PROGRESS terms: changed by more than 24 of 255 each way, back to within 12): with in-between
+  frames 14 to 271 a frame (worst every 12 frames), on the floor's light pools right of Bond and the far railing's
+  lights; without them 0 to 2. So ours, and 0446387 did not reach it (its 0 reversals were measured on the light
+  pattern of the first stretch only).
+- Not it: the fixed function matrices' blend left out (DIAG_NOFIXED, taken out): 16 to 244, no better.
+- Tally on the floor flicker: 11-04's three, 767d909 (small targets held), 9f43501 (samplers of unblended targets at the
+  step's place), this. Parked: high_fps stays off on branch interp-mt2 (sdk eon-interp-mt2 0446387), not for main.
+  What would be next: tell which draw each flickering pixel comes from (a draw id buffer in the reference renderer, or
+  a per-draw on/off bisect) at the barrier, then why that draw lands elsewhere in the in-between frames. And the frame
+  rate: 69 to 106 a second on Harry's PC at a cap of 144 (a whole driving scene redrawn each in-between frame).
+
+### 2026-11-09 - Driving above 60: the floor's flicker found and fixed headless (branch interp-mt2)
+- Harry on 767d909 (the held small targets): not fixed; "run the mission train chase headless and move forward,
+  you'll see it". Headless (.local/drv_walk.sh: Train Chase from the launch file, LS walking, 24 to 48 snaps; the
+  patterned light on the floor measured by the centre of its bright pixels, .local scripts): with in-between frames the
+  pattern jumps back and forth every other step (+15 -13, +13 -19); without them it moves smoothly. The harness is
+  deterministic: repeated runs give the same numbers.
+- What it is: the reflection pass (target 00398190, a full size target drawn with a 512x512 viewport, so the hold of
+  05f66b7 never took it) is drawn from a mirrored view each step (its matrices' first row negated from one step to the
+  next): no draw of it can be blended. The screen's floor draws sampling it (texture 00395A70, stage 1) were blended
+  around it. Drawn at the step's place instead, the reversals go: 4 in 28 frames before, 0 after.
+- sdk 0446387 (eon-interp-mt2): GameInfo::interp_sampled_targets_at_step (EoN on) replaces interp_hold_small_targets: in
+  an in-between frame a draw sampling the memory of a target that this step's unblended draws drew is drawn at the
+  step's place. Not tried: a row flipped left unblended (no effect). wincheck, smoke OK. To see on Windows: the flicker,
+  and whether the floor at the step's place shows a step judder at driving speed.
+
+### 2026-11-09 - Driving above 60: the small targets held between steps (branch interp-mt2)
+- Harry chose option 1. sdk eon-interp-mt2 05f66b7: GameInfo::interp_hold_small_targets (EoN on): an in-between frame
+  leaves what goes to a target smaller than the frame (draws, clears, copies) as its step drew it, so the 512x512 pass
+  the floor samples is one picture, its step's. A target's size comes from its guest header (the state's is 0 but for
+  the front buffer). Headless (Train Chase, two frames a step): draws a frame 719 to 640 (about 166 a step left out of
+  each in-between frame), four consecutive frames alike with the floor's glass shards in each, no traps; wincheck,
+  smoke OK. Harry's D3D12 run decides the flicker (attempt 5 overall, with his agreement).
+
+### 2026-11-09 - Driving above 60: the floor's flicker, written up (branch interp-mt2)
+- Harry on e97355c (high_fps on, cap 144, vsync off, Train Chase): "Slight flicker on the floor again". His log: 600
+  steps and 693 to 1065 frames each 10 s (69 to 106 a second, 1.1 to 1.8 frames a step), all steps blended.
+- Headless (.local/drive.sh, Train Chase, XBE_INTERP_TEST=2, XBE_INTERP_LOG=2 and a temporary log of each unmatched
+  draw, taken out): about 166 draws a step without a match, at most 172 (the 2 of 11-04 counted the screen's only).
+  In steady play nearly all are drawn into the 512x512 off-screen target 00398190, each with a draw in the step before
+  alike in every key (program, count, stage 0 to 3 textures, target, viewport): they are matched, then left at the
+  step's place as a leap (their matrix moves too far for one draw: a view of its own each step, a reflection or
+  shadow style pass). What the floor samples from that target is then a step's, among blended scenery: the likely
+  flicker.
+- The flicker has now outlived four attempts (three on 11-04, this one): stopped, as the rule says, for Harry. The
+  frame rate is the other limit: in-between frames redraw the whole driving scene (about 11500 draws), so on his PC it
+  reached 69 to 106, not 144.
+- Options: hold the off-screen target's in-between frames at the step's picture (draw it only on steps, so the floor
+  samples one consistent texture) and see if the flicker goes; or capture an in-between frame on D3D12 to see the
+  flickering draw itself; or park again.
+
+### 2026-11-09 - Driving above 60 again, on the multi-core renderer (branch interp-mt2)
+- Harry: re-explore above 60 now render-mt2 is there. Driving first (fixed steps; on foot is frame based). The interp
+  branch's state (2026-11-04): attempt 2's per-size colour targets made it playable (613-896 frames each 10 s at a cap
+  of 144), attempt 3 blended the fixed function matrices (the headlight pool), and the last fix (draws matched by stage
+  0's texture: 26 unmatched a step to 2) was never tried on Windows; the floor's glass shards flickered.
+- sdk eon-interp-mt2 (fork): render-mt2 bd6fc8c (it has the per-size targets, merged as eon-target-key) with the two
+  interp fixes cherry-picked (5c77c5d matrices, 145160e stage 0's key). EoN: the high_fps option again (off; F1 "High
+  frame rate (driving, experimental)"; EON_HIGH_FPS), step_interpolation for driving at 60 with it on, slow motion's
+  fade left out then.
+- Headless, Train Chase from .local/launch_trainchase.bin (.local/drive.sh; driving missions ARE reachable headless
+  this way), XBE_INTERP_TEST=2: 10440 frames in 5278 blanks over 90 s, no traps. wincheck 21 ok; smoke OK. The
+  reference renderer draws neither the record thread nor the flicker: Harry's D3D12 run decides.
 ### 2026-11-09 - W and S with a pad: on main
 - Harry on walk-pad (pad plugged in): "Fixed". Smoke OK, Europe and USA. main fast-forwarded to walk-pad; a 1.2.1 if
   Harry wants it released.

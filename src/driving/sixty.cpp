@@ -26,6 +26,7 @@
 namespace eon {
 extern bool driving_60fps;  // the setting (src/common/game_info.cpp; EON_DRIVING60 headless)
 extern bool slow_motion_blend;  // the setting (src/common/game_info.cpp; EON_SLOW_BLEND headless)
+extern bool high_fps;           // frames in between the steps fill slow motion's gaps instead (src/common/game_info.cpp)
 }
 
 namespace {
@@ -45,7 +46,7 @@ void SlowMotionBlend() {
     }
     float speed = 1;
     if (g_scheduler) std::memcpy(&speed, kernel::HostPtr(g_scheduler + 0x20), 4);
-    if (eon::slow_motion_blend && speed < 1 && speed > 0)
+    if (eon::slow_motion_blend && !eon::high_fps && speed < 1 && speed > 0)
         d3d::SetFrameBlend(std::min(0.999f, float(blank - tick_blank + 1) / float(spacing)), fresh);
 }
 
