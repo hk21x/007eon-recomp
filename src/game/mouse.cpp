@@ -75,7 +75,10 @@ X86_FUNC(EON_FN(0001BC90, 0001BA50)) {
     std::memcpy(&rx, &kernel::G<uint32_t>(out + 8), 4);
     std::memcpy(&ry, &kernel::G<uint32_t>(out + 12), 4);
     rx += x * k;
-    ry -= y * k;  // a scope too: flipped there it was the wrong way (Harry, 25aacfa)
+    // a scope: flipped there it was the wrong way (Harry, 25aacfa). The lock's dot (the rest of this path: mounted guns
+    // turn directly) moves the other way to the scope for the same stick: with this sign it went down for the mouse's
+    // up, and Invert mouse, which put it right, then turned the camera upside down (issue #26)
+    ry += eon::scoped ? -y * k : y * k;
     std::memcpy(&kernel::G<uint32_t>(out + 8), &rx, 4);
     std::memcpy(&kernel::G<uint32_t>(out + 12), &ry, 4);
 }
