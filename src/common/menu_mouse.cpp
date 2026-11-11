@@ -158,18 +158,20 @@ void MenuMouse(int port, input::Pad& p) {
         float dt = std::clamp(std::chrono::duration<float>(take_now - last_take).count(), 0.001f, 0.1f);
         last_take = take_now;
         // a car (Harry): the mouse swings the chase camera round it (src/driving/car_camera.cpp), which eases back behind
-        // the car once the mouse rests; not on foot (Train Chase's walk, the camera on foot's own mouse)
-        const bool in_car = eon::kDriving && input::UsingKeyboard() && vehicle == Vehicle::kOther &&
-                            now - eon::driving_on_foot_ms.load() >= 250;
+        // the car once the mouse rests; up looks up (the camera lowered), as on foot, Invert mouse flipping it
+        const bool foot = eon::kDriving && now - eon::driving_on_foot_ms.load() < 250;
+        const bool in_car = eon::kDriving && input::UsingKeyboard() && vehicle == Vehicle::kOther && !foot;
+        // on foot in a driving mission (Train Chase) the right stick turns the camera, so the mouse plays it, as in the
+        // helicopter (Harry); its invert is Invert mouse's (input::TakeMouse) over the game's own
         if (in_car && input::TakeMouse(mx, my)) {
             constexpr float kFullRate = 2400, kDegreesPerCount = 0.04f;  // as the tanks' camera below
             if (mx != 0 || my != 0) {
                 eon::car_look_yaw = std::clamp(eon::car_look_yaw + mx * kFullRate * dt * kDegreesPerCount, -150.0f, 150.0f);
-                eon::car_look_pitch = std::clamp(eon::car_look_pitch + my * kFullRate * dt * kDegreesPerCount, -10.0f, 35.0f);
+                eon::car_look_pitch = std::clamp(eon::car_look_pitch - my * kFullRate * dt * kDegreesPerCount, -10.0f, 35.0f);
                 eon::car_look_ms = now;
             }
-        } else if (vehicle != Vehicle::kOther && input::TakeMouse(mx, my)) {
-            if (vehicle != Vehicle::kHeli && now - eon::drive_aim_camera_ms.load() < 250) {
+        } else if ((vehicle != Vehicle::kOther || (foot && input::UsingKeyboard())) && input::TakeMouse(mx, my)) {
+            if (vehicle != Vehicle::kHeli && !foot && now - eon::drive_aim_camera_ms.load() < 250) {
                 // the tanks' aim camera turns by the mouse directly (src/driving/aim_camera.cpp): its counts (a rate
                 // in full deflections, 2400 counts a second) at the camera's 0.04 degrees a count on foot
                 constexpr float kFullRate = 2400, kDegreesPerCount = 0.04f;

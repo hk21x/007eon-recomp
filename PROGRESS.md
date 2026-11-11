@@ -31,7 +31,10 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
   (which negates the arm's z). The mouse reaches it only in a car (menu_mouse.cpp); tanks, rail tank, helicopter as before.
 - Headless (Serena's car mission, EON_CAR_LOOK_TEST's carlook file): 60 and -90 degrees swing the camera round the car,
   pitch 25 raises it, released it is back behind the car within 4 s, look back is head on (not mirrored).
-- Next: Harry's feel on Windows (speed, the pitch range -10 to 35, the 1 s wait before easing back).
+- Harry: works, but up and down were inverted (Invert mouse off behaved as on): the mouse's y counts up positive
+  (input::TakeMouse, Invert mouse applied there), taken as down. Fixed. And on foot in these missions (Train Chase) the
+  mouse should turn the camera too: there the right stick turns it (left, right, up, down; measured headless), so the
+  mouse plays the right stick on foot, as in the helicopter.
 
 ### 2026-11-11 - Driving above 60 onto main: the SDK on main-next (branch high-fps)
 - high-fps: EoN main 05600b5 with interp-mt2 merged (the High frame rate (experimental) option, off; driving only).
