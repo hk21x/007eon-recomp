@@ -103,10 +103,10 @@ void MenuMouse(int port, input::Pad& p) {
     if (port == 0) first = p;
     if (port != 0) {
         const bool in_menu = NowMs() - g_menu_input.load() <= kStale;
-        const auto near = [](int a, int b) { return std::abs(a - b) < 6000; };
+        const auto close_to = [](int a, int b) { return std::abs(a - b) < 6000; };
         bool pressed = first.buttons != 0 || std::abs(int(first.lx)) > 12000 || std::abs(int(first.ly)) > 12000;
         for (uint8_t a : first.analog) pressed |= a > 64;
-        bool same = p.buttons == first.buttons && near(p.lx, first.lx) && near(p.ly, first.ly);
+        bool same = p.buttons == first.buttons && close_to(p.lx, first.lx) && close_to(p.ly, first.ly);
         for (int i = 0; i < 8; i++) same &= (p.analog[i] > 64) == (first.analog[i] > 64);
         if (in_menu && pressed && same) {
             static int told = 0;
