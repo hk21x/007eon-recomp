@@ -3,7 +3,7 @@
 Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Status
-- Latest release: 1.2.0 (2026-11-09, tag v1.2.0); before it 1.0.3 (2026-10-31, tag v1.0.3).
+- Latest release: 1.3.0 (2026-11-11, tag v1.3.0, a draft until Harry attaches the packages); before it 1.2.0 (2026-11-09).
 - Milestone: released 1.0.0 (2026-10-26, tag v1.0.0; the launcher built and published by .github/workflows/release.yml). Windows (Harry, D3D12, RX 7900 XT, 3440x1440): plays on foot and in the
   driving missions up to the last mission, with saves. The open issues of 2026-10-24 (the dark slab, the blue figures,
   the carousel's band, the loading screen's strip) are fixed (Harry, 2026-10-26).
@@ -20,6 +20,17 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 - Smoke: scripts/smoke.sh: SMOKE OK (2026-10-26). Soak: 30 minutes, no traps, memory flat
 
 ## Log
+
+### 2026-11-11 - Release 1.3.0 (tag v1.3.0)
+- Fork main took main-next 8d9815a (the multi-core renderer, PGR2 1.6.3, the SDK session's host-read retry, the
+  in-between frame fixes; Harry's go in the SDK session). EoN main fast-forwarded to high-fps df30020, pinned to it.
+- In it: driving above 60 (High frame rate (experimental), off; up to 120 a second at a 144 cap), the mouse moving the
+  camera in the driving missions (a car's free look; on foot as the right stick, three times its rate), W and S with a
+  pad in Train Chase. Notes: docs/releases/v1.3.0.md.
+- Checks: the SDK session's gate (PGR2, PGR1, Agent Under Fire, NightFire, EoN SMOKE OK; True Crime conflicts, its
+  session's); here on df30020 the European and USA smoke OK; Harry on Windows (the RC 3a65376: on foot, Train Chase
+  with the option on and off; the free look and the on-foot mouse on 728b913).
+- Next: the tag's draft release; the VM builds the PAL and USA packages; Harry attaches them and publishes.
 
 ### 2026-11-11 - Driving: the mouse swings a car's chase camera (free look) (branch car-freelook)
 - Harry: the mouse should move the camera in the driving missions as the right stick does on a pad. In a car the right
