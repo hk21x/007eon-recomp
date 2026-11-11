@@ -21,6 +21,14 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-11 - Above 60 on foot: tried and backed off (branch interp-mt2)
+- 80a9dce turned the high_fps option's in-between frames on for on foot (frame based: a fixed step a frame, as driving).
+  Headless MI6 training walking: 1 flickering pixel (the camera barely moved).
+- Harry: lots of flicker, 60 a second. His log: on foot the title takes 8 to 15 ms a step and a replay 5 to 12 ms
+  (driving 3 to 7 and 1.3 to 1.5), so the frames rarely fit ("a replay takes too long" again and again).
+- Reverted: driving only again. Next for on foot: make a replay much cheaper (it binds and draws the whole step again),
+  then diagnose its flicker the way driving's was.
+
 ### 2026-11-10 - Driving above 60: from 60 back to 90-118 frames a second at a 144 cap (branch interp-mt2, sdk a149497)
 - The flicker fix (sizes as set for every draw) cost the second frame: Harry's A/B (XBE_INTERP_KEY_HEADER,
   XBE_SURFACE_AS_NOW) put it on the sizes. Replays only now take a target's size as drawn (Surface::as_drawn); the
