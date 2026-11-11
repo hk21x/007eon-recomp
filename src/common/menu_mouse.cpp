@@ -92,7 +92,17 @@ int64_t NowMs() {
     return duration_cast<milliseconds>(steady_clock::now().time_since_epoch()).count();
 }
 
+static void MenuMouseInner(int port, input::Pad& p);
+// the game's polling (default.xbe 0x5D8F0) converts a pad's sticks only once its state differs from the zeroed copy it
+// keeps from opening the pad. A real pad's sticks never rest at exactly 0; the keyboard's pad does, so until the first
+// key the game read its unconverted zeros as both sticks held up and left: the menus moving at boot, and in a driving
+// mission (a new process, the pad opened again) the view spinning at the first spawn and Bond walking by himself until
+// a movement key (issue #16). So a resting left stick reads 1 of 32767 here, and the first poll converts.
 void MenuMouse(int port, input::Pad& p) {
+    MenuMouseInner(port, p);
+    if (p.connected && p.lx == 0) p.lx = 1;
+}
+static void MenuMouseInner(int port, input::Pad& p) {
     constexpr int64_t kStale = 250, kPress = 70, kGap = 70;  // ms
     constexpr uint16_t kMouseBits[3] = {0x01, 0x02, 0x04};    // VK_LBUTTON VK_RBUTTON VK_MBUTTON
     // one controller seen on two ports (issue #32: a pad Windows offers through two interfaces; not proven for the

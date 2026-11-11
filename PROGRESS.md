@@ -21,6 +21,20 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-11 - Issues #5, #16, #25 for 1.3.1 (branch issues-132)
+- Harry: build #16, #5 and #25 into 1.3.1 (its draft not published; the tag will have to move, his OK needed then).
+- #5 (movie subtitles twice as fast): a research agent proved it. The movie's clock 0x245EF0 (USA 0x245720) counts the
+  movie loop's turns at 29.97 a second (a turn two blanks, the console's present interval 2); here the loop turns
+  each blank. Replaced by real time counted while the loop turns (src/game/movie_subtitles.cpp); its only caller is
+  the subtitle callback. Not measured after the fix: Harry's check. #28's effects do not use this clock (not traced;
+  likely per-frame steps at 60 where the console presented 30).
+- #16 (view spins at the first spawn, Bond walks by himself after a respawn): the game's polling (0x5D8F0) converts
+  the sticks only once the pad's state differs from the zeroed copy kept from opening it; the keyboard's pad rests at
+  exact zeros, so the kept sticks stayed 0 (pushed up and left) until the first key. A resting left stick now reads 1
+  (menu_mouse.cpp). Measured headless: the kept sticks 0080 0080 0080 0080 with it, 0000 x4 without.
+- #25 (stays German): not reproduced. The Fr/De disc headless: the game's choice French, German German, French French,
+  English ignored (not on the disc). The reporter's log is needed (its line names the disc's languages); reply drafted.
+
 ### 2026-11-11 - Release 1.3.1 (tag v1.3.1) in place of 1.3.0
 - v1.3.0's release build failed: on fork main 8d9815a every launcher failed to link (disc.cpp's retried reads log
   through logx, not linked into the launcher). Fixed on the fork (40a735b, launcher/CMakeLists.txt; the SDK session
