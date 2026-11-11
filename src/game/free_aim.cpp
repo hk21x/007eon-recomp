@@ -520,8 +520,19 @@ void FreeAimCamera(uint32_t cam, bool keep) {
     uint32_t bond = LiveBond();
     if (!bond) return;
     static float last[2] = {0, 0};
+    static uint32_t last_cam = 0, last_bond = 0;
+    static int64_t last_ms = 0;
     float x = kernel::G<float>(bond + kPosition), y = kernel::G<float>(bond + kPosition + 4);
-    if (g_turned || keep) {
+    // only a step from this camera's own last update: a new mission's or a respawn's Bond and camera, or the follow
+    // camera back after another mode, start again from where he is. Before, the first update of a mission added his
+    // whole position since the last one (from 0,0, or the mission before's) to the boom, and the view swung round him
+    // by itself at the start (An Old Friend: 39 degrees headless, more after other missions; issue #16, Harry)
+    const int64_t now = NowMs();
+    const bool fresh = cam != last_cam || bond != last_bond || now - last_ms > 250;
+    last_cam = cam;
+    last_bond = bond;
+    last_ms = now;
+    if ((g_turned || keep) && !fresh) {
         kernel::G<float>(cam + kBoom) += x - last[0];
         kernel::G<float>(cam + kBoom + 4) += y - last[1];
     }

@@ -21,6 +21,16 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-11 - #16 again: the view swinging by itself at An Old Friend's start (branch issues-132)
+- Harry: #16 is not fixed; in An Old Friend Bond spins with nothing touched. A research agent reproduced a swing at
+  the mission's start headless (harrysave5, keyboard mode held through the load; controller mode has none): the view
+  eased 39 degrees round Bond in half a second. Cause: eon::FreeAimCamera (src/game/free_aim.cpp) adds Bond's move
+  since its last call to the camera's boom; its last position was 0,0 or the mission before's, so the first update
+  added his whole position. Now a new camera, a new Bond or 250 ms without an update starts again from where he is.
+  The agent's scratch build with it: the boom and yaw as the controller's (0.00).
+- The resting stick's fix (a147f71) stays: a real fault (kept sticks 0 until the first key), not this one.
+- Not reproduced: Bond walking by himself after a respawn (he stood still headless).
+
 ### 2026-11-11 - The game's Subtitles option kept across starts (branch issues-132)
 - Harry, testing #5: Subtitles turned on in the game's Options is off again after a restart. A research agent traced
   it: the option is bit 9 of the profile's options, on disc only inside a save game; the front end starts from the
