@@ -8,7 +8,8 @@
 // an aiming cursor's offset (+0x244/+0x240, moved by the stick within a dead zone while LT aims). So the stick's feel:
 // a rate that eases and ramps. With the keyboard and mouse the mouse's turn (src/common/menu_mouse.cpp, degrees) is
 // added to the yaw and pitch here, the rate, its easing, the ramp and the cursor cleared, and the update keeps the
-// limits. The helicopter's camera is another (0xD1590): its mouse is still the right stick.
+// limits. The chase camera of every vehicle is another (0xD1590, src/driving/car_camera.cpp): in a car the mouse swings
+// it round; the helicopter's mouse is still the right stick.
 #include <atomic>
 
 #include "core/input.h"

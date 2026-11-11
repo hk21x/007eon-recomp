@@ -21,6 +21,18 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-11 - Driving: the mouse swings a car's chase camera (free look) (branch car-freelook)
+- Harry: the mouse should move the camera in the driving missions as the right stick does on a pad. In a car the right
+  stick only looks back (down; left, right and up do nothing, measured headless), so Harry chose a free look.
+- A research agent traced the chase camera: every vehicle's is camera.ini's HeliCam type, updated by 0xD1590 (USA
+  0xD1500), its arm (offset in the car's frame) at arm +0x20 found through 0x32A7E0/0x32A7DC (USA 0x32A7C0/0x32A7BC);
+  the game eases the eye toward it. src/driving/car_camera.cpp turns the arm by the mouse's yaw and pitch for the update
+  and puts it back; it eases back behind the car a second after the mouse rests, and lets go while looking back
+  (which negates the arm's z). The mouse reaches it only in a car (menu_mouse.cpp); tanks, rail tank, helicopter as before.
+- Headless (Serena's car mission, EON_CAR_LOOK_TEST's carlook file): 60 and -90 degrees swing the camera round the car,
+  pitch 25 raises it, released it is back behind the car within 4 s, look back is head on (not mirrored).
+- Next: Harry's feel on Windows (speed, the pitch range -10 to 35, the 1 s wait before easing back).
+
 ### 2026-11-11 - Driving above 60 onto main: the SDK on main-next (branch high-fps)
 - high-fps: EoN main 05600b5 with interp-mt2 merged (the High frame rate (experimental) option, off; driving only).
 - SDK: the SDK session's combined candidate main-next 8d9815a = render-mt2 (the multi-core renderer) + PGR2 1.6.3 +
