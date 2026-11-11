@@ -21,6 +21,17 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-11 - Driving above 60 onto main: the SDK on main-next (branch high-fps)
+- high-fps: EoN main 05600b5 with interp-mt2 merged (the High frame rate (experimental) option, off; driving only).
+- SDK: the SDK session's combined candidate main-next 8d9815a = render-mt2 (the multi-core renderer) + PGR2 1.6.3 +
+  its host-read retry + eon-interp-surface-size a149497 (merged cleanly). Its gate: PGR2, PGR1, Agent Under Fire,
+  NightFire and EoN (high-fps 3318344) SMOKE OK; True Crime conflicts (its session's).
+- Here on 8d9815a: Train Chase headless (XBE_INTERP_TEST=2) 0 flickering pixels at the start and the barrier; FPS=144
+  1,112 to 1,199 frames for about 600 steps, no late step of ours; the USA smoke (.local/usatest detached at 3318344)
+  SMOKE OK, race 11632 draws a frame, no traps.
+- Harry's go for fork main to take main-next (2026-11-11). Next: EoN's main fast-forwards once fork main has it; a VM
+  build for Harry's last check; the release notes (the option off by default).
+
 ### 2026-11-11 - Above 60 on foot: tried and backed off (branch interp-mt2)
 - 80a9dce turned the high_fps option's in-between frames on for on foot (frame based: a fixed step a frame, as driving).
   Headless MI6 training walking: 1 flickering pixel (the camera barely moved).
