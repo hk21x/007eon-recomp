@@ -21,6 +21,17 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-11 - The game's Subtitles option kept across starts (branch issues-132)
+- Harry, testing #5: Subtitles turned on in the game's Options is off again after a restart. A research agent traced
+  it: the option is bit 9 of the profile's options, on disc only inside a save game; the front end starts from the
+  defaults (off); Load Game puts the save's value over the menu's; choosing a language (at boot too) sets the
+  language's default (a watchpoint: 0x115280 through the setter 0x19C50).
+- src/game/subtitles_keep.cpp: the choice kept in the port's settings (subtitles, also in F1). The setter's call from
+  the Options menu (return address 0x11EC20, USA 0x11E520; both menus, measured) is the player's choice; from anywhere
+  else the kept choice is put back; also before 0x23F10 and after Load Game, and the manager's flag follows it.
+- Headless: EON_SUBTITLES=2, the choice and the manager's flag on at both of boot's 0x23F10 (before the fix: off again
+  at the second). The menu's toggles and a restart: the agent's end-to-end check running.
+
 ### 2026-11-11 - Issues #5, #16, #25 for 1.3.1 (branch issues-132)
 - Harry: build #16, #5 and #25 into 1.3.1 (its draft not published; the tag will have to move, his OK needed then).
 - #5 (movie subtitles twice as fast): a research agent proved it. The movie's clock 0x245EF0 (USA 0x245720) counts the

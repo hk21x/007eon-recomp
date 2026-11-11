@@ -15,9 +15,11 @@
 #include "common/release.h"
 
 namespace eon {
+const char* const kSubtitleChoices[] = {"The game's setting", "Off", "On", nullptr};
 extern const bool kDriving;  // driving.xbe's exe (src/driving/hooks.cpp), default.xbe's false (src/game/hooks.cpp)
 bool skip_intro = false;  // no logo movies at start (HideFile)
 bool driving_60fps = true;   // the driving missions at 60 frames a second (src/driving/sixty.cpp)
+uint32_t subtitles = 0;  // the game's Subtitles option as last chosen, kept across starts: 0 never, 1 off, 2 on (src/game/subtitles_keep.cpp)
 bool high_fps = false;  // driving above 60: frames in between the game's steps (sdk gpu/interp.cpp), with a frame cap over 60
 bool slow_motion_blend = true;  // driving: slow motion's pictures fade into each other (src/driving/sixty.cpp)
 bool hide_hud = false;       // no HUD, for screenshots (src/driving/hud.cpp, src/game/hud.cpp)
@@ -49,6 +51,7 @@ void Init() {
     if (const char* e = std::getenv("EON_CAMERA_FOLLOW")) eon::camera_follow = *e == '1';
     if (const char* e = std::getenv("EON_AIM_RAISE")) eon::aim_raise = uint32_t(std::atoi(e));
     if (const char* e = std::getenv("EON_LANGUAGE")) eon::language = uint32_t(std::atoi(e));
+    if (const char* e = std::getenv("EON_SUBTITLES")) eon::subtitles = uint32_t(std::atoi(e));  // 1 off, 2 on
     if (eon::skip_intro) LOGR("eon: the intro logos are skipped (skip_intro)");
     // every achievement's condition parses (a typo would leave it never met)
     for (const achievements::Def& d : app::kGame.achievements)
@@ -214,6 +217,9 @@ const app::GameInfo app::kGame = {
                  "The THX, MGM and EA logos; at the next start."},
                 {"modern_buttons", &eon::modern_buttons, nullptr, "Modern button pictures",
                  "Today's Xbox pad in the prompts (the keys and mouse while playing on the keyboard either way)."},
+                {"subtitles", nullptr, &eon::subtitles, "Subtitles",
+                 "The game's own Subtitles option, kept from one start to the next: changing it in the game's Options changes this.",
+                 eon::kSubtitleChoices},
                 {"language", nullptr, &eon::language, "Language",
                  "At the next start. Your disc's languages: a language it does not have is ignored.", eon::kLanguageChoices},
                 {"free_aim", &eon::free_aim, nullptr, "Free aim (keyboard and mouse)",
