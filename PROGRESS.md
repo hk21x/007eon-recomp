@@ -21,6 +21,16 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-11 - Release 1.3.1: the tag moved to the final code (Harry's explicit go)
+- Harry wanted #5, #16 and the Subtitles option in 1.3.1, whose tag (25d746c) was pushed with a draft never published.
+  He deleted the draft and said to do it in v1.3.1: the tag v1.3.1 is replaced on this commit (the one exception to
+  never rewriting what is pushed, by his word; no release or package had gone out from the old one).
+- In it since the old tag: movie subtitles at the movie's speed (#5), the game's Subtitles option kept across starts,
+  the view no longer swinging at a mission's start and resting sticks no longer read as pushed (#16). #25 not
+  reproduced (the reporter's log asked for). All checked by Harry on Windows.
+- Smoke on this code: European OK (race 11531 draws a frame), USA OK (11381), no traps.
+- Next: the draft from the tag; the VM rebuilds both packages; Harry attaches and publishes; the issue replies.
+
 ### 2026-11-11 - #16 again: the view swinging by itself at An Old Friend's start (branch issues-132)
 - Harry: #16 is not fixed; in An Old Friend Bond spins with nothing touched. A research agent reproduced a swing at
   the mission's start headless (harrysave5, keyboard mode held through the load; controller mode has none): the view
