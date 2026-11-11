@@ -178,7 +178,9 @@ void MenuMouse(int port, input::Pad& p) {
                 eon::drive_turn = eon::drive_turn + mx * kFullRate * dt * kDegreesPerCount;
                 eon::drive_tilt = eon::drive_tilt + my * kFullRate * dt * kDegreesPerCount;
             } else {
-                float k = float(eon::aim_sensitivity) / 100 * 32767;
+                // on foot (Train Chase) the stick's camera is slow for a mouse: three times as much there (Harry: too slow)
+                constexpr float kFootGain = 3;
+                float k = float(eon::aim_sensitivity) / 100 * 32767 * (foot ? kFootGain : 1);
                 p.rx = int16_t(std::clamp(float(p.rx) + mx * k, -32767.0f, 32767.0f));
                 p.ry = int16_t(std::clamp(float(p.ry) + my * k, -32767.0f, 32767.0f));
             }
