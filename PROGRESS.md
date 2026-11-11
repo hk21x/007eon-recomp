@@ -3,7 +3,7 @@
 Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Status
-- Latest release: 1.3.0 (2026-11-11, tag v1.3.0, a draft until Harry attaches the packages); before it 1.2.0 (2026-11-09).
+- Latest release: 1.3.1 (2026-11-11, tag v1.3.1, a draft until Harry attaches the packages; v1.3.0 was tagged but never released: its launcher did not link); before it 1.2.0 (2026-11-09).
 - Milestone: released 1.0.0 (2026-10-26, tag v1.0.0; the launcher built and published by .github/workflows/release.yml). Windows (Harry, D3D12, RX 7900 XT, 3440x1440): plays on foot and in the
   driving missions up to the last mission, with saves. The open issues of 2026-10-24 (the dark slab, the blue figures,
   the carousel's band, the loading screen's strip) are fixed (Harry, 2026-10-26).
@@ -20,6 +20,18 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 - Smoke: scripts/smoke.sh: SMOKE OK (2026-10-26). Soak: 30 minutes, no traps, memory flat
 
 ## Log
+
+### 2026-11-11 - Release 1.3.1 (tag v1.3.1) in place of 1.3.0
+- v1.3.0's release build failed: on fork main 8d9815a every launcher failed to link (disc.cpp's retried reads log
+  through logx, not linked into the launcher). Fixed on the fork (40a735b, launcher/CMakeLists.txt; the SDK session
+  fast-forwarded main), EoN pinned it, and GitHub's launcher build passed on main. No release was made from v1.3.0;
+  the tag stays (no history rewritten) and the release is 1.3.1.
+- Also in: the three reported issues (#26 the lock's dot, #24 intro movies skippable, #32 a pad on two ports),
+  checked by Harry on Windows ("All looks OK"). A Windows-only build error on the way (a lambda named near, which
+  windows.h defines away).
+- Smoke on the release's code: European OK (race 11361 draws a frame), USA OK (11624), no traps.
+- Next: the tag's draft release; the VM rebuilds both packages from v1.3.1; Harry attaches them and publishes; replies
+  for the issues.
 
 ### 2026-11-11 - Three reported issues before 1.3.0 (branch issues-130)
 - Harry: review the open GitHub issues for quick wins before releasing; chose #26, #24, #32.
