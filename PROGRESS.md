@@ -21,6 +21,14 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-14 - Main holds the scope fix and free aim on the rope; notes for 1.3.2
+- Harry on Windows: "Sniper fixed" (scope-shot 7dd3ccd) and, for the rope (rappel-free-aim 4051ad7), "Much better",
+  enemies hit with free aim on the later ropes. Main fast-forwarded to each in turn (both smokes OK on each).
+- Notes for the next release: docs/releases/v1.3.2.md. Not tagged: the tag waits for Harry's go.
+- The Windows VM was rebuilt (C:\Testing, discs in C:\ISOs; the USA disc is back there by Harry). It has VS's clang
+  19.1.5 only; 1.2.0 and 1.3.1's packages were built with LLVM 22.1.3, so the packages need that installed first.
+- Next: Harry's go for the tag; the VM builds the PAL and USA packages; Harry attaches them and publishes.
+
 ### 2026-11-14 - Free aim on the rope (A Long Way Down; branch rappel-free-aim)
 - Harry (7dd3ccd): on the rope at the start of A Long Way Down there is no free aim, only the lock (MMB).
 - Reproduced headless (harrysave5, Mission Select, the third mission; .local/rappel): Bond on the rope has action
