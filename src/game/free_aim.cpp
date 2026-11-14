@@ -549,6 +549,8 @@ bool FreeAimAiming() { return g_aiming || g_cover_right; }  // on foot, or in wa
 void FreeAimInfo(uint32_t player, uint32_t out) {
     uint32_t bond = LiveBond();
     if (!bond || player != kernel::R32(bond + kPlayerIndex)) return;
+    // not a scope's picture: for the second his last update still counted, it was raised and shifted, then jumped back
+    if (eon::scoped) return;
     kernel::G<float>(out + 0x30) *= g_zoom;
     kernel::G<float>(out + 0x10) -= RaiseNow();
     float shoulder = g_shoulder;
@@ -557,6 +559,13 @@ void FreeAimInfo(uint32_t player, uint32_t out) {
     kernel::G<float>(out + 4) -= std::cos(yaw) * shoulder;
 }
 }  // namespace eon
+
+// a scope's view is up (ecx kept for the original's call)
+static bool InScope(X86Context& ctx, uint32_t bond, uint32_t cam) {
+    const bool scope = cam && ScopeView(ctx, CameraMode(cam));
+    ctx.ecx = bond;
+    return scope;
+}
 
 // thiscall (angles out, matrix out or 0)
 X86_EXTERN_FUNC(EON_ORIG(00153CD0, 00153540));
@@ -567,6 +576,10 @@ X86_FUNC(EON_FN(00153CD0, 00153540)) {
     if (kernel::R32(ctx.esp) != kShotAimReturn || !Plays(ctx, bond)) return EON_ORIG(00153CD0, 00153540)(ctx, base);
     // as the scope's view: the camera's angles, and their matrix
     uint32_t cam = Camera(bond);
+    // a scope up: the game's own aim, along the scope's picture. Plays stays true there, and his update, which eases the
+    // shoulder's shift and the aim's raise away, stops, so this sent a scoped shot 6 degrees (Aim height) up and 28
+    // units to his right of the crosshair, every time, a bigger miss the more the scope zooms (Harry; logged headless)
+    if (InScope(ctx, bond, cam)) return EON_ORIG(00153CD0, 00153540)(ctx, base);
     for (uint32_t i = 0; i < 16; i += 4) kernel::W32(angles + i, kernel::R32(cam + 0xD0 + i));
     kernel::G<float>(angles) = ViewPitch(cam);
     if (matrix) kernel::CallGuest(ctx, kAnglesToMatrix, {angles, matrix});
@@ -581,6 +594,7 @@ X86_FUNC(EON_FN(00153BE0, 00153450)) {
     // which on the view's line left it floating in front of him (Harry)
     if (kernel::R32(ctx.esp) != kShotReturn || !Plays(ctx, bond)) return EON_ORIG(00153BE0, 00153450)(ctx, base);
     uint32_t cam = Camera(bond);
+    if (InScope(ctx, bond, cam)) return EON_ORIG(00153BE0, 00153450)(ctx, base);  // as the aim above
     float pitch = ViewPitch(cam) * kRadians, yaw = kernel::G<float>(cam + 0xD4) * kRadians;
     float f[3] = {std::cos(pitch) * std::cos(yaw), std::cos(pitch) * std::sin(yaw), -std::sin(pitch)};
     float shoulder = g_shoulder;

@@ -21,6 +21,19 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-14 - Scoped shots missed the crosshair with free aim (branch scope-shot)
+- Harry (v1.3.1, screenshot): a Dragunov shot through the scope lands up and right of the crosshair; every time, only
+  with free aim, the miss changing with the scope's zoom.
+- A research agent reproduced it headless (An Old Friend, a sniper given by a scratch build) and logged the cause:
+  free aim's shot overrides (0x153CD0 the aim, 0x153BE0 the start) still ran in the scope (Plays stays true), with the
+  shoulder's shift (28) and the aim's raise (6 degrees, Aim height) frozen, as Bond's update stops while scoped: the
+  game's scope aim pitch 13.171, free aim's 7.171; the start 28 units to his right. In 1.2.0 too (the diff since
+  touches only FreeAimCamera): not a regression.
+- Fix: both overrides leave a scoped shot to the game (ScopeView), and FreeAimInfo no longer raises and shifts the
+  scope's picture for the first second (eon::scoped). The agent's scratch build with the first part: the shot through
+  the game's own path, the dust at the crosshair.
+- Next: smoke, Harry's check on Windows, then a release (1.3.2).
+
 ### 2026-11-11 - 1.3.1 published
 - Harry attached the packages and published. Checked from here: the release is public (not a draft), its five files
   are there, and both packages' sizes and sha256s match their .json and the VM's builds from 0e45e99 (PAL 24be1330…,
