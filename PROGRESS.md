@@ -18,8 +18,51 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 - SDK: the fork's main at 296844d (2026-10-26: eon merged after EoN, PGR1 and PGR2 smoke and PGR1's frame check);
   task branch `eon`
 - Smoke: scripts/smoke.sh: SMOKE OK (2026-10-26). Soak: 30 minutes, no traps, memory flat
+- Open: #33 (the crash before the Jaws fight) is fixed on branch issue-33-jaws (2026-11-14), not on main and not in
+  the tag v1.3.2; both smokes OK there
 
 ## Log
+
+### 2026-11-14 - #33: crash going on to the Jaws fight in An Old Friend (branch issue-33-jaws)
+- The issue (two reporters, v1.3.1): C0000005 "read 100A083F9, guest 00A083F9" on guest thread 14 at the door before
+  Jaws. Their stack words are the USA build's (14 of the 15 follow a call in the USA default.xbe and the other,
+  0x80674, is its _except_handler3; none follows a call in the European one): Bond's update 0x1566C0 (European
+  0x156E50) called from 0x159920 <- 0x148DE0 <- 0x15B8F0 <- the world update, with esp where 0x159920 has it after
+  that call returned, so the fault is in the hook on it (src/game/free_aim.cpp), not in guest code. ecx/esi are
+  Bond, edx his inventory (Bond + 0x1600).
+- Cause: eon::WeaponKeys (src/game/weapon_keys.cpp, in since 1.2.0, be99d05) kept the held item's address across
+  updates and, when the held item changed, read the old item's +0x328 to see whether it was a weapon. A mission's
+  next map, and a restart after Bond dies, make a new Bond, inventory and items, and the old item's memory is given
+  back: the read faults when its page is no longer committed (the test of bit 0x100 reads the byte at +0x329, hence
+  the odd address). It runs with any input and with free aim off. An Old Friend is two maps, egypt1_train and
+  egypt1_jaws (found in the archive's map.txt); the first Bond update of the second is the reporters' crash.
+- Reproduced headless, both builds, from harrysave5 (Mission Select, the fifth mission; .local/jaws):
+  - European, nothing pressed: Bond is shot dead on the train, the restart's Bond holds another item, and the game
+    dies in WeaponKeys line 105 (signal 11 at 0x100A042E9 = the old item 0xA03FC0 + 0x329, guest esp D005FE30 as in
+    the report), 117 s and 132 s into two runs.
+  - The door itself was not played to. The map was ended as won by a probe on the map's status (0x9A7A0 made to
+    answer 1 once, which the world update 0x897F0 takes to 0x1D6D0, as when the script wins the map): the game goes
+    on to egypt1_jaws (the loader 0x20480 logged) and dies the same way at the new Bond's first update. The USA build
+    under gdb there: the fault at 0x100A051F9 in WeaponKeys, and the guest stack at D005FE30 has the report's 15
+    words at the report's offsets (0x80674 at +0x10 ... 0x63EF7 at +0xD4).
+- Fix: the item held before is only compared now (X picks it from the live list); whether it is a weapon is noted
+  while it is held (none of the code's and/or instructions on +0x328 touches bit 0x100), and another inventory
+  starts again. The other guest pointers src/game keeps between updates were looked through: g_bond is read only
+  through LiveBond (since 2026-11-08), the menus' manager behind a commit check, the rest are only compared.
+  src/driving was not looked through.
+- With the fix: European and USA, the train ended as won goes through Jaws's cutscene into the fight ("Jaws" and his
+  bar on the HUD) and is still drawing when stopped (210 s and 206 s; captures .local/jaws/e_all.png, u_all.png;
+  before the fix d_before.log); in the European idle run Bond dies and the mission restarts, twice in the captures,
+  and it draws on (f_all.png). The number keys in the training level as on 2026-11-08: 2, 3, X (back to 2), 2
+  (held: nothing), X (to 3).
+- Smoke on 9a23e45: European OK (menu 2 draws a frame, race 11542, no traps), USA OK in .local/usatest (menu 1, race
+  11540, no traps; its sdk checkout one launcher-only commit behind the pointer, as before). wincheck ok for
+  weapon_keys.cpp.
+- Not verified: the door played to (the win was forced a few seconds into the train, so what Bond holds there and the
+  script's own end are not the reporters'); the Windows exe; whether the same read is what crashed anyone elsewhere
+  (any restart or next map could hit it: it depends on the old item's page having been given back).
+- The tag v1.3.2 (69a6cb1) does not have this. Next: Harry's check on Windows (An Old Friend through the door into
+  the Jaws fight, and dying and restarting there), then main and a release; the reply for #33.
 
 ### 2026-11-14 - Main holds the scope fix and free aim on the rope; notes for 1.3.2
 - Harry on Windows: "Sniper fixed" (scope-shot 7dd3ccd) and, for the rope (rappel-free-aim 4051ad7), "Much better",
