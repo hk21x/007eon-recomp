@@ -163,6 +163,50 @@ X86_FUNC(EON_FN(001AECD0, 001AE500)) {
     EON_ORIG(001AECD0, 001AE500)(ctx, base);
 }
 
+// The rappel's camera (A Long Way Down: Bond walks down the wall on the rope; the camera object's class 0x2E1764, its
+// update 0x1B12D0, thiscall, the seconds and the time on the stack, in steps 0x1AFC70): behind Bond, looking the way he
+// faces, down the wall. The right stick eases two offsets toward its sign, +0x110 across and +0x10C up and down (each
+// -1..1, at 0x31C41C and 0x31C418 a second), which turn the view from his facing about his up by 45 degrees (0x31C428)
+// and about his side by 15 (0x31C424); 6 seconds after the stick rests (+0x104 counts them, 0x31C414) they ease back
+// to 0. It also rolls the view: 20 degrees at rest (0x31C40C, less as it turns) and 70 with the turn across (0x31C42C).
+// Locked on (0x148EF0 with +0x10F2 clear) the view goes to the target and the offsets to 0; +0xD04 and +0x10F3 leave
+// the stick out. Fed to the stick, the mouse nudged the view, which then sprang back. Here the mouse sets the offsets
+// directly, as it turns the follow camera, and they stay where it puts them (the rest's count held at 0): up to
+// kRopeAcross and kRopeUp degrees, more than the stick's, kept inside the 90 degrees of his gun's forward that a shot's
+// aim must be in (0x180CB0). While it does the two rolls are left out: with them the picture turned about its middle
+// as the view went across, and the mouse's up was no longer the picture's. Locked on, the camera is the game's and the
+// mouse moves the lock's aim (src/game/mouse.cpp)
+X86_EXTERN_FUNC(EON_ORIG(001B12D0, 001B0B00));
+X86_FUNC(EON_FN(001B12D0, 001B0B00)) {
+    constexpr uint32_t kAcross = 0x110, kUp = 0x10C, kRested = 0x104;
+    constexpr uint32_t kAcrossMost = EON_VA(0x31C428, 0x31BA38), kUpMost = EON_VA(0x31C424, 0x31BA34);  // degrees
+    constexpr uint32_t kRollRest = EON_VA(0x31C40C, 0x31BA1C), kRollAcross = EON_VA(0x31C42C, 0x31BA3C);
+    constexpr float kRopeAcross = 60, kRopeUp = 30;
+    uint32_t mode = ctx.ecx;
+    uint32_t bond = Ask(ctx, kernel::R32(kPlayers), kBondOf, {kernel::R32(mode + 0x44)});
+    const bool mouse = bond && kernel::R32(bond + kPlayerIndex) == 0 && input::UsingKeyboard() &&
+                       !(!kernel::G<uint8_t>(bond + 0x10F2) && (Ask(ctx, bond, kAiming, {}) & 0xFF)) &&
+                       !kernel::R32(bond + 0xD04) && !kernel::G<uint8_t>(bond + 0x10F3);
+    if (!mouse) return EON_ORIG(001B12D0, 001B0B00)(ctx, base);
+    eon::camera_takes_mouse_ms = NowMs();
+    float turn = eon::mouse_turn.exchange(0), tilt = eon::mouse_tilt.exchange(0);
+    uint32_t player = kernel::R32(mode + 0x44);
+    turn *= InvertSign(ctx, kInvertX, player);
+    tilt *= InvertSign(ctx, kInvertY, player);
+    // an offset of 1 is the stick's most, in degrees; the mouse's right lowers the turn, and raises the offset across
+    float across = std::max(1.0f, kernel::G<float>(kAcrossMost)), up = std::max(1.0f, kernel::G<float>(kUpMost));
+    float most_across = std::max(1.0f, kRopeAcross / across), most_up = std::max(1.0f, kRopeUp / up);
+    kernel::G<float>(mode + kAcross) = std::clamp(kernel::G<float>(mode + kAcross) - turn / across, -most_across, most_across);
+    kernel::G<float>(mode + kUp) = std::clamp(kernel::G<float>(mode + kUp) + tilt / up, -most_up, most_up);
+    kernel::G<float>(mode + kRested) = 0;
+    const uint32_t roll_rest = kernel::R32(kRollRest), roll_across = kernel::R32(kRollAcross);
+    kernel::W32(kRollRest, 0);
+    kernel::W32(kRollAcross, 0);
+    EON_ORIG(001B12D0, 001B0B00)(ctx, base);
+    kernel::W32(kRollRest, roll_rest);
+    kernel::W32(kRollAcross, roll_across);
+}
+
 // A mounted gun, the player's control of it (0x1CCA70, thiscall on Bond +0x11D4, whose first dword is the gun; Bond's
 // pads +0x11F0 and +0x1230 on the stack): the stick turns it at a rate (gun +0x300) for the frame, so the mouse fed to
 // the stick was held to the stick's full speed. With the keyboard and mouse the mouse turns it directly here, as the

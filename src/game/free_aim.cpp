@@ -14,6 +14,9 @@
 // stay in the gun's 90 degrees. The right button also zooms a little, and alone holds the fire input with the shot blocked, for the stance firing gives. The crosshair is drawn here while the right button is held, and
 // fainter for a second after the left fires from the hip, where the shots go too.
 //
+// On the rope (A Long Way Down) the same from the rappel's camera, which the mouse turns (src/game/camera.cpp): the
+// view over his shoulder, the crosshair, the shots to it, his shoulders to the view; he is not turned (below).
+//
 // EON_FREE_AIM (headless, no mouse): 0 off, 1 on, 2 on with a button held.
 #include <algorithm>
 #include <atomic>
@@ -69,6 +72,7 @@ constexpr uint32_t kAnglesToMatrix = EON_VA(0xF0A90, 0xF0610);   // cdecl (angle
 constexpr uint32_t kFollowCamera = EON_VA(0x2E2694, 0X2E1BBC);      // the camera mode's class in play
 constexpr uint32_t kCoverCamera = EON_VA(0x2DCF7C, 0x2DC4A4);       // the camera mode's class in wall cover
 constexpr uint32_t kCoverStance = 0x18;                             // his action's kind in wall cover
+constexpr uint32_t kRappelCamera = EON_VA(0x2DCFA4, 0x2DC4CC);      // the camera mode's class on the rope
 constexpr uint32_t kLeanOut = EON_VA(0x148B70, 0x1483E0);           // fastcall (Bond): fire's lean out of cover
 constexpr uint32_t kGunOwner = EON_VA(0x1A7A40, 0x1A7270);       // thiscall on a gun
 constexpr uint32_t kBodyTable = EON_VA(0x2DD118, 0x2DC640);      // 0x14A2C0's numbers for the upper body
@@ -93,6 +97,9 @@ std::atomic<bool> g_crosshair{false};
 std::atomic<bool> g_on{false};           // free aim plays on foot (the follow camera, the HUD up)
 std::atomic<bool> g_cover_lean{false};   // leaned out of wall cover by the right button
 std::atomic<bool> g_cover_right{false};  // the right button held in wall cover
+std::atomic<bool> g_rope_view{false};    // the rappel's camera is the view (below)
+std::atomic<bool> g_rope_aim{false};     // free aim plays on the rope, and the right button held
+std::atomic<bool> g_rope_turned{false};  // free aim plays on the rope, and a mouse button held
 std::atomic<int64_t> g_hip_until{0};     // the left button fired without aiming: a fainter crosshair until then (ms)
 constexpr int64_t kHipShown = 1000;
 // hit feedback: Bond's last hit on someone (damage dealt through 0x167810, below), drawn on the crosshair
@@ -150,6 +157,40 @@ float RaiseNow() {
     return float(eon::aim_raise) * (g_shoulder / kShoulder) + (float(eon::aim_raise) + kCoverLevel) * g_cover_blend;
 }
 float ViewPitch(uint32_t cam) { return kernel::G<float>(cam + 0xD0) - RaiseNow(); }
+
+// A view's rows from its angles (pitch, yaw, roll in degrees), as the game makes them (0xEECB0): forward, right and up
+struct Rows {
+    float f[3], r[3], u[3];
+};
+Rows RowsOf(float pitch, float yaw, float roll) {
+    float cp = std::cos(pitch * kRadians), sp = std::sin(pitch * kRadians), cy = std::cos(yaw * kRadians),
+          sy = std::sin(yaw * kRadians), cr = std::cos(roll * kRadians), sr = std::sin(roll * kRadians);
+    return {{cp * cy, cp * sy, -sp},
+            {cr * sy - sr * sp * cy, -cr * cy - sr * sp * sy, -sr * cp},
+            {cr * sp * cy + sr * sy, cr * sp * sy - sr * cy, cr * cp}};
+}
+
+// The rappel's view (pitch, yaw, roll in degrees, at angles) as free aim shows it, and its rows. On the rope Bond walks
+// down the wall and the camera behind him looks nearly straight down and rolls as it turns (0x1AFC70), so the aim's
+// raise is a turn about the view's own right, not a change of pitch, and his shoulder is along that right: the same
+// picture as on foot, on the wall. With no roll it is the pitch less the raise
+Rows RopeView(float* angles) {
+    Rows v = RowsOf(angles[0], angles[1], angles[2]);
+    float a = RaiseNow() * kRadians, c = std::cos(a), s = std::sin(a);
+    for (int i = 0; i < 3; i++) {
+        float f = v.f[i], u = v.u[i];
+        v.f[i] = f * c + u * s;
+        v.u[i] = u * c - f * s;
+    }
+    float pitch = -std::asin(std::clamp(v.f[2], -1.0f, 1.0f)), yaw = std::atan2(v.f[1], v.f[0]);
+    // the roll: the right against the level right and the up that this pitch and yaw have with none
+    float cy = std::cos(yaw), sy = std::sin(yaw), sp = std::sin(pitch), cp = std::cos(pitch);
+    float level = v.r[0] * sy - v.r[1] * cy, lift = v.r[0] * sp * cy + v.r[1] * sp * sy + v.r[2] * cp;
+    angles[0] = pitch / kRadians;
+    angles[1] = yaw / kRadians;
+    angles[2] = std::atan2(-lift, level) / kRadians;
+    return v;
+}
 
 // the view's heading, degrees: the camera's, and the mouse's turn still waiting for it (src/game/camera.cpp turns the
 // camera after Bond's update, so without it he faced the view a frame late, which a quick turn showed)
@@ -369,15 +410,30 @@ X86_FUNC(EON_FN(00156E50, 001566C0)) {
         right_was = right;
     }
     // play: the follow camera (the lock's and the cutscenes' are other classes) with the HUD up
-    bool on = plays && !scope && kind == kFollowCamera && (Forced() >= 0 || NowMs() - eon::hud_drawn_ms < 500);
-    g_crosshair = (on && (buttons & 2)) || g_cover_lean;  // while aiming: the right button
-    g_on = on || g_cover_lean;
-    if (on && (buttons & 1) && !(buttons & 2)) g_hip_until = NowMs() + kHipShown;  // hip fire: shots go there too
-    float shoulder = g_shoulder, want = on ? kShoulder : 0;
+    const bool hud = Forced() >= 0 || NowMs() - eon::hud_drawn_ms < 500;
+    bool on = plays && !scope && kind == kFollowCamera && hud;
+    // The rope (A Long Way Down: Bond walks down the wall on it, his action's kind 0x15, the camera mode's class
+    // 0x2DCFA4, whose camera looks to a lock's target itself): the game fires his gun the way he faces, straight down
+    // the wall (his aim pose: pitch 90 measured), unless he is locked on, and free aim's shot overrides sent it along
+    // a view that the mouse could not turn and with no crosshair, as `on` wants the follow camera (Harry: no free aim
+    // on the rope, only the lock). There free aim plays this much: the mouse turns the rappel's camera
+    // (src/game/camera.cpp), the view moves over his shoulder and up by the aim height in its own rows (RopeView), the
+    // crosshair is drawn as on foot and the shots go to it (measured: the bullet's start and forward at 0x222BF0 are
+    // the shown view's middle line). He is not turned and takes no stance, as his facing there is the wall's; while a
+    // button is held his shoulders turn to the view (0x14A740, which runs on the rope too)
+    const bool rope_view = kind == kRappelCamera;
+    const bool rope = plays && !scope && rope_view && hud;
+    g_rope_view = rope_view;
+    g_rope_aim = rope && (buttons & 2);
+    g_rope_turned = rope && (buttons & 3);
+    g_crosshair = ((on || rope) && (buttons & 2)) || g_cover_lean;  // while aiming: the right button
+    g_on = on || g_cover_lean || rope;
+    if ((on || rope) && (buttons & 1) && !(buttons & 2)) g_hip_until = NowMs() + kHipShown;  // hip fire: shots go there too
+    float shoulder = g_shoulder, want = on || rope ? kShoulder : 0;
     g_shoulder = shoulder + std::clamp(want - shoulder, -kShoulder * kBlendPerUpdate, kShoulder * kBlendPerUpdate);
     float blend = g_cover_blend;
     g_cover_blend = blend + std::clamp((g_cover_lean ? 1.0f : 0.0f) - blend, -kBlendPerUpdate, kBlendPerUpdate);
-    float zoom = g_zoom, zoom_want = on && (buttons & 2) ? kRightButtonZoom : 1;
+    float zoom = g_zoom, zoom_want = (on || rope) && (buttons & 2) ? kRightButtonZoom : 1;
     g_zoom = zoom + std::clamp(zoom_want - zoom, -0.03f, 0.03f);
     g_turned = on && (buttons & 3);
     g_aiming = on && (buttons & 2);
@@ -474,10 +530,24 @@ X86_FUNC(EON_FN(00181250, 00180AC0)) {
 X86_EXTERN_FUNC(EON_ORIG(0014A740, 00149FB0));
 X86_FUNC(EON_FN(0014A740, 00149FB0)) {
     uint32_t bond = ctx.ecx;
-    if (bond != g_bond || !(g_turned || g_cover_lean)) return EON_ORIG(0014A740, 00149FB0)(ctx, base);
+    if (bond != g_bond || !(g_turned || g_cover_lean || g_rope_turned)) return EON_ORIG(0014A740, 00149FB0)(ctx, base);
     uint32_t cam = Camera(bond);
     float pitch = ViewPitch(cam);
     if (pitch > 180) pitch -= 360;
+    // on the rope his rows are the wall's (forward down it, +0x80 his left, +0x90 out of it): the view against them
+    float rope_turn = 0;
+    if (g_rope_turned) {
+        float shown[3] = {kernel::G<float>(cam + 0xD0), kernel::G<float>(cam + 0xD4), kernel::G<float>(cam + 0xD8)};
+        Rows v = RopeView(shown);
+        float along = 0, left = 0, out = 0;
+        for (int i = 0; i < 3; i++) {
+            along += v.f[i] * kernel::G<float>(bond + kMatrix + 4 * i);
+            left += v.f[i] * kernel::G<float>(bond + kMatrix + 0x10 + 4 * i);
+            out += v.f[i] * kernel::G<float>(bond + kMatrix + 0x20 + 4 * i);
+        }
+        pitch = -std::asin(std::clamp(out, -1.0f, 1.0f)) / kRadians;
+        rope_turn = std::atan2(left, along);
+    }
     pitch *= kRadians;
     // the table's pairs: pitch scale and offset, then shoulders', each two-handed or not and flipped or not
     uint32_t held = kernel::R32(kernel::R32(bond + 0x274) + 0x10);
@@ -491,7 +561,7 @@ X86_FUNC(EON_FN(0014A740, 00149FB0)) {
                       : pitch * entry(wide ? 0x34 : 0x24) - entry(wide ? 0x30 : 0x20);
     float yaw_limit = kernel::G<float>(bond + 0x96C), pitch_limit = kernel::G<float>(bond + 0x974);
     // leaned out of cover he keeps the lean's facing: his shoulders turn the rest of the way to the view
-    float turn = 0;
+    float turn = rope_turn;
     if (g_cover_lean) {
         turn = ViewHeading(cam) - kernel::G<float>(bond + kYaw);
         turn -= 360 * std::floor((turn + 180) / 360);
@@ -541,7 +611,7 @@ void FreeAimCamera(uint32_t cam, bool keep) {
 }
 
 // whether the right button aims now, on foot or in wall cover (src/game/mouse.cpp: its sensitivity)
-bool FreeAimAiming() { return g_aiming || g_cover_right; }  // on foot, or in wall cover
+bool FreeAimAiming() { return g_aiming || g_cover_right || g_rope_aim; }  // on foot, in wall cover, or on the rope
 
 // the camera info (src/game/fov.cpp calls this after it): the right button's zoom, in the one field of view every view
 // and frustum starts from (0xF6170 builds a frustum from it and from the scales 0x61080 makes of it), and the view
@@ -552,8 +622,18 @@ void FreeAimInfo(uint32_t player, uint32_t out) {
     // not a scope's picture: for the second his last update still counted, it was raised and shifted, then jumped back
     if (eon::scoped) return;
     kernel::G<float>(out + 0x30) *= g_zoom;
-    kernel::G<float>(out + 0x10) -= RaiseNow();
     float shoulder = g_shoulder;
+    if (g_rope_view) {  // the rappel's view rolls: raised and moved in its own rows
+        if (shoulder == 0 && RaiseNow() == 0) return;
+        float angles[3] = {kernel::G<float>(out + 0x10), kernel::G<float>(out + 0x14), kernel::G<float>(out + 0x18)};
+        Rows v = RopeView(angles);
+        for (int i = 0; i < 3; i++) {
+            kernel::G<float>(out + 0x10 + 4 * i) = angles[i];
+            kernel::G<float>(out + 4 * i) += v.r[i] * shoulder;
+        }
+        return;
+    }
+    kernel::G<float>(out + 0x10) -= RaiseNow();
     float yaw = kernel::G<float>(out + 0x14) * kRadians;
     kernel::G<float>(out) += std::sin(yaw) * shoulder;
     kernel::G<float>(out + 4) -= std::cos(yaw) * shoulder;
@@ -581,7 +661,13 @@ X86_FUNC(EON_FN(00153CD0, 00153540)) {
     // units to his right of the crosshair, every time, a bigger miss the more the scope zooms (Harry; logged headless)
     if (InScope(ctx, bond, cam)) return EON_ORIG(00153CD0, 00153540)(ctx, base);
     for (uint32_t i = 0; i < 16; i += 4) kernel::W32(angles + i, kernel::R32(cam + 0xD0 + i));
-    kernel::G<float>(angles) = ViewPitch(cam);
+    if (g_rope_view) {  // on the rope: the view as it is shown there
+        float shown[3] = {kernel::G<float>(cam + 0xD0), kernel::G<float>(cam + 0xD4), kernel::G<float>(cam + 0xD8)};
+        RopeView(shown);
+        for (int i = 0; i < 3; i++) kernel::G<float>(angles + 4 * i) = shown[i];
+    } else {
+        kernel::G<float>(angles) = ViewPitch(cam);
+    }
     if (matrix) kernel::CallGuest(ctx, kAnglesToMatrix, {angles, matrix});
     kernel::Return(ctx, 0, 2);
 }
@@ -600,6 +686,14 @@ X86_FUNC(EON_FN(00153BE0, 00153450)) {
     float shoulder = g_shoulder;
     float c[3] = {kernel::G<float>(cam + 0xC0) + std::sin(yaw) * shoulder,
                   kernel::G<float>(cam + 0xC4) - std::cos(yaw) * shoulder, kernel::G<float>(cam + 0xC8)};
+    if (g_rope_view) {  // on the rope: the line through the middle of the view as it is shown there
+        float shown[3] = {kernel::G<float>(cam + 0xD0), kernel::G<float>(cam + 0xD4), kernel::G<float>(cam + 0xD8)};
+        Rows v = RopeView(shown);
+        for (int i = 0; i < 3; i++) {
+            f[i] = v.f[i];
+            c[i] = kernel::G<float>(cam + 0xC0 + 4 * i) + v.r[i] * shoulder;
+        }
+    }
     float b[3] = {kernel::G<float>(bond + kPosition), kernel::G<float>(bond + kPosition + 4),
                   kernel::G<float>(bond + kPosition + 8)};
     float along = (b[0] - c[0]) * f[0] + (b[1] - c[1]) * f[1] + (b[2] - c[2]) * f[2];

@@ -104,6 +104,20 @@ game's own code and data, with its addresses).
 - **[game]** The cover camera's update 0x1AECD0 (thiscall; object vtable 0x2E173C): the right stick's speeds +0xD8
   (across) and +0xD4 add into offsets from the wall's direction, +0xE0 (degrees, within 80) and +0xDC (within 60),
   unless locked on (0x148EF0), +0xD04 or +0x10F3; with the lock they ease back to 0 and it looks toward the target.
+- **[game]** The rope (A Long Way Down; traced and measured headless from harrysave5): Bond walks down the wall, his
+  action's kind 0x15 (set by 0x1B3150 and 0x1B3470; 0x152070 treats 0x16 the same), his rows the wall's (+0x70 forward
+  down it, +0x80 his left, +0x90 out of it). The left stick moves him over the wall, forward down it (about 300 units
+  a second); no button descends or brakes. The camera mode's class is 0x2DCFA4 (USA 0x2DC4CC), whose 0x1AF8C0 makes
+  the camera object 0x2E1764 (0x120 bytes); its update 0x1B12D0 (thiscall: seconds, time) runs steps 0x1AFC70: from
+  behind him (112 to 120 units, 0x31C3C4/0x31C3FC) along his facing, turned by two offsets the right stick eases
+  toward its sign (+0x110 across, 1 is 45 degrees about his up, 0x31C428; +0x10C up and down, 15 about his side,
+  0x31C424; back to 0 from 6 s after the stick rests, +0x104 against 0x31C414; zeroed while +0x108, which RESETCAMERA,
+  action word 0 bit 8, sets), and rolled: 20 degrees at rest (0x31C40C times 1 less the offset across) and 70 with the offset across
+  (0x31C42C). Locked on (0x148EF0 with +0x10F2 clear) it looks from him to the target (vtable +0x170) and the offsets
+  go to 0; +0xD04 and +0x10F3 leave the stick out. Every one of those numbers is read only inside 0x1AFC70. His gun
+  fires the way he faces (0x153CD0's aim pose: pitch 90, straight down the wall) unless locked; 0x14A740 (his upper
+  body) runs there too. The mission's first rope (z 2843 to 1127 on the wall y 1344) has no enemies: the lock finds
+  none until he lands on the platform below, where three come after a cutscene and the follow camera is back.
 - **[game]** Bond's weapons (traced by a research agent; the switch measured): the inventory [Bond +0x274] holds
   12 byte entries at +0 (the item first), their count +4, the item held +0x10, a second +0x14, the selection +0x18
   (0x1A8C80). A weapon has +0x328 bit 0x100 (0x1A8D10; gadgets the rest, 0x80). The weapon cycle 0x152070 (fastcall,

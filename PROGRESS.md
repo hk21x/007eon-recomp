@@ -21,6 +21,38 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-14 - Free aim on the rope (A Long Way Down; branch rappel-free-aim)
+- Harry (7dd3ccd): on the rope at the start of A Long Way Down there is no free aim, only the lock (MMB).
+- Reproduced headless (harrysave5, Mission Select, the third mission; .local/rappel): Bond on the rope has action
+  kind 0x15 and the camera mode class 0x2DCFA4 (camera object 0x2E1764, update 0x1B12D0, steps 0x1AFC70), not the
+  follow camera's 0x2E2694, so free aim's `on` was false: no crosshair, no shoulder view, and the mouse went to the
+  right stick, which only eases the view's two offsets (15 degrees up and down, 45 across, back to 0 after 6 s). The
+  shot overrides still ran (Plays true: logged), so shots went along the middle of a view with Bond in the way of it
+  and nothing to show it; the game's own aim there is his facing, straight down the wall (pitch 90, logged).
+- Fix, src/game/camera.cpp: the rappel camera's update takes the mouse as the follow camera does: it sets the two
+  offsets directly (up to 60 degrees across and 30 up and down, held: no spring back), and leaves the camera's two
+  rolls out meanwhile (20 degrees at rest, 70 with the turn: with them the picture turned about its middle as the
+  mouse moved). Locked on, or with a controller, the camera is the game's own.
+- Fix, src/game/free_aim.cpp: on the rope (the rappel camera, the HUD up, no lock) the crosshair, the hip crosshair,
+  the right button's zoom and its sensitivity play as on foot; the view moves 28 units over his shoulder and up by
+  the aim height in the view's own rows (the rappel's view looks nearly straight down, so the raise is a turn about
+  the view's right, not a pitch); the shot's aim and start are that view's middle line; his shoulders turn to it
+  while a button is held (0x14A740 with the view against his rows). He is not turned and takes no stance.
+- Measured headless (the mouse's stand-in, EON_FREE_AIM=1): MOUSER/MOUSEL take the offset across to +1.333 and
+  -1.333 (60 degrees), MOUSEU/MOUSED the other to +2 and -2 (30), and they stay through 7 s of rest; the bullet at
+  0x222BF0 starts on and flies along the shown view's middle (start 30.7 1281.2 2822.5 and forward -0.000 0.314
+  -0.949, both equal to free aim's, where the game's own aim was pitch 90; the aim not refused by the gun); the
+  info the view is drawn from equals the camera's that the shot reads; W still walks him down the wall at every
+  offset tried; after he lands the follow camera's free aim is as before (aim pitch 4.00 for the camera's 10.00
+  less the 6 of aim height, the lock's shots the game's and hitting). Captures in .local/rappel (d, i, j, k).
+- Not verified: a lock on the rope and a free aim hit on an enemy there. The mission's first rope has no enemies (the
+  lock finds none until he lands; a scripted fight on the platform below got Bond killed), so the later ropes were
+  not reached. By the code, a lock takes both hooks out (the camera's and free aim's Plays). The crosshair is drawn
+  only on Windows.
+- Smoke: European and USA (below).
+- Next: Harry on Windows: the feel and the limits on the rope (60 and 30 degrees), the view without the camera's
+  tilt while the mouse plays, the crosshair's place beside Bond, the lock (MMB) on the later ropes.
+
 ### 2026-11-14 - Scoped shots missed the crosshair with free aim (branch scope-shot)
 - Harry (v1.3.1, screenshot): a Dragunov shot through the scope lands up and right of the crosshair; every time, only
   with free aim, the miss changing with the scope's zoom.
