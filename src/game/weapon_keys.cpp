@@ -97,13 +97,25 @@ std::vector<uint32_t> Weapons(X86Context& ctx, uint32_t inv) {
 namespace eon {
 // from Bond's update (src/game/free_aim.cpp), player 1's, after the game's: plays when free aim plays on foot
 void WeaponKeys(X86Context& ctx, uint32_t bond, bool plays) {
-    static uint32_t held_was = 0, before = 0;
+    // The item held before is kept for X and never read again, only compared: whether it is a weapon is noted while
+    // it is held. It was read as the held item changed, and after a restart (Bond dead) or in a mission's next map
+    // (An Old Friend: the train, then the Jaws fight) it is the last world's item, in memory the game has given back:
+    // the crash of #33 ("read ... guest 00A083F9": that item's +0x329; headless the same on the train with Bond left
+    // to die, and going on to the Jaws map). Another Bond's inventory starts again.
+    static uint32_t inv_was = 0, held_was = 0, before = 0;
+    static bool held_was_weapon = false;
     uint32_t inv = kernel::R32(bond + 0x274);
     if (!inv) return;
+    if (inv != inv_was) {
+        inv_was = inv;
+        held_was = before = 0;
+        held_was_weapon = false;
+    }
     uint32_t held = kernel::R32(inv + 0x10);
     if (held != held_was) {  // the one held before, for X
-        if (held_was && (kernel::R32(held_was + 0x328) & 0x100)) before = held_was;
+        if (held_was && held_was_weapon) before = held_was;
         held_was = held;
+        held_was_weapon = held && (kernel::R32(held + 0x328) & 0x100);
     }
     int key = Pressed();
     if (key < 0 || !plays || !eon::free_aim || (kernel::R32(bond + 0x1550) & 0x400000)) return;

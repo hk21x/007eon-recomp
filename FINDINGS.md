@@ -126,6 +126,14 @@ game's own code and data, with its addresses).
   selects (0x1AA2B0 on the inventory), keeps the item at Bond +0x1474 (0x25E40) and the time at +0x146C ([0x3210B0]),
   and switches 0.6 s later or on fire: 0x14D6F0 (thiscall on Bond: item, 0, 0) builds state 0x3CB with the animation,
   and refuses while the gun is busy. Not while Bond +0x1550 has 0x400000 or state 0x3C5 runs.
+- **[game]** A mission's maps and what outlives them (#33; measured headless): a mission is one map or several
+  (maps/<name>.xbc in actdat*.viv, the names in map.txt; An Old Friend is egypt1_train, then egypt1_jaws). The world
+  update 0x897F0 asks the map's status each step (0x9A7A0, thiscall: 1 won, 2 lost); won goes to 0x1D6D0, which ends
+  the map's entry in the game flow ([0x31E8D4], its entries' handlers run by 0x13380), and the next map's entry
+  loads it (0x1EAB0, 0x1E230, the loader 0x20480, cdecl: the name). The next map, and a restart after Bond dies, make
+  a new Bond, inventory and items at other addresses, and the last ones' memory is given back (a read of the old
+  held item's +0x329, one page up, faulted). A hook must not read through a guest pointer kept from an earlier
+  update: g_bond goes through LiveBond (src/game/free_aim.cpp), the weapon keys keep the held item only to compare.
 - **[game]** Zoom (a scope's or a mounted gun's; traced by a research agent): 0x14B640 (thiscall on Bond) answers
   the one in use: on a mounted gun its 0x1C8BB0, else the second item's (inventory +0x14) answer to 0xE07689D3. The
   zoom: +0 the factor, +4 the least (1), +8 the most (weapon property 0x6C), +0xC the rate (0x6D, 0.1), +0x10 a byte
