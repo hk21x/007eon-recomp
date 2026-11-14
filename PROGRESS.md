@@ -19,9 +19,36 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
   task branch `eon`
 - Smoke: scripts/smoke.sh: SMOKE OK (2026-10-26). Soak: 30 minutes, no traps, memory flat
 - Open: #33 (the crash before the Jaws fight) is fixed on branch issue-33-jaws (2026-11-14), not on main and not in
-  the tag v1.3.2; both smokes OK there
+  the tag v1.3.2; both smokes OK there. #35 (the pause menu takes no input) is fixed on branch issue-35-pause (from
+  issue-33-jaws), not on main; reproduced only with one pad on two ports
 
 ## Log
+
+### 2026-11-14 - #35: the pause menu takes no input, pad or keyboard (branch issue-35-pause)
+- The issue (no version, region or log): since the latest update, pausing stops every input, keyboard too; alt-F4.
+- Not reproduced with one controller: European build, the training level (first boot) and the train (harrysave5,
+  through the title and Mission Select), the pad and the keyboard both change tabs, move and resume (.local/pause
+  a_all.png, d_all.png, g_all.png).
+- Reproduced with one pad on two ports (#32's case), a harness pad script given to ports 1 and 2 (a test copy of
+  sdk/harness/pad_script.cpp, PAD_DUP=1; not committed): through the title to the train, Start pauses, then no tab
+  change, no Start, no keys: stuck paused (c_all.png). With #32's guard taken out, as in 1.2.0, the same run pauses,
+  changes tabs and resumes with the pad and the keyboard (i_all.png).
+- Cause: the pause menu takes only player 1's input (its package's mask 1; the front end's take every player), and
+  player 1 is whichever port 0x5DCD0 finds active (0x5D860 makes a port active when its input changes; FINDINGS). The
+  copy on port 2 changes in the same poll as port 1, after it, so it became player 1 (logged: player 1's port 1, that
+  is controller 2, from Mission Select on). #32's guard (899c79c, in 1.3.0 and 1.3.1) lets go of a later port holding
+  just what port 1 holds while a menu takes input: in the pause menu that was player 1's port, so the menu read
+  nothing, and the keyboard, on controller 1, is not player 1's.
+- Fix (src/game/player_port.cpp, src/common/menu_mouse.cpp): a later port holding just what controller 1 holds is
+  not made the active controller (0x5D860 skipped for it, USA 0x5D590), so controller 1 (pad and keyboard) stays player
+  1 and the guard still lets the copy go in the front end. The game's choice of player 1 is logged ("eon: player 1 is
+  controller N"), for reports. With the fix, the two-port run pauses, changes tabs and resumes with the pad and the
+  keyboard (f_all.png); one controller as before (g_all.png). driving.xbe has its own pad layer without the active
+  port; its pause menu with the two-port pad (launch_serena.bin) works with the guard as it is (h_all.png).
+- Side finding, not fixed: with the pad on two ports Mission Select still moves two missions a tap (four Rights
+  reached another mission than with one port).
+- Not verified: that the reporter has a pad on two ports (no log; ask for eon.log from EoN\play\logs: the menus' line
+  "controller 2 holds exactly what controller 1 does" says so); the Windows exe; the USA build's pause (only its smoke).
 
 ### 2026-11-14 - #33: crash going on to the Jaws fight in An Old Friend (branch issue-33-jaws)
 - The issue (two reporters, v1.3.1): C0000005 "read 100A083F9, guest 00A083F9" on guest thread 14 at the door before

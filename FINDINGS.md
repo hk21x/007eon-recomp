@@ -227,5 +227,10 @@ game's own code and data, with its addresses).
   no save, plays the training level and never shows the main menu.
 - **[game]** Pause menu: pm_bg.fng behind tabs pm_objectives, pm_game, pm_options. A tab is a button whose left and right open the next package. Audio
   Settings' package does not load in a mission (the loader answers 0). PkHd holds only so many name bytes: pm_options.fng's has 16.
+- **[game]** Players and ports (default.xbe): a table of 4 slots at 0x35B6F4 (12 bytes: the port, then flags); 0x5D8F0 hands a
+  port whose input changed to 0x5D860 (esi the port), which makes its slot the active one (index at 0x35B6E8), and
+  0x5DCD0 puts the active slot first: player 1, its port at 0x35B6EC. The menus' engine reads player k's pad through
+  0x121970 (0x5D4F0: slot to port). The front end's packages take every player (mask +0x20 0x7FFFFFFF), the pause
+  menu's only player 1 (mask 1). One pad on two ports made the later port player 1 (both change in a poll, it last).
 - **[port]** Volume rows play the volume's sample on each step (0x90A98729, 0xE2819A4A, 0x88ECEFDA): the copies use the ordinary click.
 

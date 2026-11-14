@@ -93,12 +93,29 @@ int64_t NowMs() {
 }
 
 static void MenuMouseInner(int port, input::Pad& p);
+// each port as last polled, before anything here changed it
+static input::Pad g_polled[4];
+// two ports' input the same: the buttons, the triggers and buttons past half way, the left stick within 6000
+static bool SamePad(const input::Pad& a, const input::Pad& b) {
+    const auto close_to = [](int x, int y) { return std::abs(x - y) < 6000; };
+    bool same = a.buttons == b.buttons && close_to(a.lx, b.lx) && close_to(a.ly, b.ly);
+    for (int i = 0; i < 8; i++) same &= (a.analog[i] > 64) == (b.analog[i] > 64);
+    return same;
+}
+
+// a later port holding just what controller 1 (with the keyboard) holds: the same pad seen on two ports (issue #32),
+// for src/game/player_port.cpp
+bool SameAsFirstPort(int port) {
+    return port > 0 && port < 4 && g_polled[port].connected && g_polled[0].connected && SamePad(g_polled[port], g_polled[0]);
+}
+
 // the game's polling (default.xbe 0x5D8F0) converts a pad's sticks only once its state differs from the zeroed copy it
 // keeps from opening the pad. A real pad's sticks never rest at exactly 0; the keyboard's pad does, so until the first
 // key the game read its unconverted zeros as both sticks held up and left: the menus moving at boot, and in a driving
 // mission (a new process, the pad opened again) the view spinning at the first spawn and Bond walking by himself until
 // a movement key (issue #16). So a resting left stick reads 1 of 32767 here, and the first poll converts.
 void MenuMouse(int port, input::Pad& p) {
+    if (port >= 0 && port < 4) g_polled[port] = p;
     MenuMouseInner(port, p);
     if (p.connected && p.lx == 0) p.lx = 1;
 }
@@ -108,17 +125,15 @@ static void MenuMouseInner(int port, input::Pad& p) {
     // one controller seen on two ports (issue #32: a pad Windows offers through two interfaces; not proven for the
     // reporter's): the menus take every port, each with its own press and repeat, so each tap moved two rows (measured
     // headless with port 1 given port 0's input). In a menu, a later port holding just what port 1's controller holds
-    // is let go; two players' pads differ, and in play nothing changes
+    // is let go; two players' pads differ, and in play nothing changes. The pause menu takes only player 1's port, so
+    // that must not be the later port (issue #35: src/game/player_port.cpp)
     static input::Pad first{};
     if (port == 0) first = p;
     if (port != 0) {
         const bool in_menu = NowMs() - g_menu_input.load() <= kStale;
-        const auto close_to = [](int a, int b) { return std::abs(a - b) < 6000; };
         bool pressed = first.buttons != 0 || std::abs(int(first.lx)) > 12000 || std::abs(int(first.ly)) > 12000;
         for (uint8_t a : first.analog) pressed |= a > 64;
-        bool same = p.buttons == first.buttons && close_to(p.lx, first.lx) && close_to(p.ly, first.ly);
-        for (int i = 0; i < 8; i++) same &= (p.analog[i] > 64) == (first.analog[i] > 64);
-        if (in_menu && pressed && same) {
+        if (in_menu && pressed && SamePad(p, first)) {
             static int told = 0;
             if (told++ < 3) LOGR("eon: menus: controller %d holds exactly what controller 1 does, taken as the same pad", port + 1);
             const bool connected = p.connected;
