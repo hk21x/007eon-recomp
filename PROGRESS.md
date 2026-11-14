@@ -49,7 +49,10 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
   lock finds none until he lands; a scripted fight on the platform below got Bond killed), so the later ropes were
   not reached. By the code, a lock takes both hooks out (the camera's and free aim's Plays). The crosshair is drawn
   only on Windows.
-- Smoke: European and USA (below).
+- Smoke on d0d3e42: European OK (menu 2 draws a frame, race 11671, no traps), USA OK in .local/usatest (menu 1,
+  race 11467, no traps; its sdk checkout is one launcher-only commit behind the pointer). The USA build on the rope
+  with the same save: the same view and turns (captures u); its addresses checked in the USA xbe (the class's
+  vtable, the camera's update at its +0x18, the four numbers 20, 15, 45, 70 read only inside the step).
 - Next: Harry on Windows: the feel and the limits on the rope (60 and 30 degrees), the view without the camera's
   tilt while the mouse plays, the crosshair's place beside Bond, the lock (MMB) on the later ropes.
 
