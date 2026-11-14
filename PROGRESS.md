@@ -47,8 +47,12 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
   port; its pause menu with the two-port pad (launch_serena.bin) works with the guard as it is (h_all.png).
 - Side finding, not fixed: with the pad on two ports Mission Select still moves two missions a tap (four Rights
   reached another mission than with one port).
+- USA build with the fix, the same two-port run: pauses, changes tabs and resumes with the pad and the keyboard
+  (u_all.png); the USA build without the fix was not run.
+- Smoke on 6a5a730: European OK (menu 2 draws a frame, race 11549, no traps), USA OK in .local/usatest (menu 1, race
+  11307, no traps; its sdk checkout one launcher-only commit behind the pointer, as before). wincheck ok for both files.
 - Not verified: that the reporter has a pad on two ports (no log; ask for eon.log from EoN\play\logs: the menus' line
-  "controller 2 holds exactly what controller 1 does" says so); the Windows exe; the USA build's pause (only its smoke).
+  "controller 2 holds exactly what controller 1 does" says so); the Windows exe.
 
 ### 2026-11-14 - #33: crash going on to the Jaws fight in An Old Friend (branch issue-33-jaws)
 - The issue (two reporters, v1.3.1): C0000005 "read 100A083F9, guest 00A083F9" on guest thread 14 at the door before
