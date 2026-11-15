@@ -25,6 +25,8 @@ bool slow_motion_blend = true;  // driving: slow motion's pictures fade into eac
 bool hide_hud = false;       // no HUD, for screenshots (src/driving/hud.cpp, src/game/hud.cpp)
 bool free_aim = true;        // on foot with the mouse, shots to the middle of the view (src/game/free_aim.cpp)
 void (*frame_ui)(double fps) = nullptr;  // an exe's own drawing each frame, set once it plays (no static registration)
+bool small_lock_dot = true;  // the lock's dot drawn small and round (src/game/lock_dot.cpp)
+void (*lock_dot_ui)() = nullptr;  // its drawing each frame, set once the game draws a dot
 uint32_t fov_percent = 100;  // the on-foot views' field of view, percent of the game's (src/game/fov.cpp)
 bool camera_follow = false;  // mouse: the camera swings behind Bond as he moves, as the game's does (src/game/camera.cpp)
 uint32_t aim_sensitivity = 100;  // mouse: the lock's dot and the scope, percent (src/game/mouse.cpp)
@@ -38,7 +40,7 @@ std::vector<achievements::Def> AchievementSet();         // src/common/achieveme
 }
 
 namespace {
-// EON_SKIP_INTRO=1, EON_HIDE_HUD=1, EON_MODERN_BUTTONS, EON_DRIVING60 and EON_CAMERA_FOLLOW (0 or 1) and EON_FOV (percent) set those options without a
+// EON_SKIP_INTRO=1, EON_HIDE_HUD=1, EON_MODERN_BUTTONS, EON_DRIVING60, EON_CAMERA_FOLLOW and EON_SMALL_DOT (0 or 1) and EON_FOV (percent) set those options without a
 // settings file (the headless harness has none)
 void Init() {
     if (const char* e = std::getenv("EON_SKIP_INTRO"); e && *e == '1') eon::skip_intro = true;
@@ -49,6 +51,7 @@ void Init() {
     if (const char* e = std::getenv("EON_HIDE_HUD"); e && *e == '1') eon::hide_hud = true;
     if (const char* e = std::getenv("EON_FOV")) eon::fov_percent = uint32_t(std::atoi(e));
     if (const char* e = std::getenv("EON_CAMERA_FOLLOW")) eon::camera_follow = *e == '1';
+    if (const char* e = std::getenv("EON_SMALL_DOT")) eon::small_lock_dot = *e == '1';
     if (const char* e = std::getenv("EON_AIM_RAISE")) eon::aim_raise = uint32_t(std::atoi(e));
     if (const char* e = std::getenv("EON_LANGUAGE")) eon::language = uint32_t(std::atoi(e));
     if (const char* e = std::getenv("EON_SUBTITLES")) eon::subtitles = uint32_t(std::atoi(e));  // 1 off, 2 on
@@ -77,6 +80,7 @@ std::vector<const char*> SameCode() {
 
 void FrameUi(double fps) {
     if (eon::frame_ui) eon::frame_ui(fps);
+    if (eon::lock_dot_ui) eon::lock_dot_ui();
 }
 
 bool HideFile(const std::string& path) {
@@ -234,6 +238,8 @@ const app::GameInfo app::kGame = {
                  "The mouse moving the lock-on dot and the sniper scope, apart from the camera's Mouse sensitivity; 100 as before."},
                 {"free_aim_sensitivity", nullptr, &eon::free_aim_sensitivity, "Sensitivity while aiming (%)",
                  "Free aim: the camera's mouse sensitivity while the right button aims, as a percent of Mouse sensitivity; 100 is the same."},
+                {"small_lock_dot", &eon::small_lock_dot, nullptr, "Small round lock-on dot",
+                 "The red dot moved over a locked target for head shots: small and round at any resolution. Off: the game's square."},
                 {"hide_hud", &eon::hide_hud, nullptr, "Hide the HUD", "For screenshots; at once, on foot and driving."},
                 {"high_fps", &eon::high_fps, nullptr, "High frame rate (driving, experimental)",
                  "Driving missions above 60 with a frame cap over 60: frames drawn in between the game's 60 steps a second. Up to a step behind; may flicker."},

@@ -20,9 +20,32 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 - Smoke: scripts/smoke.sh: SMOKE OK (2026-10-26). Soak: 30 minutes, no traps, memory flat
 - Open: #33 (the crash before the Jaws fight) is fixed on branch issue-33-jaws (2026-11-14), not on main and not in
   the tag v1.3.2; both smokes OK there. #35 (the pause menu takes no input) is fixed on branch issue-35-pause (from
-  issue-33-jaws), not on main; reproduced only with one pad on two ports
+  issue-33-jaws), not on main; reproduced only with one pad on two ports. #27 (a smaller round lock-on dot) on branch
+  issue-27-dot (from issue-35-pause), not on main
 
 ## Log
+
+### 2026-11-15 - #27: a smaller, round lock-on dot (branch issue-27-dot)
+- The issue: at high resolutions the red dot the right stick moves while locked on (head shots) is large, covers the
+  target, and is square.
+- Where: the lock's crosshair item (UI_HUD_CROSSHAIRITEM_*, chosen by 0x11AB20, updated by 0x11B020) draws in
+  0x25F290 (its vtable method): when +0x428 is set it draws the dot at +0x42C (+4 x, +8 y, 0 to 1 across the 2D frame)
+  through 0xCCC30, as element +0xD8 (a red texture, 4 units of the 480 high frame: an 18 pixel square at 4K) or, on
+  target (+0xC4, not +0xCD), +0x164 (the same texture 50 units: a faint disc with the dot in its middle). Measured with
+  a probe in a lock on the train (harrysave5, the fifth mission): fields logged, and the dot's red pixels in the
+  captures at x*640, y*480 (302,198 for 0.47,0.41; 329,213 for 0.52,0.44).
+- Change (src/game/lock_dot.cpp, option "Small round lock-on dot", on by default, EON_SMALL_DOT=0/1 headless): the
+  item draws with +0x428 cleared for the call (no other code reads it), and the dot is drawn with ImGui at the same
+  place (x into the 2D's hud_aspect width in the middle, as the renderers squeeze it on ultrawide): a red circle of
+  radius 2 at 720 lines with a dark outline 1 wide (scaled by the window height: 6 pixels across, 9 with the outline,
+  at 1080p; 12 and 18 at 2160p), plus a faint red disc of the game's size on target. Windows only (ImGui).
+- Headless (European): locked on in the train, the lock's arrows are drawn and the game's square is gone (captures),
+  the position logged ("eon: lock dot drawn round at 0.392 0.369 ..."). The ImGui circle itself is not drawn headless.
+- Seen on the way, not fixed (in since 1.2.0, 356e3b3): idle on the train, when Bond is shot dead the HUD ammo hook
+  (0x17F280, src/game/free_aim.cpp line 814) can read [Bond + 0x274] + 0x10 of a Bond whose memory now holds other
+  data (inv 0x408C6397, a float): signal 11 at 0x1408C63A7, 2 of 5 runs (gdb backtrace: 0x17F280 <- 0x158510 <-
+  0x15A170). LiveBond checks only that Bond's pages are committed.
+- Next: Harry on Windows: the dot's size, shape and place (16:9 and ultrawide), with the option on and off.
 
 ### 2026-11-14 - #35: the pause menu takes no input, pad or keyboard (branch issue-35-pause)
 - The issue (no version, region or log): since the latest update, pausing stops every input, keyboard too; alt-F4.
