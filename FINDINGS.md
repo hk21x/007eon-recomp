@@ -134,6 +134,10 @@ game's own code and data, with its addresses).
   a new Bond, inventory and items at other addresses, and the last ones' memory is given back (a read of the old
   held item's +0x329, one page up, faulted). A hook must not read through a guest pointer kept from an earlier
   update: g_bond goes through LiveBond (src/game/free_aim.cpp), the weapon keys keep the held item only to compare.
+  A restart (Bond dead, or Restart Mission) frees Bond in the frame of his last update, before the HUD draws: his
+  memory stays committed and is reused at once (his vtable read 0x3F6FDF3B, 0x42C80000, 0; his +0x274 0x42C80000), so
+  a second's recency and a committed check do not make him live; his class's vtable does. The menus' manager (the
+  0x131610 object) is made again with each map and restart; the driving scheduler [0x35FDD4] is deleted at shutdown.
 - **[game]** Zoom (a scope's or a mounted gun's; traced by a research agent): 0x14B640 (thiscall on Bond) answers
   the one in use: on a mounted gun its 0x1C8BB0, else the second item's (inventory +0x14) answer to 0xE07689D3. The
   zoom: +0 the factor, +4 the least (1), +8 the most (weapon property 0x6C), +0xC the rate (0x6D, 0.1), +0x10 a byte
