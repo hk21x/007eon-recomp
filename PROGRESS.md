@@ -36,6 +36,10 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 - Harry on Windows (test-next, 2026-11-15): the restart crash, Mission Select, Bond Sense's speed fixed; the lock-on
   dot fixed after its on-target disc (drawn far larger than the game's) became a white rim. Earlier: #33 and #35.
 - Main takes test-next (issue-27-dot, stale-pointers, issue-28-speed merged on 8749514). Notes: docs/releases/v1.3.2.md.
+- Reproduced on the VM (sdk 4a28d2c's note): a fresh install with the published 1.3.1 launcher (European disc,
+  Defender's real-time protection on, no exclusions) stopped at its first build the same way: the compile ended and
+  the move of play\.next\compiler failed in the same second; renamed by hand minutes later it moved. So fresh installs
+  of 1.3.1 hit it too. The retry is now up to 2 minutes (aa4a078, then 4a28d2c); EoN pins 4a28d2c.
 - Not done before the first 1.3.2, done now: an update from 1.3.1 with the new launcher and packages, on the VM.
 - Next: smoke both regions; the tag v1.3.2 again (Harry's go); the VM's packages and the update test; Harry publishes.
 
