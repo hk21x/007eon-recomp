@@ -134,6 +134,10 @@ game's own code and data, with its addresses).
   a new Bond, inventory and items at other addresses, and the last ones' memory is given back (a read of the old
   held item's +0x329, one page up, faulted). A hook must not read through a guest pointer kept from an earlier
   update: g_bond goes through LiveBond (src/game/free_aim.cpp), the weapon keys keep the held item only to compare.
+  A restart (Bond dead, or Restart Mission) frees Bond in the frame of his last update, before the HUD draws: his
+  memory stays committed and is reused at once (his vtable read 0x3F6FDF3B, 0x42C80000, 0; his +0x274 0x42C80000), so
+  a second's recency and a committed check do not make him live; his class's vtable does. The menus' manager (the
+  0x131610 object) is made again with each map and restart; the driving scheduler [0x35FDD4] is deleted at shutdown.
 - **[game]** Zoom (a scope's or a mounted gun's; traced by a research agent): 0x14B640 (thiscall on Bond) answers
   the one in use: on a mounted gun its 0x1C8BB0, else the second item's (inventory +0x14) answer to 0xE07689D3. The
   zoom: +0 the factor, +4 the least (1), +8 the most (weapon property 0x6C), +0xC the rate (0x6D, 0.1), +0x10 a byte
@@ -232,5 +236,8 @@ game's own code and data, with its addresses).
   0x5DCD0 puts the active slot first: player 1, its port at 0x35B6EC. The menus' engine reads player k's pad through
   0x121970 (0x5D4F0: slot to port). The front end's packages take every player (mask +0x20 0x7FFFFFFF), the pause
   menu's only player 1 (mask 1). One pad on two ports made the later port player 1 (both change in a poll, it last).
+- **[game]** A package's name is at +0xC (and +0x30). Packages taking port 1's input (0x131610) with no button in focus
+  (+0x84 0): boot_ingame_pov.fng all through play (every port), and Mission Select, frontend_mission_screen.fng (every
+  port), whose missions turn with no button in focus; menu_all_bg.fng behind the front end's screens.
 - **[port]** Volume rows play the volume's sample on each step (0x90A98729, 0xE2819A4A, 0x88ECEFDA): the copies use the ordinary click.
 

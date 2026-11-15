@@ -21,9 +21,49 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 - Open: #33 (the crash before the Jaws fight) is fixed on branch issue-33-jaws (2026-11-14), not on main and not in
   the tag v1.3.2; both smokes OK there. #35 (the pause menu takes no input) is fixed on branch issue-35-pause (from
   issue-33-jaws), not on main; reproduced only with one pad on two ports. #27 (a smaller round lock-on dot) on branch
-  issue-27-dot (from issue-35-pause), not on main
+  issue-27-dot; the restart crash and Mission Select on branch stale-pointers (both from issue-35-pause), not on main
 
 ## Log
+
+### 2026-11-15 - Kept guest pointers audited: a restart crash fixed; Mission Select one mission a tap on two ports (branch stale-pointers)
+- Audit of every guest address src/ keeps past a call (statics, atomics, maps), for #33's kind of crash:
+  only compared (safe): weapon_keys.cpp inv_was/held_was/before (after 9a23e45), zoom.cpp g_zoom, free_aim.cpp
+  last_cam/last_bond and g_bond where compared (0x167810, 0x149400, 0x1510F0, 0x14B010, 0x1BC740, 0x1B2C40, 0x1519E0,
+  0x181250, Bond's update), quit_item.cpp copies[].from, movie_subtitles.cpp's map key. Guest memory of our own
+  (AllocSystem, never the game's to free): quit_item.cpp copies[].edited, g_label, g_help; pc_settings.cpp buffers,
+  g_packages, the two path strings. Guarded and live: pointer.cpp menu_manager (committed checks; the engine's mouse
+  path 0x132000 runs only in the manager's update 0x1323D0 after 0x131610 on the same manager, whose +2 byte only that
+  hook sets; the manager is made again each map and restart, logged); buttons.cpp atlases (committed, a hash of the
+  bytes, four at most; the SDK drops a replacement whose memory changes). Unbounded: movie_subtitles.cpp's clocks, one
+  entry per movie object address ever seen (tens of bytes each; not fixed); quit_item.cpp a new copy (about 13 KB)
+  whenever a menu package turns up at a new address (once per front end headless).
+- Bug 1 (fixed): the ammo text's hook (0x17F280, USA 0x17EAF0) crashed on a restart. A restart (Bond left to die, or
+  Restart Mission) frees Bond in the frame of his last update, before the HUD draws, his memory committed and reused at
+  once, so LiveBond (a second's recency, committed pages) gave the freed Bond and his +0x274 was read as an inventory.
+  Headless, the train (harrysave5, Mission Select's fifth mission, free aim, Bond left to die) on 8749514's code:
+  segfault at the first restart, gdb: free_aim.cpp's `inv && gun == R32(inv + 0x10)`, fault at guest 0x42C80010 (inv
+  0x42C80000, a float); the USA build the same run segfaulted too (160 s). Logged with the fix: his vtable at the
+  refusals 0x3F6FDF3B, 0x42C80000, 0, 0 (four restarts); Restart Mission from the pause menu gave inv 0x3F800000. Fix
+  (src/game/free_aim.cpp): LiveBond also wants his class's vtable as his update last saw it, and the hook checks the
+  inventory's pointer is committed. With the fix: four restarts alive (European), two (USA); the train won into the Jaws
+  map alive; Quit from the pause menu to Mission Select, then A Long Way Down, weapon keys working, alive. The #27
+  agent's crash (the train, Bond shot while idle, [Bond+0x274] 0x408C6397) is this one.
+- Bug 2 (hardening, not seen to crash): src/driving/sixty.cpp kept the driving scheduler from its first run and read
+  its speed each frame; the game deletes it at shutdown (0x160CA0, 0x1610B2) and clears [0x35FDD4] (USA 0x35FDB4). It
+  is read from there each time now. Serena (a car, mission failed) and Train Chase (on foot) ran to the end headless.
+- #32 residue (fixed): Mission Select (frontend_mission_screen.fng, every port) turns its missions with no button in
+  focus, so src/game/menu_input.cpp never counted it as a menu (a menu: port 1 taken with a button in focus, as play's
+  boot_ingame_pov.fng takes every port with none) and the guard for a copy on a later port was off: logged "out of the
+  menus" as Mission Select opened. It is named as a menu now (its name at the package's +0xC). Headless, single 3-blank
+  Rights: one port GZ, MI6 Training, A Long Way Down, Train Chase, An Old Friend; two ports (PAD_DUP=1) before the fix
+  A Long Way Down, An Old Friend, MI6 Interlude, Vertigo (two a tap), with it the same as one port. With two ports one
+  Right then A started MI6 Training, the pause menu changed tabs and resumed. In Mission Select the mouse now plays A
+  and B as in other menus. Two real controllers: unchanged by reading (the guard still needs the later port to hold
+  exactly what port 1 holds), not run.
+- Smoke on 281bf73: European SMOKE OK (menu 2 draws a frame, race 11549, no traps); on cfc6202 USA SMOKE OK in
+  .local/usatest (menu 1, race 11640, no traps; its sdk checkout one launcher-only commit behind the pointer, as
+  before). wincheck ok for the three files.
+- Not verified: Windows; two real pads in Mission Select; movie map growth over a long session.
 
 ### 2026-11-15 - #27: a smaller, round lock-on dot (branch issue-27-dot)
 - The issue: at high resolutions the red dot the right stick moves while locked on (head shots) is large, covers the

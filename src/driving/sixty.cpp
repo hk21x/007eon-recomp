@@ -30,7 +30,9 @@ extern bool high_fps;           // frames in between the steps fill slow motion'
 }
 
 namespace {
-uint32_t g_scheduler = 0;
+// the scheduler: the game's one (0x15F4D0's only caller, the main loop 0x160C08, passes it), read where it lives each
+// time rather than kept: the shutdown 0x160CA0 deletes it (0x1610B2) and clears the pointer
+constexpr uint32_t kScheduler = EON_VA(0x35FDD4, 0x35FDB4);
 
 // slow motion: the ticks' spacing and how far into it this blank is, for the swap that follows. Under 1 so the renderers
 // keep blending at a tick's last blank: what stays on screen is all but this tick's picture
@@ -45,7 +47,7 @@ void SlowMotionBlend() {
         last_tick = tick;
     }
     float speed = 1;
-    if (g_scheduler) std::memcpy(&speed, kernel::HostPtr(g_scheduler + 0x20), 4);
+    if (uint32_t sched = kernel::R32(kScheduler)) speed = kernel::G<float>(sched + 0x20);
     if (eon::slow_motion_blend && !eon::high_fps && speed < 1 && speed > 0)
         d3d::SetFrameBlend(std::min(0.999f, float(blank - tick_blank + 1) / float(spacing)), fresh);
 }
@@ -70,7 +72,7 @@ X86_FUNC(EON_FN(00214CB0, 00214C70)) {
 X86_EXTERN_FUNC(EON_ORIG(0015F4D0, 0015F430));
 X86_FUNC(EON_FN(0015F4D0, 0015F430)) {
     if (!On()) return EON_ORIG(0015F4D0, 0015F430)(ctx, base);
-    uint32_t sched = g_scheduler = ctx.ecx;
+    uint32_t sched = ctx.ecx;
     uint8_t was = kernel::G<uint8_t>(sched + 0x1E);
     kernel::G<uint8_t>(sched + 0x1E) = 1;
     EON_ORIG(0015F4D0, 0015F430)(ctx, base);

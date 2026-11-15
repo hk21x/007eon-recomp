@@ -116,6 +116,7 @@ std::atomic<int> g_reload_clip{-1};      // the clip before R emptied it, shown 
 constexpr int64_t kReloadEmpty = 200;
 std::atomic<bool> g_strafe_ask{false};  // the strafe's check runs while he aims (below)
 std::atomic<int64_t> g_updated{0};
+std::atomic<uint32_t> g_bond_class{0};  // his vtable as his update last saw it (LiveBond)
 
 int Forced() {
     static const int v = [] {
@@ -131,11 +132,15 @@ int64_t NowMs() {
 }
 
 // player 1's Bond to read from: g_bond outlives a mission, so only while his update ran in the last second and his
-// memory is still there (Harry's crash on starting a mission: the ammo text read the last mission's freed Bond)
+// memory is still there (Harry's crash on starting a mission: the ammo text read the last mission's freed Bond), and
+// still his: a restart (Bond dead, or Restart Mission) frees him between his last update and the HUD's draw in the same
+// frame, his memory still committed and soon reused: the ammo text read his inventory pointer as 0x42C80000 and
+// faulted at 0x42C80010 (headless, the train with Bond left to die). A freed Bond no longer has his class's vtable
 uint32_t LiveBond() {
     uint32_t bond = g_bond;
     if (!bond || NowMs() - g_updated > 1000) return 0;
-    return mem::IsCommitted(bond) && mem::IsCommitted(bond + 0x1600) ? bond : 0;
+    if (!mem::IsCommitted(bond) || !mem::IsCommitted(bond + 0x1600)) return 0;
+    return kernel::R32(bond) == g_bond_class ? bond : 0;
 }
 
 uint32_t Camera(uint32_t bond) {
@@ -345,6 +350,7 @@ X86_FUNC(EON_FN(00156E50, 001566C0)) {
     if (kernel::R32(bond + kPlayerIndex) != 0) return;
     eon::frame_ui = DrawCrosshair;
     g_bond = bond;
+    g_bond_class = kernel::R32(bond);
     g_updated = NowMs();
     uint32_t cam = Camera(bond), mode = CameraMode(cam);
     uint32_t kind = mode ? kernel::R32(mode) : 0;
@@ -810,6 +816,7 @@ X86_EXTERN_FUNC(EON_ORIG(0017F280, 0017EAF0));
 X86_FUNC(EON_FN(0017F280, 0017EAF0)) {
     uint32_t bond = LiveBond();
     uint32_t gun = ctx.ecx, inv = bond ? kernel::R32(bond + 0x274) : 0;
+    if (inv && !mem::IsCommitted(inv + 0x14)) inv = 0;  // and his inventory's pointer one to read
     int shown = g_reload_clip;
     bool held = inv && gun == kernel::R32(inv + 0x10);
     uint32_t clip = kernel::R32(gun + 0x3E8), loading = kernel::R32(gun + 0x3F0);
