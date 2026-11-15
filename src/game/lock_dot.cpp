@@ -14,8 +14,9 @@
 //
 // With the option (on by default) the item draws with +0x428 cleared for the call (only that method reads it), and
 // the dot is drawn here with ImGui at the same place: a red circle of radius 2 at 720 lines (scaled by the window's
-// height, as free aim's crosshair), a thin dark outline round it, and for +0x164 a faint disc of the game's size
-// round it. The 2D frame is squeezed into the window's middle at GameInfo::hud_aspect on a wider screen (the
+// height, as free aim's crosshair) with a thin dark outline; on target (+0x164) the outline is white instead. The
+// game's faint disc there, drawn at its size (50 units: 150 pixels across at 1440 lines), covered the target (Harry's
+// screenshot), so the dot's rim tells it. The 2D frame is squeezed into the window's middle at GameInfo::hud_aspect on a wider screen (the
 // renderers' ultrawide squeeze), so x maps into that width. Windows only: headless the game's dot is gone and the
 // position is logged.
 #include <algorithm>
@@ -40,7 +41,6 @@ extern void (*lock_dot_ui)();         // drawn each frame (src/common/game_info.
 namespace {
 
 constexpr uint32_t kDotOn = 0x428, kDotPos = 0x42C, kOnTarget = 0xC4, kMiss = 0xCD;
-constexpr float kGlow = 25.0f / 480;  // +0x164's half size, of the frame's height
 
 std::atomic<float> g_x{0}, g_y{0};
 std::atomic<bool> g_glow{false};
@@ -65,8 +65,7 @@ void DrawDot() {
     const ImVec2 c(vp->WorkPos.x + vp->WorkSize.x * 0.5f + (g_x - 0.5f) * w, vp->WorkPos.y + g_y * h);
     const float k = h / 720, r = 2.0f * k;
     ImDrawList* d = ImGui::GetForegroundDrawList();
-    if (g_glow) d->AddCircleFilled(c, kGlow * h, IM_COL32(255, 0, 0, 40), 48);
-    d->AddCircleFilled(c, r + 1.0f * k, IM_COL32(0, 0, 0, 170), 24);
+    d->AddCircleFilled(c, r + 1.0f * k, g_glow ? IM_COL32(255, 255, 255, 230) : IM_COL32(0, 0, 0, 170), 24);
     d->AddCircleFilled(c, r, IM_COL32(255, 20, 20, 255), 24);
 #endif
 }
