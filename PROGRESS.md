@@ -3,7 +3,7 @@
 Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Status
-- Latest release: 1.3.1 (2026-11-11, tag v1.3.1, published; v1.3.0 was tagged but never released: its launcher did not link); before it 1.2.0 (2026-11-09).
+- Latest release: 1.3.1 (2026-11-11; 1.3.2 pulled 2026-11-14 for #36, being released again, tag v1.3.1, published; v1.3.0 was tagged but never released: its launcher did not link); before it 1.2.0 (2026-11-09).
 - Milestone: released 1.0.0 (2026-10-26, tag v1.0.0; the launcher built and published by .github/workflows/release.yml). Windows (Harry, D3D12, RX 7900 XT, 3440x1440): plays on foot and in the
   driving missions up to the last mission, with saves. The open issues of 2026-10-24 (the dark slab, the blue figures,
   the carousel's band, the loading screen's strip) are fixed (Harry, 2026-10-26).
@@ -25,6 +25,19 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
   pulses too fast at 60) on branch issue-28-speed (all from issue-35-pause), not on main; together on test-next
 
 ## Log
+
+### 2026-11-15 - 1.3.2 again: everything since, and the launcher's update fix
+- Harry pulled the first v1.3.2 (#36: the update from 1.3.1 stopped at "Could not put compiler in place (is the game
+  still running?): Access is denied"). The launcher's update was the same code in 1.3.1 and 1.3.2 (sdk 40a735b): it
+  moved the new version's folders into place once, and a folder just built (or the one it replaces) can be held for a
+  moment on Windows (inferred: an antivirus scan, the indexer; not reproduced). Fork branch launcher-replace-retry
+  aa4a078 (on 40a735b): the move tried again for up to 30 s, each try logged. EoN pins aa4a078 (fork main has moved on
+  by 8 kernel and recompiler commits, untested here; the branch is for the SDK session to merge).
+- Harry on Windows (test-next, 2026-11-15): the restart crash, Mission Select, Bond Sense's speed fixed; the lock-on
+  dot fixed after its on-target disc (drawn far larger than the game's) became a white rim. Earlier: #33 and #35.
+- Main takes test-next (issue-27-dot, stale-pointers, issue-28-speed merged on 8749514). Notes: docs/releases/v1.3.2.md.
+- Not done before the first 1.3.2, done now: an update from 1.3.1 with the new launcher and packages, on the VM.
+- Next: smoke both regions; the tag v1.3.2 again (Harry's go); the VM's packages and the update test; Harry publishes.
 
 ### 2026-11-15 - #28: Bond Sense's red rings and the HUD's pulses too fast at 60 (branch issue-28-speed)
 - The issue: in Bond Vision (the game's Bond Sense: the inventory open, d-pad left or down) the red waves round a
