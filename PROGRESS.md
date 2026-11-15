@@ -41,7 +41,9 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
   the move of play\.next\compiler failed in the same second; renamed by hand minutes later it moved. So fresh installs
   of 1.3.1 hit it too. The retry is now up to 2 minutes (aa4a078, then 4a28d2c); EoN pins 4a28d2c.
 - Not done before the first 1.3.2, done now: an update from 1.3.1 with the new launcher and packages, on the VM.
-- Next: smoke both regions; the tag v1.3.2 again (Harry's go); the VM's packages and the update test; Harry publishes.
+- Smoke on 7a9d5d6 (f850d3f differs only in the launcher and docs): European OK (menu 2, race 11525, no traps), USA OK
+  in .local/usatest (menu 1, race 11526, no traps). Harry's go to delete the old remote tag and tag again.
+- Next: the VM's packages and the update test; Harry publishes.
 
 ### 2026-11-15 - #28: Bond Sense's red rings and the HUD's pulses too fast at 60 (branch issue-28-speed)
 - The issue: in Bond Vision (the game's Bond Sense: the inventory open, d-pad left or down) the red waves round a
