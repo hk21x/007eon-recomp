@@ -3,7 +3,7 @@
 Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Status
-- Latest release: 1.3.1 (2026-11-11; 1.3.2 pulled 2026-11-14 for #36, being released again, tag v1.3.1, published; v1.3.0 was tagged but never released: its launcher did not link); before it 1.2.0 (2026-11-09).
+- Latest release: 1.3.2 (2026-11-15, published again after #36; before it 1.3.1, 2026-11-11, tag v1.3.1, published; v1.3.0 was tagged but never released: its launcher did not link); before it 1.2.0 (2026-11-09).
 - Milestone: released 1.0.0 (2026-10-26, tag v1.0.0; the launcher built and published by .github/workflows/release.yml). Windows (Harry, D3D12, RX 7900 XT, 3440x1440): plays on foot and in the
   driving missions up to the last mission, with saves. The open issues of 2026-10-24 (the dark slab, the blue figures,
   the carousel's band, the loading screen's strip) are fixed (Harry, 2026-10-26).
@@ -25,6 +25,15 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
   pulses too fast at 60) on branch issue-28-speed (all from issue-35-pause), not on main; together on test-next
 
 ## Log
+
+### 2026-11-15 - Release 1.3.2 published and checked
+- The VM: tag v1.3.2 (d9dedc3, sdk 4a28d2c), LLVM 22.1.3. On a published-1.3.1 install (Harry's clicks) the draft's
+  launcher (a81ea07a...) with the new PAL package beside it updated on the first press ("built": "v1.3.2"); a fresh
+  install in a new folder too. Neither met the lock, so the retry itself is not yet seen working. 1b: the 1.3.1
+  launcher's own stopped build went through on a second press (the workaround).
+- Harry published v1.3.2 (2026-11-15 09:17). Checked here: public, not a draft; its five files' sizes and sha256s
+  match the VM's builds (PAL 147277c6..., 76,154,882; USA 5589d54f..., 76,154,589; the launcher a81ea07a...).
+- Next: replies on the issues; the SDK session to take launcher-replace-retry (4a28d2c) into fork main.
 
 ### 2026-11-15 - 1.3.2 again: everything since, and the launcher's update fix
 - Harry pulled the first v1.3.2 (#36: the update from 1.3.1 stopped at "Could not put compiler in place (is the game
