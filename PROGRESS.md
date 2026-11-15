@@ -46,6 +46,8 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
   Unlocks' turning models (Gadgets' medal) stop when the frame's time is scaled down, so they follow it. Other frame
   steps found (FINDINGS): 0x12A3B0, a scripted widget sequence on the frame counter 0x320960 (not seen on screen).
 - Smoke (European, this worktree): SMOKE OK: menu 2 draws a frame, race 11347 draws a frame over the last 300
+  frames, no traps. USA on 0edac02 in .local/usatest (the USA.iso, EON_USA=1; its sdk checkout one launcher-only
+  commit behind the pointer, as before): SMOKE OK: menu 1 draws a frame, race 11381 draws a frame over the last 300
   frames, no traps. wincheck ok for src/game/ui_speed.cpp.
 - Not verified: Windows; which "silk-clad model" the reporter meant (if it is the menu movie it is unchanged; it plays
   at its own 30 frames a second); the FPS=30 rings run did not reach the level in time (the pulse did).
