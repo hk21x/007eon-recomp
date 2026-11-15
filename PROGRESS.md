@@ -20,9 +20,35 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 - Smoke: scripts/smoke.sh: SMOKE OK (2026-10-26). Soak: 30 minutes, no traps, memory flat
 - Open: #33 (the crash before the Jaws fight) is fixed on branch issue-33-jaws (2026-11-14), not on main and not in
   the tag v1.3.2; both smokes OK there. #35 (the pause menu takes no input) is fixed on branch issue-35-pause (from
-  issue-33-jaws), not on main; reproduced only with one pad on two ports
+  issue-33-jaws), not on main; reproduced only with one pad on two ports. #28 (Bond Sense's rings and HUD pulses too
+  fast at 60) is fixed on branch issue-28-speed (from issue-35-pause), not on main
 
 ## Log
+
+### 2026-11-15 - #28: Bond Sense's red rings and the HUD's pulses too fast at 60 (branch issue-28-speed)
+- The issue: in Bond Vision (the game's Bond Sense: the inventory open, d-pad left or down) the red waves round a
+  point of interest seem too fast at 60; "a number of things", the menus' turning silk-clad model too.
+- Cause: on foot the game makes its device with present interval 2 (0x5FEC0, 0x35B7C0 = 2): 29.97 frames a second on
+  the console, 60 here. Most of the game follows the frame's real time (0x1DAC0 into 0x320990), but two parts of the
+  HUD's widget library step by a constant each draw: 0x25FBD0, Bond Sense's rings (+0xCC size += +0xD4, 0.05 a draw;
+  a ring each 14 draws), and 0xCA3A0, every widget animation's progress (+0x80 += +0x74 a call: fades, pulses,
+  loops, moves; also the lock reticle 0x260050). Found by the rings' draws (32x32 textured triangles, 1.5 pixels wider
+  each frame however long the frame took), traced in gdb from the draw down (0x127E90 <- 0xCB660 <- 0xCCC30 <-
+  0x25FBD0); freezing the HUD's FEng time left them growing.
+- Fix: src/game/ui_speed.cpp (USA 0x25F400, 0xC9F20, frame time 0x31FE88): each call gets its step times the frame's
+  seconds * 29.97 (the library's own rate: the reticle turns by seconds * 29.97 [0x2C3D00]), put back after (negated
+  if a pulse turned round). State 1 widgets (+0x74 a level) untouched. Gameplay functions are not touched.
+- Measured headless, the rappel (harrysave5, Mission Select's third mission, d-pad left), the rings started a second:
+  4.0 to 4.5 before (60 draws a second), 2.0 to 2.5 with the fix (console 2.14). A pulsing HUD widget at the level's
+  start (vtable 0x2C49A0, state 3, speed 0.05): 3.02 progress a second before, 1.51 after (console 1.50); FPS=30: 1.45.
+- Not changed, measured right: the menus' background (febgloop_ntscw.xmv, the woman in white silk turning; 768 frames
+  over 25.6 s) decodes 30 frames a second (XMV paces by the vertical blank count); FEng menus get real seconds; the
+  Unlocks' turning models (Gadgets' medal) stop when the frame's time is scaled down, so they follow it. Other frame
+  steps found (FINDINGS): 0x12A3B0, a scripted widget sequence on the frame counter 0x320960 (not seen on screen).
+- Smoke (European, this worktree): SMOKE OK: menu 2 draws a frame, race 11347 draws a frame over the last 300
+  frames, no traps. wincheck ok for src/game/ui_speed.cpp.
+- Not verified: Windows; which "silk-clad model" the reporter meant (if it is the menu movie it is unchanged; it plays
+  at its own 30 frames a second); the FPS=30 rings run did not reach the level in time (the pulse did).
 
 ### 2026-11-14 - #35: the pause menu takes no input, pad or keyboard (branch issue-35-pause)
 - The issue (no version, region or log): since the latest update, pausing stops every input, keyboard too; alt-F4.

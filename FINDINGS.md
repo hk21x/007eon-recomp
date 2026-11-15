@@ -234,3 +234,23 @@ game's own code and data, with its addresses).
   menu's only player 1 (mask 1). One pad on two ports made the later port player 1 (both change in a poll, it last).
 - **[port]** Volume rows play the volume's sample on each step (0x90A98729, 0xE2819A4A, 0x88ECEFDA): the copies use the ordinary click.
 
+
+## Speed of effects (frame steps)
+
+- **[game]** On foot the device is made with present interval 2 (0x5FEC0: the parameters' 0x35B7C0 = 2), so the console
+  drew at most 29.97 frames a second; the port draws 60. The frame's real time is measured by 0x1DAC0 into 0x320990
+  (clamped 1/60 to 0.1 s; 0x320944 and 0x320984 are scaled copies, the latter by the slow motion 0x320964, left 0
+  while paused); movement,
+  cameras, the FEng menus (0xC6BE0 gives 0x1323D0 the seconds * 1200 ticks, at most 20 a pass) and the front end's
+  turning unlock models follow it (measured: frozen FEng time leaves the medal turning, the frame's time * 0.001 stops it).
+- **[game]** The HUD widget library steps some animations by a constant a draw, tuned for 29.97 draws a second (it
+  knows the rate: the lock reticle 0x260050 turns by its UI seconds [UI +0xF0, 0xC0350] * 29.97 [0x2C3D00]):
+  0x25FBD0 Bond Sense's rings round a point of interest (+0xCC size += +0xD4 a draw, 0.05; spacing +0xD0 0.7, back
+  past +0xC8 3.0; drawn through 0xCCC30/0xCB660/0x127E90 as 32x32 textured triangle quads) and 0xCA3A0 a widget's
+  animation (state +0x78 2..8: progress +0x80 += speed +0x74 a call; state 3 negates the speed at each end, state 1
+  takes it as a level). Fixed by src/game/ui_speed.cpp (issue #28).
+- **[game]** Also stepped by frames, not changed: 0x12A3B0 (a scripted UI sequence of the widget library, vtable
+  0x2DC4F4: timing (frame counter 0x320960 - start + [0x6583C0]) * speed / 1000, command 6 plays a movie; not seen
+  on screen yet); the Bond Sense blur passes' noise offset 0x3E9710 (+2 a draw: noise, no speed). The menus'
+  background movie (febgloop_ntscw.xmv, 768 frames over 25.6 s) is paced by XMV against the vertical blank count
+  (0x26C3B0 reads device +0x1DE8) and decodes 30 frames a second here: right.
