@@ -232,5 +232,8 @@ game's own code and data, with its addresses).
   0x5DCD0 puts the active slot first: player 1, its port at 0x35B6EC. The menus' engine reads player k's pad through
   0x121970 (0x5D4F0: slot to port). The front end's packages take every player (mask +0x20 0x7FFFFFFF), the pause
   menu's only player 1 (mask 1). One pad on two ports made the later port player 1 (both change in a poll, it last).
+- **[game]** A package's name is at +0xC (and +0x30). Packages taking port 1's input (0x131610) with no button in focus
+  (+0x84 0): boot_ingame_pov.fng all through play (every port), and Mission Select, frontend_mission_screen.fng (every
+  port), whose missions turn with no button in focus; menu_all_bg.fng behind the front end's screens.
 - **[port]** Volume rows play the volume's sample on each step (0x90A98729, 0xE2819A4A, 0x88ECEFDA): the copies use the ordinary click.
 
