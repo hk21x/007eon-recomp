@@ -60,7 +60,9 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
   Right then A started MI6 Training, the pause menu changed tabs and resumed. In Mission Select the mouse now plays A
   and B as in other menus. Two real controllers: unchanged by reading (the guard still needs the later port to hold
   exactly what port 1 holds), not run.
-- Smoke on 281bf73: European SMOKE OK (menu 2 draws a frame, race 11549, no traps). wincheck ok for the three files.
+- Smoke on 281bf73: European SMOKE OK (menu 2 draws a frame, race 11549, no traps); on cfc6202 USA SMOKE OK in
+  .local/usatest (menu 1, race 11640, no traps; its sdk checkout one launcher-only commit behind the pointer, as
+  before). wincheck ok for the three files.
 - Not verified: Windows; two real pads in Mission Select; movie map growth over a long session.
 
 ### 2026-11-14 - #35: the pause menu takes no input, pad or keyboard (branch issue-35-pause)
