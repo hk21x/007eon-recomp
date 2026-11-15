@@ -45,6 +45,9 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
   (0x17F280, src/game/free_aim.cpp line 814) can read [Bond + 0x274] + 0x10 of a Bond whose memory now holds other
   data (inv 0x408C6397, a float): signal 11 at 0x1408C63A7, 2 of 5 runs (gdb backtrace: 0x17F280 <- 0x158510 <-
   0x15A170). LiveBond checks only that Bond's pages are committed.
+- Smoke on 7c1d5a4: European OK (menu 2 draws a frame, race 11648, no traps), USA OK in .local/usatest (menu 1, race
+  11367, no traps; its sdk checkout one launcher-only commit behind the pointer, as before). wincheck ok for
+  lock_dot.cpp and game_info.cpp. The USA address 0x25EAC0 by xbe_port; the USA lock itself not played headless.
 - Next: Harry on Windows: the dot's size, shape and place (16:9 and ultrawide), with the option on and off.
 
 ### 2026-11-14 - #35: the pause menu takes no input, pad or keyboard (branch issue-35-pause)
