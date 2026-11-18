@@ -26,6 +26,25 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-18 - README in twine-pc's style, with new shots from GPU-VM (branch readme-style)
+
+Harry asked (through the Juiced session) for every port's README to follow CipherNovaa/twine-pc's layout, as Juiced's
+now does: banner, badges, links, hero shot, table of contents, Xbox vs. PC wipe, features table, PC Settings, graphics
+close-ups, controls, requirements, getting started, FAQ, known issues, roadmap, community, building, credits with an AI
+disclosure. The facts are the old README's, checked against the code (the PC Settings pages from pc_settings.cpp).
+
+Shots: GPU-VM (Intel Arc A750), main at 2bb0a66 built there from the European disc, Harry's save, a 1920x800 window
+(21:9; the VM's screen is 1920x1080). Scripts in `.local/gpuvm` (`shot.sh`: title > Load Game > Ground Zero > Agent,
+the briefing skipped, F12; `readme/batch.sh`, `panels.sh`, `wipe.sh`); keys played by `C:\eonctl\run.ps1` from the
+scheduled task EoNRun. The soldiers and the camera differ a little from run to run, so the close-ups are registered
+on the pagoda roof (offsets 0 except MSAA 8x, 2,-11), and the wipe is one run: all off, then render scale 200%, MSAA
+4x and anisotropic 16x set in the pause menu's PC Settings and shot as the game resumed. MSAA 8x drew no black areas
+here. Screenshots are named by the second, so F12 gives at most one a second (this SDK has no burst).
+
+Not done: a driving mission shot. The key player follows the switch to EoNDriving.exe, but three tries gave no F12
+screenshot from it (focus after the switch, most likely); the section shows the main menu at 21:9 instead. Seen on the
+way: the wall cover prompt sometimes shows a "0" key picture instead of "F" (2 of about 14 runs), not looked into.
+
 ### 2026-11-15 - Release 1.3.2 published and checked
 - The VM: tag v1.3.2 (d9dedc3, sdk 4a28d2c), LLVM 22.1.3. On a published-1.3.1 install (Harry's clicks) the draft's
   launcher (a81ea07a...) with the new PAL package beside it updated on the first press ("built": "v1.3.2"); a fresh
