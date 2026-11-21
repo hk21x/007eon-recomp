@@ -22,6 +22,23 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
   Steam Big Picture) and the update's retried move. #33, #35, #27, #28 and the stale pointers' fixes are in 1.3.2
 ## Log
 
+### 2026-11-21 - The menus' pointer: a red arrow of its own (branch menu-pointer)
+
+Harry asked every game (passed on by the Agent Under Fire session) for a pointer of its own in the menus in place of
+Windows' arrow, as Juiced and Agent Under Fire (ce92da7). src/common/menu_mouse.cpp: MenuCursor() draws the arrow in
+code (CreateDIBSection, CreateIconIndirect, 4x4 samples per pixel), 32 px at 1080 lines (24 to 96), made again when
+the window's height changes; the logo star's red, bright at the tip and deeper at the tail, the menus' near-black for
+its edge, and a soft shadow, so it reads on the menus' silver and over the world. PointerProc answers WM_SETCURSOR
+with it and swallows the runtime's half second hiding timer (kCursorTimer 0x5243) while the menus take the pointer
+and F1's window is shut. It no longer needs mouse look on, only keyboard play (the menus' pointer itself).
+
+Evidence: wincheck ok; built on GPU-VM (Arc A750) at 7110bfa, no warnings in the file. There the key player
+(C:\eonctl\run.ps1) gained "move FX FY" (the pointer at a fraction of the window) and "desk NAME" (the desktop with
+the cursor). On the main menu the log said "the menus' pointer picture made, 32 pixels", Windows reported our cursor
+(not the system arrow) and still showing after 3 s standing still; the desktop shot shows the red arrow. Smoke:
+European SMOKE OK (menu 1, race 11573), USA in .local/usatest on 7110bfa SMOKE OK (menu 2, race 11584), no traps.
+Not looked at: the driving menus (EoNDriving shares the code), sizes other than 1080 lines.
+
 ### 2026-11-21 - #38: a .recomp.json for recomp.fyi (branch recomp-json)
 
 recomp.board (recomp.fyi), a list of recomps in progress, showed EoN's status as unknown and proposed a small file at
