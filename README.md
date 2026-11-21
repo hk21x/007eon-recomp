@@ -327,6 +327,14 @@ loading screen, rebuild it in the launcher.
 </details>
 
 <details>
+<summary><b>Can it go straight into the game, from Steam Big Picture say?</b></summary>
+<br>
+Yes. Tick <b>Start the game when the launcher opens, if nothing needs updating</b> under Play, or add
+<code>--play</code> to the shortcut's launch options (in Steam: the shortcut's Properties). The launcher still checks
+for a new version first and stays open when there is one to install. Hold Shift as it opens to stay in it.
+</details>
+
+<details>
 <summary><b>How do I start again from a first boot?</b></summary>
 <br>
 Delete the <code>hdd</code> folder beside <code>EoN.exe</code> (<code>EoN\play\hdd</code> with the launcher,
