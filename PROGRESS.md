@@ -18,13 +18,28 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 - SDK: the fork's main at 296844d (2026-10-26: eon merged after EoN, PGR1 and PGR2 smoke and PGR1's frame check);
   task branch `eon`
 - Smoke: scripts/smoke.sh: SMOKE OK (2026-10-26). Soak: 30 minutes, no traps, memory flat
-- Open: #33 (the crash before the Jaws fight) is fixed on branch issue-33-jaws (2026-11-14), not on main and not in
-  the tag v1.3.2; both smokes OK there. #35 (the pause menu takes no input) is fixed on branch issue-35-pause (from
-  issue-33-jaws), not on main; reproduced only with one pad on two ports. #27 (a smaller round lock-on dot) on branch
-  issue-27-dot; the restart crash and Mission Select on branch stale-pointers; #28 (Bond Sense's rings and HUD
-  pulses too fast at 60) on branch issue-28-speed (all from issue-35-pause), not on main; together on test-next
-
+- Open: #37 (the launcher starts the game by itself, for Steam Big Picture) on branch issue-37-autoplay (sdk
+  launcher-autoplay 4fd9115, from launcher-replace-retry), not on main; #33, #35, #27, #28 and the stale pointers'
+  fixes are on main and in 1.3.2
 ## Log
+
+### 2026-11-21 - #37: the launcher starts the game by itself when nothing needs updating (branch issue-37-autoplay)
+
+A player streaming to a TV through Steam Big Picture asked for the launcher to skip itself when all is up to date.
+SDK launcher-autoplay 4fd9115 (fork branch, from launcher-replace-retry): a box under Play, "Start the game when the
+launcher opens, if nothing needs updating", saved as play_at_start in launcher.json, and a launch option --play that
+does the same for one shortcut (a Steam shortcut's launch options). Once the start's update check is done the game
+starts if it is chosen and built and no game or launcher update is offered; otherwise the launcher stays and says why
+in launcher.log. Shift held as it opens, or "Stay in the launcher" while it checks, keeps it open. It hides and waits
+for the game, its processes in a job so a game that starts itself again is still waited for, then closes, so Steam
+counts the game as running until it ends.
+
+Evidence: launcher_cli and screen_preview build on Linux (the box and the waiting line drawn, p5b_play_at_start).
+The launcher built on the Windows VM (no new warnings) and run there in the console session (a scheduled task) with a
+stand-in EoN.exe that starts itself once: box on, the game started at once and the launcher closed when the second
+process ended (5 s, not the first's 2 s); off with --play, the same; off with no option, it stayed; on with the game
+not built, it stayed ("the game is not built"). Not tried: Shift (no keyboard on the VM), a real Steam shortcut.
+Next: Harry tries it from Steam Big Picture; then the all-games gate and fork main, with launcher-replace-retry.
 
 ### 2026-11-18 - README in twine-pc's style, with new shots from GPU-VM (branch readme-style)
 
