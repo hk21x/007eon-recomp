@@ -1,0 +1,13 @@
+{
+  "$schema": "https://recomp.fyi/schema/v1.json",
+  "game": "James Bond 007: Everything or Nothing",
+  "wikidata": "Q161202",
+  "system": "Xbox",
+  "type": "recomp",
+  "project": "007: Everything or Nothing recomp",
+  "status": "released",
+  "targets": ["Windows"],
+  "toolchain": "XboxXBE-Recomp",
+  "original": [{ "region": "Europe" }, { "region": "USA" }],
+  "links": [{ "label": "Discord", "url": "https://discord.gg/PQjkKsdtc" }]
+}

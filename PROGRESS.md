@@ -22,6 +22,14 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
   Steam Big Picture) and the update's retried move. #33, #35, #27, #28 and the stale pointers' fixes are in 1.3.2
 ## Log
 
+### 2026-11-21 - #38: a .recomp.json for recomp.fyi (branch recomp-json)
+
+recomp.board (recomp.fyi), a list of recomps in progress, showed EoN's status as unknown and proposed a small file at
+the repository's root that says what the project is. Harry agreed. `.recomp.json`: the game, Wikidata Q161202
+(checked: James Bond 007: Everything or Nothing), Xbox, recomp, status released, Windows, XboxXBE-Recomp, Europe and
+USA, the Discord. Valid against https://recomp.fyi/schema/v1.json (python jsonschema). Keep its status current: the
+board reads it daily. The other sessions told, so each port can carry its own. Next: Harry closes #38.
+
 ### 2026-11-21 - #37: the launcher starts the game by itself when nothing needs updating (branch issue-37-autoplay)
 
 A player streaming to a TV through Steam Big Picture asked for the launcher to skip itself when all is up to date.
