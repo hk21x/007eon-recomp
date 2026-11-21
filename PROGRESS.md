@@ -18,9 +18,8 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 - SDK: the fork's main at 296844d (2026-10-26: eon merged after EoN, PGR1 and PGR2 smoke and PGR1's frame check);
   task branch `eon`
 - Smoke: scripts/smoke.sh: SMOKE OK (2026-10-26). Soak: 30 minutes, no traps, memory flat
-- Open: #37 (the launcher starts the game by itself, for Steam Big Picture) on branch issue-37-autoplay (sdk
-  launcher-autoplay 4fd9115, from launcher-replace-retry), not on main; #33, #35, #27, #28 and the stale pointers'
-  fixes are on main and in 1.3.2
+- SDK pin: the fork's main 068400d (2026-11-21). Next release: #37 (the launcher starts the game by itself, for
+  Steam Big Picture) and the update's retried move. #33, #35, #27, #28 and the stale pointers' fixes are in 1.3.2
 ## Log
 
 ### 2026-11-21 - #37: the launcher starts the game by itself when nothing needs updating (branch issue-37-autoplay)
@@ -40,6 +39,14 @@ stand-in EoN.exe that starts itself once: box on, the game started at once and t
 process ended (5 s, not the first's 2 s); off with --play, the same; off with no option, it stayed; on with the game
 not built, it stayed ("the game is not built"). Not tried: Shift (no keyboard on the VM), a real Steam shortcut.
 Next: Harry tries it from Steam Big Picture; then the all-games gate and fork main, with launcher-replace-retry.
+
+Then, on Harry's "You work on these": launcher-autoplay merged onto the fork's main (068400d, a clean merge; against
+the old main it changes launcher/ alone, so the gate was the launchers: launcher_cli and screen_preview build and draw
+for PGR2, PGR1, EoN, Agent Under Fire, NightFire, 50 Cent, Juiced and True Crime; the merged launcher built on the
+Windows VM and the play-at-start run passed again) and pushed as the fork's main. EoN's sdk moved to 068400d, which
+also brings main's runtime since 40a735b (stick tuning, aspect_live, hud_layout, ProgramExtent ...). Smoke:
+European SMOKE OK (menu 2, race 11595), USA in .local/usatest on cd60137 SMOKE OK (menu 1, race 11413), no traps.
+README: a FAQ entry on going straight into the game. Main fast-forwarded. Not tried: Shift, a real Steam shortcut.
 
 ### 2026-11-18 - README in twine-pc's style, with new shots from GPU-VM (branch readme-style)
 
