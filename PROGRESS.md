@@ -38,6 +38,8 @@ the cursor). On the main menu the log said "the menus' pointer picture made, 32 
 (not the system arrow) and still showing after 3 s standing still; the desktop shot shows the red arrow. Smoke:
 European SMOKE OK (menu 1, race 11573), USA in .local/usatest on 7110bfa SMOKE OK (menu 2, race 11584), no traps.
 Not looked at: the driving menus (EoNDriving shares the code), sizes other than 1080 lines.
+Harry on Windows (RX 7900 XT, 3440x1440, Direct3D 11) after building main 365ebc8: "Red pointer works perfectly."
+(His first try ran an old build: that checkout was on the branch slowmo-blend, from about 1 November.)
 
 ### 2026-11-21 - #38: a .recomp.json for recomp.fyi (branch recomp-json)
 
